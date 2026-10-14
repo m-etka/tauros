@@ -8,6 +8,8 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
+  var APP_VERSION = '1.1.0';
+  var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
 
   /* ------------------------------------------------------------------ */
   /* Yardımcılar                                                         */
@@ -43,13 +45,15 @@
   /* ------------------------------------------------------------------ */
   /* Kayıt                                                               */
   /* ------------------------------------------------------------------ */
-  var save = { stars: {}, sound: true };
+  // stars: toplama (eski kayıtlarla uyumlu), games: diğer oyunlar
+  var save = { stars: {}, games: {}, sound: true };
   try {
     var raw = window.localStorage.getItem(STORE_KEY);
     if (raw) {
       var parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
         save.stars = parsed.stars || {};
+        save.games = parsed.games || {};
         save.sound = parsed.sound !== false;
       }
     }
@@ -158,7 +162,7 @@
   /* ------------------------------------------------------------------ */
   /* Seviyeler (1. sınıf: toplamı 20'yi geçmeyen toplama)               */
   /* ------------------------------------------------------------------ */
-  var LEVELS = [
+  var LEVELS_ADD = [
     { name: "5'e kadar", sub: 'Say ve topla', color: '#ef476f', kind: 'objects', max: 5 },
     { name: "10'a kadar", sub: 'Say ve topla', color: '#ff8a3d', kind: 'objects', max: 10 },
     { name: 'Kurbağa', sub: 'Sayı doğrusu', color: '#3bb273', kind: 'line', max: 10 },
@@ -169,7 +173,33 @@
     { name: 'Şampiyon', sub: "20'ye kadar", color: '#26874f', kind: 'plain', max: 20 }
   ];
 
-  function makeQuestion(lv, seen) {
+  // 1. sınıf çıkarma: 20'ye kadar, onluk bozmadan
+  var LEVELS_SUB = [
+    { name: "5'ten çıkar", sub: 'Kalanı say', color: '#ef476f', kind: 'objects', max: 5 },
+    { name: "10'dan çıkar", sub: 'Kalanı say', color: '#ff8a3d', kind: 'objects', max: 10 },
+    { name: 'Kurbağa', sub: 'Geri zıpla', color: '#3bb273', kind: 'line', max: 10 },
+    { name: 'Onluk kutu', sub: '10 kutucuk', color: '#3a86ff', kind: 'frame', max: 10 },
+    { name: 'Sayılarla', sub: "10'a kadar", color: '#8e7dff', kind: 'plain', max: 10 },
+    { name: 'Gizli sayı', sub: '8 – ? = 5', color: '#e0a800', kind: 'missing', max: 10 },
+    { name: "20'ye kadar", sub: 'İki onluk kutu', color: '#ef476f', kind: 'frame20', max: 20 },
+    { name: 'Şampiyon', sub: "20'ye kadar", color: '#26874f', kind: 'plain', max: 20 }
+  ];
+
+  var MINUS = '\u2013'; // eski Android yazı tiplerinde kesin bulunan çizgi
+  var GAMES = {
+    add: { id: 'add', title: 'Toplama', icon: '2+3', color: '#ff8a3d', op: '+', levels: LEVELS_ADD },
+    sub: { id: 'sub', title: 'Çıkarma', icon: '5' + MINUS + '2', color: '#3a86ff', op: MINUS, levels: LEVELS_SUB }
+  };
+  var GAME_ORDER = ['add', 'sub'];
+  var CUR = GAMES.add; // seçili oyun
+  function starsOf(game) {
+    if (game.id === 'add') return save.stars;
+    if (!save.games[game.id]) save.games[game.id] = {};
+    return save.games[game.id];
+  }
+
+  function makeQuestion(lv, seen, op) {
+    if (op === 'sub') return makeSubQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -198,6 +228,33 @@
     return { a: a, b: b, sum: sumAB, answer: answer, opts: makeChoices(answer, lv.kind === 'missing' ? lv.max - 1 : lv.max) };
   }
 
+  function makeSubQuestion(lv, seen) {
+    var a, b, key, tries = 0;
+    do {
+      if (lv.kind === 'frame20') {
+        a = rnd(11, 19); b = rnd(1, a - 10);          // onluk bozmadan: sonuç >= 10
+      } else if (lv.kind === 'line') {
+        b = rnd(1, 4); a = rnd(b + 1, 10);
+      } else if (lv.max === 20) {
+        // Şampiyon: çoğu 10'dan büyük (onluk bozmadan), bir kısmı 10'a kadar
+        var roll = Math.random();
+        if (roll < 0.1) { a = pick([20, rnd(11, 19)]); b = a - 10; }
+        else if (roll < 0.65) { a = rnd(11, 19); b = rnd(1, a - 10); }
+        else { a = rnd(4, 10); b = rnd(1, a - 1); }
+      } else if (lv.max === 5) {
+        a = rnd(2, 5); b = rnd(1, a - 1);
+      } else {
+        a = rnd(lv.kind === 'objects' ? 6 : 4, 10); b = rnd(1, a - 1);
+      }
+      key = a + '-' + b;
+      tries++;
+    } while (seen[key] && tries < 40);
+    seen[key] = true;
+    var r = a - b;
+    var answer = lv.kind === 'missing' ? b : r;
+    return { a: a, b: b, sum: r, answer: answer, opts: makeChoices(answer, a) };
+  }
+
   function makeChoices(ans, max) {
     var out = [ans];
     var cand = shuffle([ans - 1, ans + 1]).concat(shuffle([ans - 2, ans + 2, ans + 3, ans - 3]));
@@ -219,6 +276,7 @@
     for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
     $('s-' + name).classList.add('active');
     current = name;
+    if (pendingReload && safeToReload()) { doReload(); return; }
     if (name === 'home') renderHome();
     if (name === 'levels') renderLevels();
   }
@@ -251,20 +309,25 @@
   /* ------------------------------------------------------------------ */
   /* Ana sayfa                                                           */
   /* ------------------------------------------------------------------ */
-  var HELLOS = ['Merhaba! Hadi oynayalım!', 'Toplama yapalım mı?', 'Bugün yıldız toplayalım!'];
-  function totalStars() {
-    var t = 0;
-    for (var k in save.stars) if (save.stars.hasOwnProperty(k)) t += save.stars[k];
+  var HELLOS = ['Merhaba! Hadi oynayalım!', 'Toplama mı, çıkarma mı?', 'Bugün yıldız toplayalım!'];
+  function totalStars(game) {
+    var t = 0, m = starsOf(game);
+    for (var k in m) if (m.hasOwnProperty(k)) t += m[k];
     return t;
   }
   function renderHome() {
     $('home-hello').innerHTML = pick(HELLOS);
     var g = $('games');
     g.innerHTML = '';
-    var card = el('button', 'game-card',
-      '<div class="game-icon">2+3</div><h3>Toplama</h3><p>' + totalStars() + ' / ' + (LEVELS.length * 3) + ' yıldız</p>');
-    card.addEventListener('click', function () { Snd.tap(); show('levels'); });
-    g.appendChild(card);
+    for (var i = 0; i < GAME_ORDER.length; i++) {
+      (function (game) {
+        var card = el('button', 'game-card',
+          '<div class="game-icon" style="background:' + game.color + '">' + game.icon + '</div><h3>' + game.title + '</h3><p>' +
+          totalStars(game) + ' / ' + (game.levels.length * 3) + ' yıldız</p>');
+        card.addEventListener('click', function () { Snd.tap(); CUR = game; show('levels'); });
+        g.appendChild(card);
+      })(GAMES[GAME_ORDER[i]]);
+    }
     homeMascot.face('happy', 1200);
   }
 
@@ -272,11 +335,11 @@
   /* Seviye seçimi                                                       */
   /* ------------------------------------------------------------------ */
   function unlockedCount() {
-    var n = 1;
-    for (var i = 0; i < LEVELS.length; i++) {
-      if (save.stars[i] > 0) n = i + 2; else break;
+    var n = 1, st = starsOf(CUR), L = CUR.levels;
+    for (var i = 0; i < L.length; i++) {
+      if (st[i] > 0) n = i + 2; else break;
     }
-    return Math.min(n, LEVELS.length);
+    return Math.min(n, L.length);
   }
   function starRow(n, cls) {
     var s = '';
@@ -286,17 +349,19 @@
   function renderLevels() {
     var box = $('levels');
     box.innerHTML = '';
+    $('levels-title').innerHTML = CUR.title;
     var open = unlockedCount();
-    for (var i = 0; i < LEVELS.length; i++) {
+    var st = starsOf(CUR);
+    for (var i = 0; i < CUR.levels.length; i++) {
       (function (i) {
-        var lv = LEVELS[i];
+        var lv = CUR.levels[i];
         var locked = i >= open;
-        var isCurrent = !locked && i === open - 1 && !(save.stars[i] > 0);
+        var isCurrent = !locked && i === open - 1 && !(st[i] > 0);
         var b = el('button', 'lvl' + (locked ? ' locked' : '') + (isCurrent ? ' current' : ''),
           '<div class="lvl-num" style="background:' + lv.color + '">' + (locked ? svgUse('i-lock') : (i + 1)) + '</div>' +
           '<div class="lvl-name">' + lv.name + '</div>' +
           '<div class="lvl-sub">' + lv.sub + '</div>' +
-          starRow(save.stars[i] || 0, 'lvl-stars'));
+          starRow(st[i] || 0, 'lvl-stars'));
         b.addEventListener('click', function () {
           if (locked) { Snd.wrong(); restartAnim(b, 'shakeit'); return; }
           Snd.tap();
@@ -305,7 +370,7 @@
         box.appendChild(b);
       })(i);
     }
-    $('total-stars').innerHTML = totalStars();
+    $('total-stars').innerHTML = totalStars(CUR);
   }
 
   /* ------------------------------------------------------------------ */
@@ -315,7 +380,7 @@
 
   function startLevel(i) {
     show('play');
-    G = { lvl: i, lv: LEVELS[i], q: 0, missQ: 0, streak: 0, seen: {}, cur: null, locked: false, wrongNow: 0, results: [] };
+    G = { game: CUR, op: CUR.id, sign: CUR.op, lvl: i, lv: CUR.levels[i], q: 0, missQ: 0, streak: 0, seen: {}, cur: null, locked: false, wrongNow: 0, results: [] };
     renderDots();
     say(pick(['Hadi başlayalım!', 'Hazır mısın?', 'Haydi!']));
     playMascot.face('happy', 900);
@@ -340,7 +405,7 @@
     stopHint();
     var build = function () {
       G.qid = (G.qid || 0) + 1;
-      G.cur = makeQuestion(G.lv, G.seen);
+      G.cur = makeQuestion(G.lv, G.seen, G.op);
       G.locked = false;
       G.wrongNow = 0;
       G.counter = 0;
@@ -364,6 +429,8 @@
   var ITEMS = ['i-apple', 'i-star', 'i-balloon'];
 
   function buildQuestion(stage, q, lv) {
+    if (G.op === 'sub') { buildSubQuestion(stage, q, lv); return; }
+    G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
       var pair = pick(PAIRS), item = pick(ITEMS);
@@ -412,6 +479,85 @@
     }
   }
 
+  /* ---------- Çıkarma görselleri ---------- */
+  function buildSubQuestion(stage, q, lv) {
+    var kind = lv.kind, M = MINUS;
+    var C1 = '#3a86ff', C2 = '#ef476f';
+    G.countReady = false;
+    if (kind === 'objects') {
+      var item = pick(ITEMS), color = pick(['#ef476f', '#ff8a3d', '#3bb273', '#8e7dff', '#3a86ff']);
+      var vis = el('div', 'visual');
+      var grp = objGroup(q.a, item, color, 0, true);
+      vis.appendChild(grp);
+      stage.appendChild(vis);
+      stage.appendChild(equation(q.a, M, q.b, '=', null, ['#2b2d42', C2]));
+      say(pick([q.a + " taneden " + q.b + " tanesi gidiyor!", 'Kaç tane kaldı?']));
+      strikeLast(grp.querySelectorAll('.obj'), q.b, 'Kaç tane kaldı?');
+    } else if (kind === 'frame' || kind === 'frame20') {
+      var vis2 = el('div', 'visual');
+      var frames = kind === 'frame20' ? 2 : 1;
+      var idx = 0, cells = [];
+      for (var f = 0; f < frames; f++) {
+        var fr = el('div', 'frame');
+        for (var c = 0; c < 10; c++) {
+          var cell = el('div', 'cell');
+          if (idx < q.a) {
+            var chip = el('div', 'chip pop');
+            chip.style.background = C1;
+            chip.style.webkitAnimationDelay = chip.style.animationDelay = (idx * 0.03) + 's';
+            cell.appendChild(chip);
+            cell.className = 'cell obj-cell';
+            attachCount(cell);
+            cells.push(cell);
+          }
+          idx++;
+          fr.appendChild(cell);
+        }
+        vis2.appendChild(fr);
+      }
+      stage.appendChild(vis2);
+      stage.appendChild(equation(q.a, M, q.b, '=', null, [C1, C2]));
+      say(q.b + ' tanesini siliyoruz!');
+      strikeLast(cells, q.b, kind === 'frame20' ? 'İlk kutu dolu kaldı mı?' : 'Kalanları say!');
+    } else if (kind === 'line') {
+      G.countReady = true;
+      stage.appendChild(numberLine(q, -1));
+      stage.appendChild(equation(q.a, M, q.b, '=', null, ['#ef476f', C1]));
+      say(q.b + ' kere geri zıplıyor!');
+    } else if (kind === 'missing') {
+      G.countReady = true;
+      stage.appendChild(equation(q.a, M, null, '=', q.sum, ['#2b2d42', C2]));
+      say('Kaç tane gitti?');
+    } else {
+      G.countReady = true;
+      stage.appendChild(equation(q.a, M, q.b, '=', null, ['#2b2d42', C2]));
+      say(pick(['Kaç kalır?', 'Bil bakalım!', 'Hızlı düşün!']));
+    }
+  }
+
+  // Son "b" nesneyi sırayla çizer (gider); bitince çocuk kalanları sayabilir.
+  function strikeLast(nodeList, b, prompt) {
+    var nodes = [];
+    for (var i = 0; i < nodeList.length; i++) nodes.push(nodeList[i]);
+    var qid = G.qid;
+    var start = 650 + nodes.length * 40;
+    for (var k = 0; k < b; k++) {
+      (function (node, k) {
+        later(function () {
+          if (G.qid !== qid) return;
+          node.classList.add('gone');
+          node.appendChild(el('span', 'xmark', '<i></i><i></i>'));
+          Snd.tone(520 - k * 25, 0, 0.09, 'triangle', 0.16);
+        }, start + k * 140);
+      })(nodes[nodes.length - 1 - k], k);
+    }
+    later(function () {
+      if (G.qid !== qid) return;
+      G.countReady = true;
+      if (prompt) say(prompt);
+    }, start + b * 140 + 150);
+  }
+
   function objGroup(n, item, color, offset) {
     var g = el('div', 'group');
     // 5'li sıralar: göz hemen gruplar (örüntü algısı)
@@ -431,7 +577,7 @@
   function attachCount(node) {
     var qid = G.qid;
     node.addEventListener('click', function () {
-      if (!G || G.qid !== qid || node.getAttribute('data-n')) return;
+      if (!G || G.qid !== qid || !G.countReady || node.getAttribute('data-n') || node.classList.contains('gone')) return;
       G.counter++;
       node.setAttribute('data-n', G.counter);
       node.classList.add('counted');
@@ -450,10 +596,11 @@
     var nodes = $('stage').querySelectorAll('.obj, .obj-cell');
     if (!nodes.length) return false;
     if (hintTimers.length) return true; // zaten sayıyor
+    if (!G.countReady) return false;
     var qid = G.qid;
     var list = [];
     for (var i = 0; i < nodes.length; i++) {
-      if (!nodes[i].getAttribute('data-n')) list.push(nodes[i]);
+      if (!nodes[i].getAttribute('data-n') && !nodes[i].classList.contains('gone')) list.push(nodes[i]);
     }
     for (var j = 0; j < list.length; j++) {
       (function (n, k) {
@@ -488,7 +635,8 @@
     return e;
   }
 
-  function numberLine(q) {
+  function numberLine(q, dir) {
+    dir = dir || 1;
     var wrap = el('div', 'nline');
     var max = 10;
     var W = 880, pad = 30, y = 110;
@@ -498,6 +646,7 @@
     for (var i = 0; i <= max; i++) {
       var x = pad + i * step;
       var hi = i === q.a;
+      // çıkarmada başlangıç noktası (eksilen) vurgulanır
       s += '<line x1="' + x + '" y1="' + (y - 14) + '" x2="' + x + '" y2="' + (y + 14) + '" stroke="#2b2d42" stroke-width="4"/>';
       s += '<text x="' + x + '" y="' + (y + 50) + '" text-anchor="middle" font-size="34" font-weight="900" fill="' + (hi ? '#ef476f' : '#2b2d42') + '" font-family="Roboto, Arial, sans-serif">' + i + '</text>';
     }
@@ -513,13 +662,13 @@
     var arcs = wrap.querySelector('.arcs');
     var fbody = frog.firstChild;
     var hopOnce = function (k) {
-      var from = pos, to = pos + 1;
+      var from = pos, to = pos + dir;
       pos = to;
       var x1 = pad + from * step, x2 = pad + to * step, mid = (x1 + x2) / 2;
       var ns = 'http://www.w3.org/2000/svg';
       var p = document.createElementNS(ns, 'path');
       p.setAttribute('d', 'M' + x1 + ' ' + (y - 18) + ' Q' + mid + ' ' + (y - 95) + ' ' + x2 + ' ' + (y - 18));
-      p.setAttribute('stroke', '#3a86ff');
+      p.setAttribute('stroke', dir > 0 ? '#3a86ff' : '#ef476f');
       p.setAttribute('stroke-width', '4');
       p.setAttribute('stroke-dasharray', '8 7');
       p.setAttribute('fill', 'none');
@@ -527,9 +676,9 @@
       var t = document.createElementNS(ns, 'text');
       t.setAttribute('x', mid); t.setAttribute('y', y - 64);
       t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '26');
-      t.setAttribute('font-weight', '900'); t.setAttribute('fill', '#3a86ff');
+      t.setAttribute('font-weight', '900'); t.setAttribute('fill', dir > 0 ? '#3a86ff' : '#ef476f');
       t.setAttribute('font-family', 'Roboto, Arial, sans-serif');
-      t.textContent = '+' + k;
+      t.textContent = (dir > 0 ? '+' : MINUS) + k;
       arcs.appendChild(t);
       var dx = (pctAt(to) - pctAt(q.a)) / 100 * wrap.offsetWidth;
       frog.style.webkitTransform = frog.style.transform = 'translateX(' + dx + 'px)';
@@ -629,8 +778,10 @@
 
   function finishLevel() {
     var stars = G.missQ <= 1 ? 3 : G.missQ <= 3 ? 2 : 1;
-    var prev = save.stars[G.lvl] || 0;
-    if (stars > prev) save.stars[G.lvl] = stars;
+    var st = starsOf(G.game);
+    var prev = st[G.lvl] || 0;
+    if (stars > prev) st[G.lvl] = stars;
+    var LV = G.game.levels;
     persist();
     var lvlIndex = G.lvl;
     show('result');
@@ -638,10 +789,10 @@
     var titles = { 3: 'Muhteşem!', 2: 'Çok iyi!', 1: 'Bitirdin!' };
     $('result-title').innerHTML = titles[stars];
     var txt;
-    if (stars === 3) txt = 'Toplama ustası oldun!';
+    if (stars === 3) txt = G.game.title + ' ustası oldun!';
     else if (stars === 2) txt = 'Bir daha oynarsan 3 yıldız alabilirsin!';
     else txt = 'Her oyunda daha iyi oluyorsun!';
-    if (lvlIndex === LEVELS.length - 1) txt = 'Bütün seviyeleri bitirdin! Sen bir şampiyonsun!';
+    if (lvlIndex === LV.length - 1) txt = 'Bütün seviyeleri bitirdin! Sen bir şampiyonsun!';
     else if (!prev) txt += '<br>Yeni seviye açıldı!';
     $('result-text').innerHTML = txt;
 
@@ -659,7 +810,7 @@
     later(function () { burst($('result-mascot'), 18); }, 900);
 
     var next = $('btn-next');
-    next.style.display = lvlIndex < LEVELS.length - 1 ? '' : 'none';
+    next.style.display = lvlIndex < LV.length - 1 ? '' : 'none';
     next.onclick = function () { Snd.tap(); startLevel(lvlIndex + 1); };
     $('btn-again').onclick = function () { Snd.tap(); startLevel(lvlIndex); };
   }
@@ -681,15 +832,92 @@
   /* Çevrimdışı (Service Worker)                                         */
   /* ------------------------------------------------------------------ */
   var status = $('offline-status');
+  var verBtn = $('ver');
+  var verText = 'Sürüm ' + APP_VERSION + (BUILD.indexOf('__') === 0 ? '' : ' · ' + BUILD);
+  verBtn.innerHTML = verText;
+
+  /* Güncelleme: oyun önbellekten (internetsiz) açılır. Yeni sürüm yayınlanınca
+   * arka planda iner; hazır olduğunda oyun ortasında değil, ana sayfadayken
+   * sayfa kendiliğinden yenilenir. */
+  var swReg = null, pendingReload = false, reloading = false, lastCheck = 0;
+  var hadController = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
+  function doReload() {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  }
+  function safeToReload() { return current === 'home' || current === 'levels' || current === 'about'; }
+  function checkUpdate(force) {
+    if (!swReg || !navigator.onLine) return;
+    var now = Date.now();
+    if (!force && now - lastCheck < 60000) return;
+    lastCheck = now;
+    try { swReg.update(); } catch (e) { }
+  }
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').then(function () {
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadController) { hadController = true; return; } // ilk kurulum: yenilemeye gerek yok
+      if (safeToReload()) doReload();
+      else { pendingReload = true; status.innerHTML = 'Yeni sürüm hazır'; }
+    });
+    navigator.serviceWorker.register('sw.js').then(function (reg) {
+      swReg = reg;
+      reg.addEventListener('updatefound', function () {
+        if (hadController) status.innerHTML = 'Yeni sürüm indiriliyor...';
+      });
       return navigator.serviceWorker.ready;
     }).then(function () {
-      status.innerHTML = 'İnternetsiz oynanabilir';
+      if (!pendingReload) status.innerHTML = 'İnternetsiz oynanabilir';
     }).catch(function () {
       status.innerHTML = '';
     });
+    // Ana ekrandan açılan uygulama günlerce açık kalabilir: öne gelince kontrol et
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') {
+        checkUpdate(false);
+        if (ac && ac.status !== 0 && !(navigator.serviceWorker && navigator.serviceWorker.controller)) { try { ac.update(); } catch (e) { } }
+      }
+    });
+    window.addEventListener('online', function () { checkUpdate(true); });
   }
+  /* Yedek: Service Worker'ı olmayan ya da kuramayan eski tarayıcılar AppCache kullanır.
+   * (Service Worker sayfayı kontrol ediyorsa tarayıcı AppCache'i yok sayar.) */
+  var ac = window.applicationCache;
+  if (ac) {
+    var acReady = function () {
+      if (!pendingReload) status.innerHTML = 'İnternetsiz oynanabilir';
+    };
+    ac.addEventListener('cached', acReady);
+    ac.addEventListener('noupdate', acReady);
+    ac.addEventListener('downloading', function () {
+      if (!navigator.serviceWorker || !navigator.serviceWorker.controller) status.innerHTML = 'İnternetsiz kullanım için hazırlanıyor...';
+    });
+    ac.addEventListener('updateready', function () {
+      try { ac.swapCache(); } catch (e) { }
+      if (safeToReload()) doReload();
+      else { pendingReload = true; status.innerHTML = 'Yeni sürüm hazır'; }
+    });
+    if (ac.status === 1) acReady(); // IDLE: zaten önbellekte
+  }
+  if (!('serviceWorker' in navigator) && !ac) status.innerHTML = '';
+
+  function chromeVersion() {
+    var m = navigator.userAgent.match(/Chrome\/(\d+)/);
+    return m ? 'Chrome ' + m[1] : '';
+  }
+  function checkAll() {
+    checkUpdate(true);
+    if (ac && ac.status !== 0) { try { ac.update(); } catch (e) { } }
+  }
+
+  // Sürüm yazısına dokununca elle güncelleme kontrolü (+ tarayıcı sürümü, sorun bildirimi için)
+  verBtn.addEventListener('click', function () {
+    var info = verText + (chromeVersion() ? ' · ' + chromeVersion() : '');
+    if (!navigator.onLine) { verBtn.innerHTML = info + ' · internet yok'; return; }
+    verBtn.innerHTML = info + ' · kontrol ediliyor...';
+    checkAll();
+    setTimeout(function () { if (!reloading) verBtn.innerHTML = info + ' · güncel'; }, 4000);
+  });
 
   show('home');
 })();

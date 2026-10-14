@@ -7,3 +7,7 @@ https://:project.pages.dev/*
 
 /sw.js
   Cache-Control: no-cache
+
+/offline.appcache
+  Content-Type: text/cache-manifest; charset=utf-8
+  Cache-Control: no-cache

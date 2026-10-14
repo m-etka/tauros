@@ -1,7 +1,7 @@
 {
   "name": "Mandi'nin Oyun Bahçesi",
   "short_name": "Mandi",
-  "description": "1. sınıf çocuklar için ücretsiz, reklamsız toplama oyunu. İnternetsiz çalışır.",
+  "description": "1. sınıf çocuklar için ücretsiz, reklamsız toplama ve çıkarma oyunu. İnternetsiz çalışır.",
   "lang": "tr",
   "start_url": "./",
   "scope": "./",

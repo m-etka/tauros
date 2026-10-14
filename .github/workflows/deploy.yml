@@ -32,9 +32,11 @@ jobs:
           node-version: 20
 
       # Her yayında önbellek sürümü değişsin ki tablet yeni sürümü alsın
-      - name: Önbellek sürümünü güncelle
+      - name: Önbellek ve sürüm etiketini güncelle
         if: env.SKIP != '1'
-        run: sed -i "s/mandi-v1/mandi-${GITHUB_SHA::8}/" public/sw.js
+        run: |
+          sed -i "s/mandi-v1/mandi-${GITHUB_SHA::8}/" public/sw.js
+          sed -i "s/__BUILD__/${GITHUB_SHA::7}/" public/app.js public/offline.appcache
 
       - name: Pages projesini oluştur (yoksa)
         if: env.SKIP != '1'
@@ -98,6 +100,8 @@ jobs:
             chk "/sitemap.xml" 'curl -s $B/sitemap.xml | grep -q "<urlset"'
             chk "/og.jpg"    'curl -sI $B/og.jpg | grep -qi "content-type: image/jpeg"'
             chk "404"        '[ "$(curl -s -o /dev/null -w %{http_code} $B/yok)" = 404 ]'
+            chk "/offline.appcache" 'curl -sI $B/offline.appcache | grep -qi "content-type: text/cache-manifest"'
+            chk "sürüm etiketi" 'curl -s $B/app.js | grep -q "var BUILD = .${GITHUB_SHA::7}."'
           done
           # Cloudflare'in "AI botlarını engelle" / yönetilen robots.txt ayarı açıksa burada görünür
           BLOCK=$(curl -s https://mandi.etka.org/robots.txt | grep -i -E "^disallow: */ *$|content-signal" | sort -u | tr '\n' ' ')

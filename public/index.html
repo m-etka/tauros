@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" manifest="offline.appcache">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#ff8a3d">
 <meta name="mobile-web-app-capable" content="yes">
-<title>1. Sınıf Toplama Oyunu – Ücretsiz ve İnternetsiz | Mandi'nin Oyun Bahçesi</title>
-<meta name="description" content="1. sınıf çocuklar için ücretsiz, reklamsız toplama oyunu. Nesnelerle sayma, sayı doğrusu ve onluk kutu ile 20'ye kadar toplama. Bir kez açın, internetsiz oynayın.">
+<title>Mandi'nin Oyun Bahçesi – 1. Sınıf Toplama ve Çıkarma Oyunu</title>
+<meta name="description" content="1. sınıf çocuklar için ücretsiz, reklamsız toplama ve çıkarma oyunu. Nesnelerle sayma, sayı doğrusu ve onluk kutu ile 20'ye kadar. Bir kez açın, internetsiz oynayın.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://mandi.etka.org/">
 <link rel="manifest" href="manifest.json">
@@ -17,8 +17,8 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="tr_TR">
 <meta property="og:site_name" content="Mandi'nin Oyun Bahçesi">
-<meta property="og:title" content="1. Sınıf Toplama Oyunu – Mandi'nin Oyun Bahçesi">
-<meta property="og:description" content="Çocuklar nesneleri sayarak, kurbağayla zıplayarak ve onluk kutuyla toplamayı öğreniyor. Ücretsiz, reklamsız, internetsiz çalışır.">
+<meta property="og:title" content="1. Sınıf Toplama ve Çıkarma Oyunu – Mandi'nin Oyun Bahçesi">
+<meta property="og:description" content="Çocuklar nesneleri sayarak, kurbağayla zıplayarak ve onluk kutuyla toplama ve çıkarmayı öğreniyor. Ücretsiz, reklamsız, internetsiz çalışır.">
 <meta property="og:url" content="https://mandi.etka.org/">
 <meta property="og:image" content="https://mandi.etka.org/og.jpg">
 <meta property="og:image:width" content="1200">
@@ -30,11 +30,11 @@
 {
   "@context": "https://schema.org",
   "@type": ["WebApplication", "LearningResource"],
-  "name": "Mandi'nin Oyun Bahçesi – 1. Sınıf Toplama Oyunu",
-  "alternateName": "Mandi Toplama Oyunu",
+  "name": "Mandi'nin Oyun Bahçesi – 1. Sınıf Toplama ve Çıkarma Oyunu",
+  "alternateName": ["Mandi Toplama Oyunu", "Mandi Çıkarma Oyunu"],
   "url": "https://mandi.etka.org/",
   "image": "https://mandi.etka.org/og.jpg",
-  "description": "1. sınıf çocuklar için ücretsiz, reklamsız ve internetsiz çalışan toplama oyunu. 8 seviyede 5'ten 20'ye kadar toplama: nesnelerle sayma, sayı doğrusu, onluk kutu ve eksik sayıyı bulma.",
+  "description": "1. sınıf çocuklar için ücretsiz, reklamsız ve internetsiz çalışan toplama ve çıkarma oyunu. Her biri 8 seviyeli iki oyunda 20'ye kadar toplama ve onluk bozmadan çıkarma: nesnelerle sayma, sayı doğrusu, onluk kutu ve eksik sayıyı bulma.",
   "inLanguage": "tr",
   "applicationCategory": "EducationalApplication",
   "applicationSubCategory": "Matematik",
@@ -45,9 +45,9 @@
   "learningResourceType": "Eğitsel oyun",
   "educationalLevel": "İlkokul 1. sınıf",
   "typicalAgeRange": "6-9",
-  "teaches": ["Toplama işlemi", "20'ye kadar toplama", "Sayı doğrusunda toplama", "Onluk kutu ile toplama", "Eksik toplananı bulma"],
+  "teaches": ["Toplama işlemi", "20'ye kadar toplama", "Sayı doğrusunda toplama", "Onluk kutu ile toplama", "Eksik toplananı bulma", "Çıkarma işlemi", "20'ye kadar onluk bozmadan çıkarma", "Sayı doğrusunda geriye sayarak çıkarma", "Eksik çıkanı bulma"],
   "audience": { "@type": "EducationalAudience", "educationalRole": "student" },
-  "featureList": ["İnternet olmadan çalışır", "Reklam yok", "Hesap ve kişisel veri gerekmez", "8 seviye ve yıldız ödülleri", "Nesnelere dokunarak sayma"]
+  "featureList": ["İnternet olmadan çalışır", "Reklam yok", "Hesap ve kişisel veri gerekmez", "Toplama ve çıkarmada 8'er seviye, yıldız ödülleri", "Nesnelere dokunarak sayma"]
 }
 </script>
 
@@ -111,6 +111,7 @@
     <footer class="home-foot">
       <p class="offline" id="offline-status"></p>
       <button class="parent-link" data-go="about">Ebeveyn ve öğretmenler için</button>
+      <button class="ver" id="ver" aria-label="Sürüm ve güncelleme"></button>
     </footer>
   </section>
 
@@ -123,10 +124,10 @@
     </header>
     <div class="about">
       <article>
-        <h2>1. sınıf toplama oyunu: ücretsiz, reklamsız, internetsiz</h2>
-        <p><strong>Mandi'nin Oyun Bahçesi</strong>, 6-9 yaş çocuklar için hazırlanmış bir matematik oyunudur. İlk oyun, 1. sınıf matematiğindeki <strong>toplama</strong> konusunu, toplamı 20'yi geçmeyen sayılarla adım adım çalıştırır. Rehber karakter Mandi adında bir mandalinadır: doğru cevapta sevinir, yanlış cevapta çocukla birlikte sayar.</p>
+        <h2>1. sınıf toplama ve çıkarma oyunu: ücretsiz, reklamsız, internetsiz</h2>
+        <p><strong>Mandi'nin Oyun Bahçesi</strong>, 6-9 yaş çocuklar için hazırlanmış bir matematik oyunudur. İki oyun 1. sınıf matematiğindeki <strong>toplama</strong> ve <strong>çıkarma</strong> konularını 20'ye kadar sayılarla adım adım çalıştırır. Rehber karakter Mandi adında bir mandalinadır: doğru cevapta sevinir, yanlış cevapta çocukla birlikte sayar.</p>
 
-        <h2>Neler öğretir? 8 seviye</h2>
+        <h2>Toplama oyunu: 8 seviye</h2>
         <ol>
           <li><strong>5'e kadar toplama:</strong> elma, yıldız ve balonları sayarak.</li>
           <li><strong>10'a kadar toplama:</strong> nesneler beşli sıralarla gösterilir, göz grupları hemen tanır.</li>
@@ -135,6 +136,18 @@
           <li><strong>Sayılarla toplama:</strong> görsel destek olmadan 10'a kadar.</li>
           <li><strong>Gizli sayı:</strong> eksik toplananı bulma, örneğin 3 + ? = 7.</li>
           <li><strong>20'ye kadar toplama:</strong> iki onluk kutu ile "önce 10'u tamamla" stratejisi.</li>
+          <li><strong>Şampiyon:</strong> 20'ye kadar karışık sorular.</li>
+        </ol>
+
+        <h2>Çıkarma oyunu: 8 seviye</h2>
+        <ol>
+          <li><strong>5'ten çıkarma:</strong> nesnelerin bir kısmı çizilir, çocuk kalanları sayar.</li>
+          <li><strong>10'dan çıkarma:</strong> aynı yöntemle 10'a kadar.</li>
+          <li><strong>Sayı doğrusu:</strong> kurbağa geriye zıplar, her zıplama –1'dir.</li>
+          <li><strong>Onluk kutu:</strong> pullar tek tek silinir, kalanlar sayılır.</li>
+          <li><strong>Sayılarla çıkarma:</strong> görsel destek olmadan 10'a kadar.</li>
+          <li><strong>Gizli sayı:</strong> eksik çıkanı bulma, örneğin 8 – ? = 5.</li>
+          <li><strong>20'ye kadar çıkarma:</strong> iki onluk kutu ile onluk bozmadan (ör. 17 – 4).</li>
           <li><strong>Şampiyon:</strong> 20'ye kadar karışık sorular.</li>
         </ol>
 
@@ -166,7 +179,7 @@
   <section id="s-levels" class="screen">
     <header class="bar">
       <button class="icon-btn" data-go="home" aria-label="Geri"><svg><use xlink:href="#i-back"/></svg></button>
-      <h2>Toplama</h2>
+      <h2 id="levels-title">Toplama</h2>
       <div class="bar-stars"><svg class="mini-star"><use xlink:href="#i-star"/></svg><span id="total-stars">0</span></div>
     </header>
     <div class="levels" id="levels"></div>

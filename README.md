@@ -4,6 +4,7 @@
 
 ## Oyunlar
 
+- **Çıkarma** (1. sınıf, 20'ye kadar onluk bozmadan): 8 seviye — nesneler çizilir, kurbağa geri zıplar, onluk kutuda pullar silinir, gizli sayı.
 - **Toplama** (1. sınıf, toplamı 20'yi geçmeyen): 8 seviye
   1. 5'e kadar, nesneleri sayarak
   2. 10'a kadar, nesneleri sayarak
@@ -34,10 +35,11 @@ Güncellemeler: tablet internete bağlıyken oyunu bir kez açıp kapatmak yeter
 ## Geliştirme kuralları (cihaz uyumu)
 
 - JavaScript yalnızca **ES5** (let/const/ok fonksiyonu yok); kütüphane yok.
-- CSS'te flex `gap`, `clamp()`, `min()`, `aspect-ratio`, `inset` yok.
+- CSS'te **değişken (`var(--x)`) yok** — tabletteki eski Chrome desteklemiyor; flex `gap`, `clamp()`, `min()`, `aspect-ratio`, `inset` de yok.
 - Animasyonlar yalnızca `transform` ve `opacity` ile.
 - Emoji yok (Android 4.2 renkli emoji göstermiyor); simgeler SVG.
-- Yeni dosya eklenirse `public/sw.js` içindeki `FILES` listesine de eklenmeli.
+- Yeni dosya eklenirse `public/sw.js` içindeki `FILES` listesine ve `public/offline.appcache`'e de eklenmeli.
+- Çevrimdışı: Service Worker; desteklemeyen eski tarayıcılarda AppCache yedeği. Yeni sürüm ana sayfadayken kendiliğinden yüklenir, oyun ortasında bölmez. Ana sayfadaki sürüm yazısına dokunmak elle kontrol eder.
 
 ## Arama motorları ve yapay zekâ
 
