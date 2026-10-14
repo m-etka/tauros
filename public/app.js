@@ -214,6 +214,7 @@
   var current = null;
   function show(name) {
     clearTimers();
+    stopHint();
     var screens = document.querySelectorAll('.screen');
     for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
     $('s-' + name).classList.add('active');
@@ -336,7 +337,9 @@
   function nextQuestion() {
     if (G.q >= QUESTIONS_PER_LEVEL) { finishLevel(); return; }
     var stage = $('stage');
+    stopHint();
     var build = function () {
+      G.qid = (G.qid || 0) + 1;
       G.cur = makeQuestion(G.lv, G.seen);
       G.locked = false;
       G.wrongNow = 0;
@@ -424,9 +427,11 @@
   }
 
   // Çocuk nesnelere dokunarak sayabilir: her dokunuşta sıradaki numara yazılır.
+  // qid: her soruya özel; eski sorunun nesneleri/zamanlayıcıları yeni soruyu etkilemesin.
   function attachCount(node) {
+    var qid = G.qid;
     node.addEventListener('click', function () {
-      if (node.getAttribute('data-n')) return;
+      if (!G || G.qid !== qid || node.getAttribute('data-n')) return;
       G.counter++;
       node.setAttribute('data-n', G.counter);
       node.classList.add('counted');
@@ -436,16 +441,26 @@
   }
 
   // İpucu: tüm nesneleri sırayla numaralar
+  var hintTimers = [];
+  function stopHint() {
+    for (var i = 0; i < hintTimers.length; i++) clearTimeout(hintTimers[i]);
+    hintTimers = [];
+  }
   function countHint() {
     var nodes = $('stage').querySelectorAll('.obj, .obj-cell');
     if (!nodes.length) return false;
+    if (hintTimers.length) return true; // zaten sayıyor
+    var qid = G.qid;
     var list = [];
     for (var i = 0; i < nodes.length; i++) {
       if (!nodes[i].getAttribute('data-n')) list.push(nodes[i]);
     }
     for (var j = 0; j < list.length; j++) {
       (function (n, k) {
-        later(function () { if (!n.getAttribute('data-n')) fireClick(n); }, k * 230);
+        hintTimers.push(setTimeout(function () {
+          if (G && G.qid === qid && !n.getAttribute('data-n')) fireClick(n);
+          if (k === list.length - 1) hintTimers = [];
+        }, k * 230));
       })(list[j], j);
     }
     return true;
@@ -545,6 +560,7 @@
     var q = G.cur;
     if (val === q.answer) {
       G.locked = true;
+      stopHint();
       var clean = G.wrongNow === 0;
       G.results.push(clean);
       if (!clean) G.missQ++;

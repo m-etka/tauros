@@ -272,7 +272,7 @@ svg { display: block; }
 @-webkit-keyframes objIn { from { opacity: 0; -webkit-transform: scale(.2); } to { opacity: 1; -webkit-transform: scale(1); } }
 @keyframes objIn { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: scale(1); } }
 .obj.counted { -webkit-transform: scale(1.12); transform: scale(1.12); }
-.obj .num {
+.obj .num, .cell .num {
   position: absolute; left: 50%; top: 50%;
   width: 1.9rem; height: 1.9rem; margin: -.95rem 0 0 -.95rem;
   border-radius: 50%;
@@ -285,7 +285,7 @@ svg { display: block; }
 .frame {
   display: -webkit-flex; display: flex;
   -webkit-flex-wrap: wrap; flex-wrap: wrap;
-  width: 17.4rem;
+  width: 17.5rem; /* 5 x 3.4rem + 2 x .25rem kenarlık */
   background: #fff;
   border: .25rem solid var(--ink);
   border-radius: .8rem;
@@ -293,7 +293,7 @@ svg { display: block; }
   margin: 0 .5rem;
 }
 .cell {
-  width: 3.4rem; height: 3.4rem;
+  width: 20%; height: 3.4rem;
   border-right: .15rem solid #c9cfdc;
   border-bottom: .15rem solid #c9cfdc;
   display: -webkit-flex; display: flex;
