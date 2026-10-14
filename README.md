@@ -42,6 +42,6 @@ Güncellemeler: tablet internete bağlıyken oyunu bir kez açıp kapatmak yeter
 ## Arama motorları ve yapay zekâ
 
 - `index.html`: başlık, açıklama, canonical, Open Graph (`og.jpg`) ve schema.org `WebApplication` + `LearningResource` verisi.
-- "Ebeveynler için" ekranı: arama motorlarının da okuduğu gerçek açıklama metni.
+- "Ebeveyn ve öğretmenler için" ekranı: arama motorlarının da okuduğu gerçek açıklama metni.
 - `robots.txt` (AI botlarına da izin verir), `sitemap.xml`, `llms.txt`, `404.html`.
 - `_headers`: `*.pages.dev` kopyası `noindex`; asıl adres mandi.etka.org.
