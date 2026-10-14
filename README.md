@@ -38,3 +38,10 @@ Güncellemeler: tablet internete bağlıyken oyunu bir kez açıp kapatmak yeter
 - Animasyonlar yalnızca `transform` ve `opacity` ile.
 - Emoji yok (Android 4.2 renkli emoji göstermiyor); simgeler SVG.
 - Yeni dosya eklenirse `public/sw.js` içindeki `FILES` listesine de eklenmeli.
+
+## Arama motorları ve yapay zekâ
+
+- `index.html`: başlık, açıklama, canonical, Open Graph (`og.jpg`) ve schema.org `WebApplication` + `LearningResource` verisi.
+- "Ebeveynler için" ekranı: arama motorlarının da okuduğu gerçek açıklama metni.
+- `robots.txt` (AI botlarına da izin verir), `sitemap.xml`, `llms.txt`, `404.html`.
+- `_headers`: `*.pages.dev` kopyası `noindex`; asıl adres mandi.etka.org.

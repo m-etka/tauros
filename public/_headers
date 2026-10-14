@@ -1,0 +1,9 @@
+# pages.dev kopyası arama sonuçlarında çıkmasın; asıl adres mandi.etka.org
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+
+/sw.js
+  Cache-Control: no-cache
