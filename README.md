@@ -26,9 +26,9 @@ Güncellemeler: tablet internete bağlıyken oyunu bir kez açıp kapatmak yeter
 
 ## Yayın
 
-`master` dalına her push, GitHub Actions ile Cloudflare Pages'e (`mandi-oyun` projesi) yayınlanır. Gerekli repo secret'ları:
+`master` dalına her push, GitHub Actions ile Cloudflare Pages'e (`mandi-oyun` projesi) yayınlanır ve **mandi.etka.org** adresine bağlanır. Gerekli repo secret'ları:
 
-- `CLOUDFLARE_API_TOKEN` — izin: *Account → Cloudflare Pages → Edit*
+- `CLOUDFLARE_API_TOKEN` — izinler: *Account → Cloudflare Pages → Edit*, *Zone (etka.org) → DNS → Edit*
 - `CLOUDFLARE_ACCOUNT_ID`
 
 ## Geliştirme kuralları (cihaz uyumu)

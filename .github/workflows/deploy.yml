@@ -43,3 +43,42 @@ jobs:
       - name: Yayınla
         if: env.SKIP != '1'
         run: npx --yes wrangler@3 pages deploy public --project-name "$PROJECT" --branch master --commit-dirty=true
+
+      # mandi.etka.org: Pages projesine alan adı ekle + DNS CNAME kaydı oluştur.
+      # Tekrar çalıştırmak güvenlidir; var olan başka bir DNS kaydına dokunmaz.
+      - name: Özel alan adı (mandi.etka.org)
+        if: env.SKIP != '1'
+        env:
+          DOMAIN: mandi.etka.org
+          ZONE: etka.org
+        run: |
+          set -u
+          API=https://api.cloudflare.com/client/v4
+          AUTH="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+
+          SUB=$(curl -s -H "$AUTH" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT" | jq -r '.result.subdomain')
+          echo "Pages adresi: $SUB"
+          [ -n "$SUB" ] && [ "$SUB" != "null" ] || { echo "::error::Pages projesi okunamadı"; exit 1; }
+
+          # 1) Pages projesine alan adını ekle (zaten ekliyse hata vermez)
+          if curl -s -H "$AUTH" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/domains" | jq -e --arg d "$DOMAIN" '.result[]? | select(.name==$d)' >/dev/null; then
+            echo "Alan adı projede zaten var."
+          else
+            curl -s -X POST -H "$AUTH" -H "Content-Type: application/json" \
+              "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/domains" \
+              --data "{\"name\":\"$DOMAIN\"}" | jq -c '{success, errors}'
+          fi
+
+          # 2) DNS kaydı
+          ZID=$(curl -s -H "$AUTH" "$API/zones?name=$ZONE" | jq -r '.result[0].id // empty')
+          [ -n "$ZID" ] || { echo "::warning::$ZONE bölgesi okunamadı (token'da Zone Read/DNS Edit izni bu bölge için var mı?). DNS kaydını elle ekleyin: CNAME mandi -> $SUB"; exit 0; }
+          REC=$(curl -s -H "$AUTH" "$API/zones/$ZID/dns_records?name=$DOMAIN" | jq -c '.result[0] // empty')
+          if [ -z "$REC" ]; then
+            curl -s -X POST -H "$AUTH" -H "Content-Type: application/json" "$API/zones/$ZID/dns_records" \
+              --data "{\"type\":\"CNAME\",\"name\":\"$DOMAIN\",\"content\":\"$SUB\",\"proxied\":true,\"comment\":\"Mandi oyun (m-etka/tauros)\"}" \
+              | jq -c '{success, errors}'
+          elif [ "$(echo "$REC" | jq -r '.type + " " + .content')" = "CNAME $SUB" ]; then
+            echo "DNS kaydı zaten doğru."
+          else
+            echo "::warning::$DOMAIN için başka bir DNS kaydı var ($(echo "$REC" | jq -r '.type + " " + .content')). Dokunulmadı."
+          fi
