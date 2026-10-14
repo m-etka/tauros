@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#ff8a3d">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Mandi'nin Oyun Bahçesi</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Ortak SVG sembolleri -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-apple" viewBox="0 0 40 40">
+      <path d="M20 11C12 5 2 10 4 22c2 12 10 16 16 13 6 3 14-1 16-13 2-12-8-17-16-11z" fill="currentColor"/>
+      <path d="M20 11l2-8" stroke="#6b4226" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <path d="M22 6c4-4 9-3 10-1-4 3-8 3-10 1z" fill="#3bb273"/>
+      <ellipse cx="12" cy="18" rx="3" ry="5" fill="#fff" opacity=".4"/>
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 40 40">
+      <path d="M20 3l5 11 12 1.5-9 8.5 2.5 12L20 30l-10.5 6 2.5-12-9-8.5L15 14z" fill="currentColor" stroke="rgba(0,0,0,.12)" stroke-width="1.5" stroke-linejoin="round"/>
+      <ellipse cx="15" cy="17" rx="2.5" ry="4" fill="#fff" opacity=".45"/>
+    </symbol>
+    <symbol id="i-balloon" viewBox="0 0 40 40">
+      <path d="M20 2C11 2 6 9 6 16c0 9 8 15 14 16 6-1 14-7 14-16 0-7-5-14-14-14z" fill="currentColor"/>
+      <path d="M18 32l2 3 2-3z" fill="currentColor"/>
+      <path d="M20 35c-2 2 2 3 0 5" stroke="#7a7a8c" stroke-width="1.5" fill="none"/>
+      <ellipse cx="13" cy="12" rx="3" ry="5" fill="#fff" opacity=".45"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 40 40">
+      <rect x="9" y="18" width="22" height="17" rx="4" fill="currentColor"/>
+      <path d="M14 18v-5a6 6 0 0 1 12 0v5" stroke="currentColor" stroke-width="4" fill="none"/>
+    </symbol>
+    <symbol id="i-back" viewBox="0 0 40 40">
+      <path d="M24 9L12 20l12 11" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="i-sound" viewBox="0 0 40 40">
+      <path d="M7 15h6l9-7v24l-9-7H7z" fill="currentColor"/>
+      <path class="waves" d="M27 14c3 3 3 9 0 12M31 10c5 5 5 15 0 20" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="i-frog" viewBox="0 0 40 40">
+      <ellipse cx="20" cy="25" rx="15" ry="12" fill="#3bb273"/>
+      <circle cx="12" cy="13" r="6" fill="#3bb273"/><circle cx="28" cy="13" r="6" fill="#3bb273"/>
+      <circle cx="12" cy="13" r="3.6" fill="#fff"/><circle cx="28" cy="13" r="3.6" fill="#fff"/>
+      <circle cx="13" cy="14" r="1.8" fill="#2b2d42"/><circle cx="29" cy="14" r="1.8" fill="#2b2d42"/>
+      <path d="M13 27q7 5 14 0" stroke="#1f6e45" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="20" cy="31" rx="9" ry="4" fill="#8be0ae"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="app">
+
+  <!-- ANA SAYFA -->
+  <section id="s-home" class="screen">
+    <div class="home-top">
+      <div class="home-mascot" id="home-mascot"></div>
+      <div class="home-title">
+        <h1>Mandi'nin<br>Oyun Bahçesi</h1>
+        <p class="bubble-lite" id="home-hello">Merhaba! Hadi oynayalım!</p>
+      </div>
+    </div>
+    <div class="games" id="games"></div>
+    <p class="offline" id="offline-status"></p>
+  </section>
+
+  <!-- SEVİYE SEÇİMİ -->
+  <section id="s-levels" class="screen">
+    <header class="bar">
+      <button class="icon-btn" data-go="home" aria-label="Geri"><svg><use xlink:href="#i-back"/></svg></button>
+      <h2>Toplama</h2>
+      <div class="bar-stars"><svg class="mini-star"><use xlink:href="#i-star"/></svg><span id="total-stars">0</span></div>
+    </header>
+    <div class="levels" id="levels"></div>
+  </section>
+
+  <!-- OYUN -->
+  <section id="s-play" class="screen">
+    <header class="bar">
+      <button class="icon-btn" data-go="levels" aria-label="Geri"><svg><use xlink:href="#i-back"/></svg></button>
+      <div class="dots" id="dots"></div>
+      <button class="icon-btn" id="sound-btn" aria-label="Ses"><svg><use xlink:href="#i-sound"/></svg></button>
+    </header>
+    <div class="stage" id="stage"></div>
+    <div class="choices" id="choices"></div>
+    <div class="play-mascot">
+      <div class="bubble" id="bubble"></div>
+      <div class="masc-wrap" id="play-mascot"></div>
+    </div>
+    <div class="streak" id="streak"></div>
+  </section>
+
+  <!-- SONUÇ -->
+  <section id="s-result" class="screen">
+    <div class="result-card">
+      <div class="result-mascot" id="result-mascot"></div>
+      <h2 id="result-title">Harika!</h2>
+      <div class="big-stars" id="big-stars"></div>
+      <p id="result-text"></p>
+      <div class="result-btns">
+        <button class="btn btn-soft" id="btn-again">Tekrar</button>
+        <button class="btn btn-go" id="btn-next">Devam</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="fx"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

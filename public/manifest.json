@@ -1,0 +1,16 @@
+{
+  "name": "Mandi'nin Oyun Bahçesi",
+  "short_name": "Mandi",
+  "description": "1. sınıf toplama oyunu, internetsiz çalışır.",
+  "lang": "tr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#bfe8ff",
+  "theme_color": "#ff8a3d",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
