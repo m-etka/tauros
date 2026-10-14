@@ -82,3 +82,22 @@ jobs:
           else
             echo "::warning::$DOMAIN için başka bir DNS kaydı var ($(echo "$REC" | jq -r '.type + " " + .content')). Dokunulmadı."
           fi
+
+      # Yayından sonra canlı adresleri kontrol et (sorun varsa adım kırmızı olur)
+      - name: Canlı kontrol
+        if: env.SKIP != '1'
+        run: |
+          sleep 15
+          fail=0
+          for HOST in mandi-oyun.pages.dev mandi.etka.org; do
+            B="https://$HOST"
+            chk() { if eval "$2"; then echo "OK   $HOST $1"; else echo "::error::$HOST $1 hatalı"; fail=1; fi; }
+            chk "/"          '[ "$(curl -s -o /dev/null -w %{http_code} $B/)" = 200 ]'
+            chk "/llms.txt"  'curl -s $B/llms.txt | head -1 | grep -q "^# Mandi"'
+            chk "/robots.txt" 'curl -s $B/robots.txt | grep -q "^Sitemap:"'
+            chk "/sitemap.xml" 'curl -s $B/sitemap.xml | grep -q "<urlset"'
+            chk "/og.jpg"    'curl -sI $B/og.jpg | grep -qi "content-type: image/jpeg"'
+            chk "404"        '[ "$(curl -s -o /dev/null -w %{http_code} $B/yok)" = 404 ]'
+          done
+          echo "--- mandi.etka.org/robots.txt ---"; curl -s https://mandi.etka.org/robots.txt | head -30
+          exit $fail
