@@ -99,5 +99,7 @@ jobs:
             chk "/og.jpg"    'curl -sI $B/og.jpg | grep -qi "content-type: image/jpeg"'
             chk "404"        '[ "$(curl -s -o /dev/null -w %{http_code} $B/yok)" = 404 ]'
           done
-          echo "--- mandi.etka.org/robots.txt ---"; curl -s https://mandi.etka.org/robots.txt | head -30
+          # Cloudflare'in "AI botlarını engelle" / yönetilen robots.txt ayarı açıksa burada görünür
+          BLOCK=$(curl -s https://mandi.etka.org/robots.txt | grep -i -E "^disallow: */ *$|content-signal" | sort -u | tr '\n' ' ')
+          if [ -n "$BLOCK" ]; then echo "::warning::mandi.etka.org robots.txt engelleme satırları içeriyor: $BLOCK"; else echo "::notice::mandi.etka.org robots.txt temiz"; fi
           exit $fail
