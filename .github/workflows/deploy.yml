@@ -101,8 +101,18 @@ jobs:
             chk "/og.jpg"    'curl -sI $B/og.jpg | grep -qi "content-type: image/jpeg"'
             chk "404"        '[ "$(curl -s -o /dev/null -w %{http_code} $B/yok)" = 404 ]'
             chk "/offline.appcache" 'curl -sI $B/offline.appcache | grep -qi "content-type: text/cache-manifest"'
+            chk "appcache build" 'curl -s $B/offline.appcache | grep -q "build ${GITHUB_SHA::7}"'
             chk "sürüm etiketi" 'curl -s $B/app.js | grep -q "var BUILD = .${GITHUB_SHA::7}."'
           done
+          # Eski cihazlar (iPad 3 / iOS 9) için: Cloudflare sayfayı değiştiriyor mu, dosyalar yönlendiriliyor mu, sertifika zinciri ne?
+          curl -s https://mandi.etka.org/ > /tmp/live.html
+          if cmp -s /tmp/live.html public/index.html; then echo "::notice::Canlı index.html depodakiyle aynı"; else echo "::warning::Canlı index.html farklı (Cloudflare bir şey ekliyor olabilir): $(diff public/index.html /tmp/live.html | grep '^>' | head -5 | cut -c1-160 | tr '\n' ' ')"; fi
+          CODES=""; for f in / style.css app.js manifest.json icons/icon-192.png offline.appcache; do CODES="$CODES $f=$(curl -s -o /dev/null -w '%{http_code}' https://mandi.etka.org/${f#/})"; done
+          echo "::notice::AppCache dosyaları:$CODES"
+          CHAIN=$(echo | openssl s_client -connect mandi.etka.org:443 -servername mandi.etka.org -showcerts 2>/dev/null | grep -E '^ *[0-9]+ s:|^ *i:' | sed 's/^ *//' | tr '\n' ' ')
+          echo "::notice::Sertifika zinciri: $CHAIN"
+          HDR=$(curl -sI https://mandi.etka.org/offline.appcache | grep -i -E '^(content-type|cache-control):' | tr -d '\r' | tr '\n' ' ')
+          echo "::notice::appcache başlıkları: $HDR"
           # Cloudflare'in "AI botlarını engelle" / yönetilen robots.txt ayarı açıksa burada görünür
           BLOCK=$(curl -s https://mandi.etka.org/robots.txt | grep -i -E "^disallow: */ *$|content-signal" | sort -u | tr '\n' ' ')
           if [ -n "$BLOCK" ]; then echo "::warning::mandi.etka.org robots.txt engelleme satırları içeriyor: $BLOCK"; else echo "::notice::mandi.etka.org robots.txt temiz"; fi

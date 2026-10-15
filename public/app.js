@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.1.0';
+  var APP_VERSION = '1.1.1';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
 
   /* ------------------------------------------------------------------ */
@@ -897,13 +897,34 @@
       if (safeToReload()) doReload();
       else { pendingReload = true; status.innerHTML = 'Yeni sürüm hazır'; }
     });
+    ac.addEventListener('error', function () {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) return;
+      // İnternetsizken açılışta da 'error' gelir; önbellek varsa sorun yok
+      if (ac.status !== 0) acReady();
+      else status.innerHTML = 'İnternetsiz mod kurulamadı (sürüm yazısına dokunun)';
+    });
+    ac.addEventListener('obsolete', function () { status.innerHTML = 'İnternetsiz mod kaldırıldı'; });
     if (ac.status === 1) acReady(); // IDLE: zaten önbellekte
   }
   if (!('serviceWorker' in navigator) && !ac) status.innerHTML = '';
 
   function chromeVersion() {
-    var m = navigator.userAgent.match(/Chrome\/(\d+)/);
-    return m ? 'Chrome ' + m[1] : '';
+    var ua = navigator.userAgent;
+    var m = ua.match(/Chrome\/(\d+)/);
+    if (m) return 'Chrome ' + m[1];
+    m = ua.match(/OS (\d+)_(\d+)(?:_(\d+))? like Mac/);
+    if (m) return 'iOS ' + m[1] + '.' + m[2] + (m[3] ? '.' + m[3] : '');
+    m = ua.match(/Version\/(\d+)[^ ]* Safari/);
+    return m ? 'Safari ' + m[1] : '';
+  }
+  // Teşhis: hangi çevrimdışı yöntem kullanılıyor, durumu ne
+  function offlineInfo() {
+    var parts = [];
+    if (navigator.serviceWorker) parts.push('SW ' + (navigator.serviceWorker.controller ? 'aktif' : 'pasif'));
+    else parts.push('SW yok');
+    if (ac) parts.push('AC ' + ['yok', 'hazır', 'kontrol', 'iniyor', 'yeni', 'silindi'][ac.status]);
+    if (window.navigator.standalone) parts.push('ana ekran');
+    return parts.join(', ');
   }
   function checkAll() {
     checkUpdate(true);
@@ -912,7 +933,7 @@
 
   // Sürüm yazısına dokununca elle güncelleme kontrolü (+ tarayıcı sürümü, sorun bildirimi için)
   verBtn.addEventListener('click', function () {
-    var info = verText + (chromeVersion() ? ' · ' + chromeVersion() : '');
+    var info = verText + (chromeVersion() ? ' · ' + chromeVersion() : '') + ' · ' + offlineInfo();
     if (!navigator.onLine) { verBtn.innerHTML = info + ' · internet yok'; return; }
     verBtn.innerHTML = info + ' · kontrol ediliyor...';
     checkAll();

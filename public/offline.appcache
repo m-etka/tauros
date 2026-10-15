@@ -1,9 +1,10 @@
 CACHE MANIFEST
-# Service Worker desteklemeyen eski tarayıcılar için (ör. eski Chrome / Android 4.x).
+# Service Worker'ı olmayan eski tarayıcılar için (iPad 3 / iOS 9 Safari, eski Android Chrome).
 # Bu satır her yayında değişir; tarayıcı yeni sürümü buradan anlar.
 # build __BUILD__
 
 CACHE:
+/
 style.css
 app.js
 manifest.json
@@ -11,3 +12,6 @@ icons/icon-192.png
 
 NETWORK:
 *
+
+FALLBACK:
+/index.html /
