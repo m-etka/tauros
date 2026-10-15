@@ -558,3 +558,46 @@ svg { display: block; }
   -webkit-transform: rotate(-45deg); transform: rotate(-45deg);
 }
 .ch.shake { -webkit-animation: shake .4s; animation: shake .4s; }
+
+/* ---------- Saat ---------- */
+.clk-row {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+}
+.clk-face { width: 15rem; height: 15rem; margin-right: 2rem; }
+.clk-face .clock { width: 100%; height: 100%; }
+.clk-face.live { touch-action: none; -ms-touch-action: none; cursor: pointer; }
+.clk-face.drag-h .hand-h line { stroke: #c22d52; }
+.clk-face.drag-m .hand-m line { stroke: #1f63cf; }
+.clk-face.dig-only { display: none; }
+.clk-info { text-align: center; min-width: 12rem; }
+.clk-prompt { font-size: 1.7rem; font-weight: 900; color: #2b2d42; margin-bottom: .6rem; line-height: 1.25; }
+.clk-prompt b { color: #ef476f; }
+.clk-words { font-size: 1.4rem; font-weight: 700; color: #6b6f8a; margin-top: .4rem; }
+.dig {
+  display: inline-block;
+  background: #2b2d42; color: #7dffb0;
+  font-family: "Courier New", Courier, monospace; font-weight: 900;
+  font-size: 3.2rem; line-height: 1;
+  padding: .5rem 1rem; border-radius: .8rem;
+  border-bottom: .3rem solid #14151f;
+}
+.dig.big { font-size: 5rem; padding: .7rem 1.4rem; }
+.clk-info .eq { -webkit-justify-content: center; justify-content: center; }
+.clk-info .eq .box { min-width: 8rem; font-size: 3.4rem; line-height: 5rem; }
+
+.ch.tm {
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+}
+.ch.tm .tm-big { font-size: 2.05rem; line-height: 1; letter-spacing: -.03em; }
+.ch.tm .tm-small { font-size: 1rem; font-weight: 700; margin-top: .3rem; opacity: .9; }
+.ch.clk { padding: .5rem; }
+.ch.clk .clock { width: 100%; height: 100%; }
+.game-icon .clk-ico { height: 100%; padding: .4rem 0; }
+.game-icon .clk-ico .clock { width: 4.6rem; height: 4.6rem; margin: 0 auto; }
+.portrait .clk-row { -webkit-flex-direction: column; flex-direction: column; }
+.portrait .clk-face { margin: 0 0 1rem; }

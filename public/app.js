@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.2.0';
+  var APP_VERSION = '1.3.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
 
   /* ------------------------------------------------------------------ */
@@ -203,12 +203,25 @@
   ];
   GAMES.pv = { id: 'pv', title: 'Onluk ve Birlik', iconHTML: 'pv', color: '#3bb273', levels: LEVELS_PV };
 
+  // Saat: tam ve yarım saatler (1. sınıf)
+  var LEVELS_CLOCK = [
+    { name: 'Tam saat', sub: 'Saat kaç?', color: '#8e7dff', kind: 'full' },
+    { name: 'Tam saat kur', sub: 'Akrebi çevir', color: '#ef476f', kind: 'setfull' },
+    { name: 'Buçuk', sub: 'Yarım saatler', color: '#3a86ff', kind: 'half' },
+    { name: 'Dijital saat', sub: 'Eşini bul', color: '#3bb273', kind: 'match' },
+    { name: 'Buçuk kur', sub: 'İki ibre', color: '#ff8a3d', kind: 'sethalf' },
+    { name: 'Karışık', sub: 'Tam ve buçuk', color: '#e0a800', kind: 'readmix' },
+    { name: 'Kaç saat sonra?', sub: '1-3 saat', color: '#ef476f', kind: 'later' },
+    { name: 'Şampiyon', sub: 'Hepsi', color: '#26874f', kind: 'mix' }
+  ];
+  GAMES.clock = { id: 'clock', title: 'Saat', iconHTML: 'clock', color: '#8e7dff', levels: LEVELS_CLOCK };
+
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
-    { title: 'Matematik', games: ['add', 'sub', 'pv'] },
+    { title: 'Matematik', games: ['add', 'sub', 'pv', 'clock'] },
     { title: 'Türkçe', games: [], soon: 'Yakında: Hece Treni' }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'clock'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -219,6 +232,7 @@
   function makeQuestion(lv, seen, op) {
     if (op === 'sub') return makeSubQuestion(lv, seen);
     if (op === 'pv') return makePvQuestion(lv, seen);
+    if (op === 'clock') return makeClockQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -335,6 +349,9 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'clock') {
+      return '<div class="game-icon" style="background:' + game.color + '"><div class="clk-ico">' + clockSVG(10, 30, true) + '</div></div>';
+    }
     if (game.iconHTML === 'pv') {
       return '<div class="game-icon" style="background:' + game.color + '"><div class="pv-ico">' +
         svgUse('i-rod') + svgUse('i-rod') + svgUse('i-rod') + svgUse('i-cube', 'c') + svgUse('i-cube', 'c') + svgUse('i-cube', 'c') + svgUse('i-cube', 'c') +
@@ -465,6 +482,7 @@
   function buildQuestion(stage, q, lv) {
     if (G.op === 'sub') { buildSubQuestion(stage, q, lv); return; }
     if (G.op === 'pv') { buildPvQuestion(stage, q); return; }
+    if (G.op === 'clock') { buildClockQuestion(stage, q); return; }
     G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
@@ -900,13 +918,231 @@
     return true;
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Saat                                                                */
+  /* ------------------------------------------------------------------ */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function hourNext(h, k) { return ((h - 1 + k) % 12 + 12) % 12 + 1; }
+  function timeText(v) { var h = Math.floor(v / 100), m = v % 100; return h + ':' + (m < 10 ? '0' : '') + m; }
+  function timeWords(v) { var h = Math.floor(v / 100), m = v % 100; return m === 30 ? h + ' buçuk' : 'saat ' + h; }
+  // Bulunma eki: 3'te, 6'da, 12'de ...
+  var ABL = { 1: "'den", 2: "'den", 3: "'ten", 4: "'ten", 5: "'ten", 6: "'dan", 7: "'den", 8: "'den", 9: "'dan", 10: "'dan", 11: "'den", 12: "'den" };
+  var LOC = { 1: "'de", 2: "'de", 3: "'te", 4: "'te", 5: "'te", 6: "'da", 7: "'de", 8: "'de", 9: "'da", 10: "'da", 11: "'de", 12: "'de" };
+
+  function clockSVG(h, m, mini) {
+    var s = '<svg class="clock' + (mini ? ' mini' : '') + '" viewBox="0 0 200 200">';
+    s += '<circle cx="100" cy="100" r="96" fill="#2b2d42"/><circle cx="100" cy="100" r="89" fill="#ffffff"/>';
+    if (!mini) {
+      for (var t = 0; t < 60; t++) {
+        if (t % 5 === 0) continue;
+        s += '<line x1="100" y1="15" x2="100" y2="20" stroke="#c9cfdc" stroke-width="2" transform="rotate(' + (t * 6) + ' 100 100)"/>';
+      }
+    }
+    for (var i = 1; i <= 12; i++) {
+      var a = i * 30 * Math.PI / 180, x = 100 + Math.sin(a) * 70, y = 100 - Math.cos(a) * 70;
+      s += '<circle class="nb nb' + i + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="15" fill="none"/>';
+      s += '<line x1="100" y1="12" x2="100" y2="22" stroke="#2b2d42" stroke-width="4" stroke-linecap="round" transform="rotate(' + (i * 30) + ' 100 100)"/>';
+      if (!mini || i % 3 === 0) s += '<text x="' + x.toFixed(1) + '" y="' + (y + 8).toFixed(1) + '" text-anchor="middle" font-size="' + (mini ? 26 : 22) + '" font-weight="900" fill="#2b2d42" font-family="Roboto, Arial, sans-serif">' + i + '</text>';
+    }
+    s += '<g class="hand-m" transform="rotate(' + (m * 6) + ' 100 100)"><line x1="100" y1="108" x2="100" y2="38" stroke="#3a86ff" stroke-width="7" stroke-linecap="round"/></g>';
+    s += '<g class="hand-h" transform="rotate(' + ((h % 12) * 30 + m * 0.5) + ' 100 100)"><line x1="100" y1="108" x2="100" y2="60" stroke="#ef476f" stroke-width="11" stroke-linecap="round"/></g>';
+    s += '<circle cx="100" cy="100" r="8" fill="#2b2d42"/></svg>';
+    return s;
+  }
+  function setHands(wrap, h, m) {
+    wrap.querySelector('.hand-m').setAttribute('transform', 'rotate(' + (m * 6) + ' 100 100)');
+    wrap.querySelector('.hand-h').setAttribute('transform', 'rotate(' + ((h % 12) * 30 + m * 0.5) + ' 100 100)');
+  }
+  function markNumber(n, on) {
+    var c = $('stage').querySelector('.clock .nb' + n);
+    if (c) c.setAttribute('fill', on ? '#ffe08a' : 'none');
+  }
+
+  function makeClockQuestion(lv, seen) {
+    var kind = lv.kind;
+    if (kind === 'mix') kind = pick(['full', 'half', 'match', 'setfull', 'sethalf', 'later']);
+    if (kind === 'readmix') kind = pick(['full', 'half', 'half']);
+    var h, m, k = 0, key, tries = 0;
+    do {
+      h = rnd(1, 12);
+      m = (kind === 'half' || kind === 'sethalf') ? 30 : (kind === 'match' ? pick([0, 30]) : 0);
+      if (kind === 'later') k = rnd(1, 3);
+      key = kind + h + ':' + m + '+' + k;
+      tries++;
+    } while (seen[key] && tries < 40);
+    seen[key] = true;
+    var v = h * 100 + m;
+    var q = { kind: kind, h: h, m: m, k: k };
+    if (kind === 'setfull' || kind === 'sethalf') {
+      q.build = true; q.ctrl = 'clock'; q.answer = v; q.opts = [];
+      return q;
+    }
+    var opts;
+    if (kind === 'later') {
+      q.answer = hourNext(h, k) * 100;
+      opts = [q.answer, hourNext(h, k + 1) * 100, hourNext(h, k - 1) * 100];
+      if (k === 1) opts[2] = hourNext(h, 3) * 100;
+    } else {
+      q.answer = v;
+      if (m === 30) opts = [v, hourNext(h, 1) * 100 + 30, h * 100];        // en sık hata: akrebin geçtiği sayıyı okumak
+      else opts = [v, hourNext(h, 1) * 100, (h === 6 ? 12 : 6) * 100 + (kind === 'match' ? 30 : 0)];
+      if (opts[2] === opts[0] || opts[2] === opts[1]) opts[2] = hourNext(h, -1) * 100 + m;
+    }
+    q.opts = shuffle(opts);
+    q.answerText = timeText(q.answer);
+    if (kind === 'match') {
+      q.optClass = 'clk';
+      q.optHTML = function (val) { return clockSVG(Math.floor(val / 100), val % 100, true); };
+    } else {
+      q.optClass = 'tm';
+      q.optHTML = function (val) { return '<span class="tm-big">' + timeText(val) + '</span><span class="tm-small">' + timeWords(val) + '</span>'; };
+    }
+    return q;
+  }
+
+  function buildClockQuestion(stage, q) {
+    G.countReady = true;
+    var row = el('div', 'clk-row');
+    var face = el('div', 'clk-face');
+    var info = el('div', 'clk-info');
+    row.appendChild(face);
+    row.appendChild(info);
+    stage.appendChild(row);
+    if (q.build) {
+      G.ch = 12; G.cm = 0;
+      face.innerHTML = clockSVG(G.ch, G.cm);
+      face.className = 'clk-face live';
+      info.innerHTML = '<div class="clk-prompt">Saati kur</div><div class="dig">' + timeText(q.answer) + '</div><div class="clk-words">' + timeWords(q.answer) + '</div>';
+      attachClockDrag(face, q);
+      say(q.kind === 'setfull' ? 'Kırmızı akrebi ' + q.h + LOC[q.h] + ' bırak!' : 'Önce mavi yelkovanı 6' + LOC[6] + ' bırak!');
+      return;
+    }
+    if (q.kind === 'match') {
+      face.innerHTML = '';
+      face.className = 'clk-face dig-only';
+      info.innerHTML = '<div class="dig big">' + timeText(q.answer) + '</div><div class="clk-words">' + timeWords(q.answer) + '</div>';
+      say('Aynı saati gösteren saati bul!');
+      return;
+    }
+    face.innerHTML = clockSVG(q.h, q.m);
+    if (q.kind === 'later') {
+      info.innerHTML = '<div class="clk-prompt">Saat ' + q.h + '.<br><b>' + q.k + ' saat sonra</b> saat kaç?</div><div class="eq"><span class="box">?</span></div>';
+      say('Akrep ' + q.k + ' sayı ilerler!');
+    } else {
+      info.innerHTML = '<div class="clk-prompt">Saat kaç?</div><div class="eq"><span class="box">?</span></div>';
+      say(q.m === 30 ? 'Yelkovan 6' + LOC[6] + ': buçuk!' : pick(['Kısa kırmızı ibre akrep!', 'Saat kaç?']));
+    }
+    q.onRight = function () {
+      if (q.kind === 'later') setHands(face, hourNext(q.h, q.k), 0);
+    };
+  }
+
+  // Akrep ve yelkovanı sürükleme (dokunma + fare). Dış halka: yelkovan, iç: akrep.
+  function attachClockDrag(face, q) {
+    var svg = face.querySelector('svg'), hand = null;
+    function point(e) {
+      var t = e.touches && e.touches.length ? e.touches[0] : (e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e);
+      var r = svg.getBoundingClientRect();
+      var x = t.clientX - (r.left + r.width / 2), y = t.clientY - (r.top + r.height / 2);
+      return { ang: (Math.atan2(x, -y) * 180 / Math.PI + 360) % 360, rad: Math.sqrt(x * x + y * y) / (r.width / 2) };
+    }
+    function angDiff(a, b) { var d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
+    function choose(p) {
+      if (q.kind === 'setfull') return 'h';
+      var ha = (G.ch % 12) * 30 + G.cm * 0.5, ma = G.cm * 6;
+      // Kısa akrep içte, uzun yelkovan dışta: önce uzaklığa bak, arada kalırsa yakın ibreyi seç
+      if (p.rad < 0.45) return 'h';
+      if (p.rad > 0.6) return 'm';
+      return angDiff(p.ang, ha) <= angDiff(p.ang, ma) ? 'h' : 'm';
+    }
+    function apply(p) {
+      if (hand === 'm') {
+        G.cm = (Math.round(p.ang / 180) % 2) * 30;
+      } else {
+        var h = Math.round((p.ang - G.cm * 0.5) / 30);
+        h = ((h % 12) + 12) % 12;
+        G.ch = h === 0 ? 12 : h;
+      }
+      setHands(face, G.ch, G.cm);
+    }
+    function down(e) {
+      if (G.locked) return;
+      if (e.preventDefault) e.preventDefault();
+      var p = point(e);
+      hand = choose(p);
+      face.className = 'clk-face live drag-' + hand;
+      var before = G.ch * 100 + G.cm;
+      apply(p);
+      if (G.ch * 100 + G.cm !== before) Snd.tone(hand === 'm' ? 660 : 440, 0, 0.05, 'triangle', 0.12);
+    }
+    function move(e) {
+      if (!hand) return;
+      if (e.preventDefault) e.preventDefault();
+      var before = G.ch * 100 + G.cm;
+      apply(point(e));
+      if (G.ch * 100 + G.cm !== before) Snd.tone(hand === 'm' ? 660 : 440, 0, 0.05, 'triangle', 0.12);
+    }
+    function up() {
+      if (!hand) return;
+      hand = null;
+      face.className = 'clk-face live';
+    }
+    face.addEventListener('touchstart', down, false);
+    face.addEventListener('touchmove', move, false);
+    face.addEventListener('touchend', up, false);
+    face.addEventListener('mousedown', down, false);
+    document.addEventListener('mousemove', move, false);
+    document.addEventListener('mouseup', up, false);
+    // Soru değişince belge dinleyicilerini bırak
+    var qid = G.qid;
+    var cleanup = setInterval(function () {
+      if (!G || G.qid !== qid || current !== 'play') {
+        document.removeEventListener('mousemove', move, false);
+        document.removeEventListener('mouseup', up, false);
+        clearInterval(cleanup);
+      }
+    }, 1000);
+  }
+
+  function buildClockControls(box, q) {
+    var ok = el('button', 'ch pvb pvok', '<span class="tick"></span><span>Tamam</span>');
+    ok.style.webkitAnimationDelay = ok.style.animationDelay = '.1s';
+    ok.addEventListener('click', function () { answer(ok, G.ch * 100 + G.cm); });
+    box.appendChild(ok);
+  }
+
+  function clockSetHint() {
+    var q = G.cur;
+    markNumber(q.h, true);
+    if (G.cm !== q.m) { markNumber(6, q.m === 30); markNumber(12, q.m === 0); }
+    if (G.cm !== q.m) return q.m === 30 ? 'Buçukta mavi yelkovan 6' + LOC[6] + ' olur!' : 'Tam saatte mavi yelkovan 12' + LOC[12] + ' olur!';
+    if (q.m === 30) return 'Akrep ' + q.h + ' ile ' + hourNext(q.h, 1) + ' arasında olmalı!';
+    return 'Kırmızı akrep ' + q.h + LOC[q.h] + ' olmalı!';
+  }
+  function clockHint(val) {
+    var q = G.cur;
+    if (q.kind === 'match') {
+      return q.m === 30 ? 'Buçukta yelkovan 6' + LOC[6] + ' olur!' : 'Tam saatte yelkovan 12' + LOC[12] + ' olur!';
+    }
+    if (q.kind === 'later') {
+      markNumber(q.h, true);
+      return q.h + ABL[q.h] + ' ' + q.k + ' sayı ilerle!';
+    }
+    if (q.m === 30) {
+      markNumber(q.h, true); markNumber(hourNext(q.h, 1), true);
+      return 'Akrep ' + q.h + ' ile ' + hourNext(q.h, 1) + ' arasında: ' + q.h + ' buçuk!';
+    }
+    markNumber(q.h, true);
+    return 'Kısa kırmızı akrep ' + q.h + LOC[q.h] + '!';
+  }
+
   function buildChoices(q) {
     var box = $('choices');
     box.innerHTML = '';
-    if (q.build) { buildPvControls(box, q); return; }
+    if (q.build) { if (q.ctrl === 'clock') buildClockControls(box, q); else buildPvControls(box, q); return; }
     for (var i = 0; i < q.opts.length; i++) {
       (function (val, k) {
-        var b = el('button', 'ch k' + k, String(val));
+        var b = el('button', 'ch k' + k + (q.optClass ? ' ' + q.optClass : ''), q.optHTML ? q.optHTML(val) : String(val));
         b.style.webkitAnimationDelay = b.style.animationDelay = (0.08 * k + 0.1) + 's';
         b.addEventListener('click', function () { answer(b, val); });
         box.appendChild(b);
@@ -924,11 +1160,12 @@
       G.results.push(clean);
       if (!clean) G.missQ++;
       G.streak = clean ? G.streak + 1 : 0;
-      btn.className = q.build ? 'ch pvb pvok right' : 'ch right';
+      btn.className = q.build ? 'ch pvb pvok right' : 'ch right' + (q.optClass ? ' ' + q.optClass : '');
       var others = $('choices').querySelectorAll('.ch');
       for (var i = 0; i < others.length; i++) if (others[i] !== btn) others[i].classList.add('fade');
       var box = $('stage').querySelector('.box');
-      if (box) { box.innerHTML = String(q.answer); box.className = 'box done'; }
+      if (box) { box.innerHTML = q.answerText || String(q.answer); box.className = 'box done'; }
+      if (q.onRight) q.onRight();
       Snd.right();
       burst(btn, 16);
       say(pick(PRAISE));
@@ -942,10 +1179,12 @@
       G.streak = 0;
       Snd.wrong();
       playMascot.face('sad', 700);
-      if (q.build) { restartAnim(btn, 'shake'); say(pvBuildHint()); return; }
+      if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : pvBuildHint()); return; }
       btn.disabled = true;
       btn.className += ' wrong';
-      if (G.op === 'pv') {
+      if (G.op === 'clock') {
+        say(clockHint(val));
+      } else if (G.op === 'pv') {
         if (!pvHint()) say(pick(RETRY));
       } else if (G.wrongNow >= 1 && countHint()) {
         say('Birlikte sayalım!');

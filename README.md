@@ -7,6 +7,7 @@
 Ana sayfa konu başlıkları (Matematik, Türkçe...) altında oyun kartları gösterir. Yeni oyun: `app.js` içinde `GAMES` ve `SUBJECTS`'e eklenir.
 
 
+- **Saat** (1. sınıf, tam ve yarım saat): 8 seviye — okuma, akrep/yelkovanı sürükleyerek kurma (içte akrep, dışta yelkovan), dijital eşleştirme, kaç saat sonra.
 - **Onluk ve Birlik** (1. sınıf, 100'e kadar basamak değeri): 8 seviye — çubuk/küp okuma, +10/+1 ile sayı kurma (10 küp = 1 çubuk), kaç onluk/birlik.
 - **Çıkarma** (1. sınıf, 20'ye kadar onluk bozmadan): 8 seviye — nesneler çizilir, kurbağa geri zıplar, onluk kutuda pullar silinir, gizli sayı.
 - **Toplama** (1. sınıf, toplamı 20'yi geçmeyen): 8 seviye
