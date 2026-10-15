@@ -120,14 +120,17 @@ svg { display: block; }
 @keyframes wobble { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
 
 /* ---------- Ana sayfa ---------- */
-#s-home { -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
+#s-home { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.home-inner { margin: auto; padding: 1rem 1rem .6rem; text-align: center; }
 .home-top {
+  -webkit-justify-content: center; justify-content: center;
   display: -webkit-flex; display: flex;
   -webkit-align-items: center; align-items: center;
   margin-bottom: 2rem;
 }
-.home-mascot { width: 11rem; height: 11rem; margin-right: 1.5rem; }
-.home-title h1 { font-size: 3rem; line-height: 1.05; font-weight: 900; color: #2b2d42; }
+.home-mascot { width: 8rem; height: 8rem; margin-right: 1.3rem; }
+.home-title { text-align: left; }
+.home-title h1 { font-size: 2.6rem; line-height: 1.05; font-weight: 900; color: #2b2d42; }
 .bubble-lite {
   display: inline-block;
   margin-top: .8rem;
@@ -136,10 +139,13 @@ svg { display: block; }
   padding: .5rem 1.1rem;
   font-size: 1.3rem; font-weight: 700; color: #6b6f8a;
 }
-.games { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; }
+.subject { margin-bottom: 1rem; }
+.subject-title { font-size: 1.5rem; font-weight: 900; color: #2b2d42; margin: 0 0 .5rem; }
+.games { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-justify-content: center; justify-content: center; }
+.soon { display: inline-block; background: rgba(255,255,255,.6); border-radius: 1.2rem; padding: .6rem 1.2rem; font-size: 1.1rem; font-weight: 700; color: #6b6f8a; }
 .game-card {
-  width: 17rem;
-  margin: 0 .8rem;
+  width: 14.5rem;
+  margin: 0 .6rem .8rem;
   border-radius: 1.6rem;
   background: #ffffff;
   border-bottom: .45rem solid #d7dfea;
@@ -148,17 +154,21 @@ svg { display: block; }
 }
 .game-card:active { -webkit-transform: translateY(.3rem) scale(.98); transform: translateY(.3rem) scale(.98); border-bottom-width: .15rem; }
 .game-icon {
-  height: 6rem;
+  height: 5.4rem;
+  overflow: hidden;
   border-radius: 1.2rem;
   background: #ff8a3d;
   color: #fff;
-  font-size: 3.6rem; font-weight: 900;
-  line-height: 6rem;
-  margin-bottom: .8rem;
+  font-size: 3.2rem; font-weight: 900;
+  line-height: 5.4rem;
+  margin-bottom: .7rem;
 }
-.game-card h3 { font-size: 1.8rem; font-weight: 900; }
+.game-card h3 { font-size: 1.55rem; font-weight: 900; }
+.game-icon .pv-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: flex-end; align-items: flex-end; height: 100%; padding-bottom: .55rem; }
+.game-icon .pv-ico svg { width: .85rem; height: 4.2rem; margin: 0 .1rem; }
+.game-icon .pv-ico svg.c { width: .85rem; height: .85rem; }
 .game-card p { font-size: 1.1rem; color: #6b6f8a; margin-top: .2rem; }
-.home-foot { position: absolute; bottom: .6rem; left: 0; right: 0; text-align: center; }
+.home-foot { margin-top: .6rem; text-align: center; }
 .offline { font-size: .95rem; color: #6b6f8a; min-height: 1.2rem; margin-bottom: .3rem; }
 
 /* ---------- Seviyeler ---------- */
@@ -428,8 +438,8 @@ svg { display: block; }
 
 /* ---------- Dikey ekran ---------- */
 .portrait .home-top { -webkit-flex-direction: column; flex-direction: column; text-align: center; }
-.portrait .home-mascot { margin: 0 0 1rem; }
-.portrait .games { -webkit-flex-direction: column; flex-direction: column; }
+.portrait .home-mascot { margin: 0 auto 1rem; }
+.portrait .home-title { text-align: center; }
 .portrait #s-play { padding-bottom: 8.5rem; }
 .portrait .stage { padding: 0 1rem; }
 .portrait .choices { padding-left: 0; height: 9.5rem; }
@@ -482,4 +492,69 @@ svg { display: block; }
 .about ol, .about ul { padding-left: 1.6rem; margin-bottom: .6rem; }
 .about li { margin-bottom: .3rem; }
 .about-cta { text-align: center; margin-top: 1.2rem; }
-#s-home { padding-bottom: 4.5rem; }
+
+
+/* ---------- Onluk ve Birlik ---------- */
+.pv {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: flex-end; align-items: flex-end;
+  -webkit-justify-content: center; justify-content: center;
+  margin-bottom: .8rem;
+  min-height: 11rem;
+}
+.pv-rods { display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; }
+.pv-rod { position: relative; width: 2.2rem; height: 11rem; margin: 0 .2rem; }
+.pv-rod svg, .pv-cube svg { width: 100%; height: 100%; }
+.pv-cubes {
+  display: -webkit-flex; display: flex;
+  -webkit-flex-wrap: wrap-reverse; flex-wrap: wrap-reverse;
+  width: 5rem; margin-left: .8rem;
+}
+.pv-cube { position: relative; width: 2.2rem; height: 2.2rem; margin: .1rem .1rem 0; }
+.pv-rod .num, .pv-cube .num {
+  position: absolute; left: 50%; top: 50%;
+  width: 2rem; height: 2rem; margin: -1rem 0 0 -1rem;
+  border-radius: 50%; background: #2b2d42; color: #fff;
+  font-size: 1rem; font-weight: 900; line-height: 2rem; text-align: center;
+  -webkit-animation: objIn .2s ease-out; animation: objIn .2s ease-out;
+}
+.pv-rod.counted, .pv-cube.counted { -webkit-transform: scale(1.06); transform: scale(1.06); }
+.pv-target { margin-bottom: .6rem; }
+.pv-num { font-size: 5rem; font-weight: 900; line-height: 1; color: #2b2d42; }
+.pv-num .d-t { color: #3a86ff; }
+.pv-num .d-o { color: #ff8a3d; }
+.pv-ask { font-size: 1.6rem; font-weight: 700; color: #2b2d42; margin-bottom: .6rem; text-align: center; }
+.pv-holder .pv { min-height: 0; }
+.pv-area {
+  background: rgba(255,255,255,.85);
+  border-radius: 1.3rem;
+  padding: .8rem 1.2rem .6rem;
+  min-width: 24rem;
+  text-align: center;
+}
+.pv-area .pv { min-height: 11rem; margin-bottom: .4rem; }
+.pv-area .pv-rod, .pv-area .pv-cube { cursor: pointer; }
+.pv-empty { height: 11.4rem; line-height: 11.4rem; color: #8a90a8; font-size: 1.15rem; font-weight: 700; }
+.pv-now { font-size: 1.3rem; font-weight: 700; color: #6b6f8a; }
+.pv-now span:first-child { color: #1f63cf; }
+.pv-now span + span { color: #d9661c; }
+.pv-now b { color: #2b2d42; font-size: 1.6rem; }
+
+.ch.pvb {
+  width: 8.4rem; height: 6.6rem; border-radius: 1.6rem;
+  font-size: 1.5rem;
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+  margin: 0 .7rem;
+}
+.ch.pvb .pvb-rod { width: .9rem; height: 3rem; margin-bottom: .2rem; }
+.ch.pvb .pvb-cube { width: 1.6rem; height: 1.6rem; margin-bottom: .3rem; }
+.ch.pvok { background: #3bb273; border-bottom: .5rem solid #26874f; }
+.ch.pvok .tick {
+  display: block; width: 1.6rem; height: .9rem; margin: 0 0 .5rem;
+  border-left: .4rem solid #fff; border-bottom: .4rem solid #fff;
+  -webkit-transform: rotate(-45deg); transform: rotate(-45deg);
+}
+.ch.shake { -webkit-animation: shake .4s; animation: shake .4s; }

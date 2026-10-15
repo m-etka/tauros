@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.1.2';
+  var APP_VERSION = '1.2.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
 
   /* ------------------------------------------------------------------ */
@@ -190,7 +190,25 @@
     add: { id: 'add', title: 'Toplama', icon: '2+3', color: '#ff8a3d', op: '+', levels: LEVELS_ADD },
     sub: { id: 'sub', title: 'Çıkarma', icon: '5' + MINUS + '2', color: '#3a86ff', op: MINUS, levels: LEVELS_SUB }
   };
-  var GAME_ORDER = ['add', 'sub'];
+  // Onluk ve birlik (basamak değeri, 100'e kadar)
+  var LEVELS_PV = [
+    { name: 'Onluk nedir?', sub: '11-19', color: '#3a86ff', kind: 'read', min: 11, max: 19 },
+    { name: 'Onlukları say', sub: '10, 20, 30...', color: '#ff8a3d', kind: 'tens', min: 10, max: 90 },
+    { name: 'Sayıyı oku', sub: "50'ye kadar", color: '#3bb273', kind: 'read', min: 20, max: 50 },
+    { name: 'Sayıyı kur', sub: "30'a kadar", color: '#8e7dff', kind: 'build', min: 11, max: 30 },
+    { name: 'Kaç onluk?', sub: 'Basamaklar', color: '#e0a800', kind: 'digits', min: 21, max: 98 },
+    { name: 'Sayıyı oku', sub: "99'a kadar", color: '#ef476f', kind: 'read', min: 51, max: 99 },
+    { name: 'Sayıyı kur', sub: "99'a kadar", color: '#3a86ff', kind: 'build', min: 31, max: 99 },
+    { name: 'Şampiyon', sub: 'Karışık', color: '#26874f', kind: 'mix', min: 11, max: 99 }
+  ];
+  GAMES.pv = { id: 'pv', title: 'Onluk ve Birlik', iconHTML: 'pv', color: '#3bb273', levels: LEVELS_PV };
+
+  // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
+  var SUBJECTS = [
+    { title: 'Matematik', games: ['add', 'sub', 'pv'] },
+    { title: 'Türkçe', games: [], soon: 'Yakında: Hece Treni' }
+  ];
+  var GAME_ORDER = ['add', 'sub', 'pv'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -200,6 +218,7 @@
 
   function makeQuestion(lv, seen, op) {
     if (op === 'sub') return makeSubQuestion(lv, seen);
+    if (op === 'pv') return makePvQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -309,24 +328,39 @@
   /* ------------------------------------------------------------------ */
   /* Ana sayfa                                                           */
   /* ------------------------------------------------------------------ */
-  var HELLOS = ['Merhaba! Hadi oynayalım!', 'Toplama mı, çıkarma mı?', 'Bugün yıldız toplayalım!'];
+  var HELLOS = ['Merhaba! Hadi oynayalım!', 'Bugün ne öğrenelim?', 'Bugün yıldız toplayalım!'];
   function totalStars(game) {
     var t = 0, m = starsOf(game);
     for (var k in m) if (m.hasOwnProperty(k)) t += m[k];
     return t;
   }
+  function gameIcon(game) {
+    if (game.iconHTML === 'pv') {
+      return '<div class="game-icon" style="background:' + game.color + '"><div class="pv-ico">' +
+        svgUse('i-rod') + svgUse('i-rod') + svgUse('i-rod') + svgUse('i-cube', 'c') + svgUse('i-cube', 'c') + svgUse('i-cube', 'c') + svgUse('i-cube', 'c') +
+        '</div></div>';
+    }
+    return '<div class="game-icon" style="background:' + game.color + '">' + game.icon + '</div>';
+  }
   function renderHome() {
     $('home-hello').innerHTML = pick(HELLOS);
-    var g = $('games');
-    g.innerHTML = '';
-    for (var i = 0; i < GAME_ORDER.length; i++) {
-      (function (game) {
-        var card = el('button', 'game-card',
-          '<div class="game-icon" style="background:' + game.color + '">' + game.icon + '</div><h3>' + game.title + '</h3><p>' +
-          totalStars(game) + ' / ' + (game.levels.length * 3) + ' yıldız</p>');
-        card.addEventListener('click', function () { Snd.tap(); CUR = game; show('levels'); });
-        g.appendChild(card);
-      })(GAMES[GAME_ORDER[i]]);
+    var box = $('subjects');
+    box.innerHTML = '';
+    for (var s = 0; s < SUBJECTS.length; s++) {
+      var subj = SUBJECTS[s];
+      var sec = el('div', 'subject', '<h2 class="subject-title">' + subj.title + '</h2>');
+      var g = el('div', 'games');
+      for (var i = 0; i < subj.games.length; i++) {
+        (function (game) {
+          var card = el('button', 'game-card', gameIcon(game) + '<h3>' + game.title + '</h3><p>' +
+            totalStars(game) + ' / ' + (game.levels.length * 3) + ' yıldız</p>');
+          card.addEventListener('click', function () { Snd.tap(); CUR = game; show('levels'); });
+          g.appendChild(card);
+        })(GAMES[subj.games[i]]);
+      }
+      if (subj.soon) g.appendChild(el('div', 'soon', subj.soon));
+      sec.appendChild(g);
+      box.appendChild(sec);
     }
     homeMascot.face('happy', 1200);
   }
@@ -430,6 +464,7 @@
 
   function buildQuestion(stage, q, lv) {
     if (G.op === 'sub') { buildSubQuestion(stage, q, lv); return; }
+    if (G.op === 'pv') { buildPvQuestion(stage, q); return; }
     G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
@@ -691,9 +726,184 @@
     return wrap;
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Onluk ve Birlik                                                     */
+  /* ------------------------------------------------------------------ */
+  function makePvQuestion(lv, seen) {
+    var kind = lv.kind === 'mix' ? pick(['read', 'read', 'build', 'digits']) : lv.kind;
+    var n, key, tries = 0;
+    do {
+      if (kind === 'tens') n = 10 * rnd(1, 9);
+      else {
+        n = rnd(lv.min, lv.max);
+        if (kind === 'digits' && n % 10 === Math.floor(n / 10)) n++; // 44 gibi sayılar olmasın
+      }
+      key = kind + n;
+      tries++;
+    } while (seen[key] && tries < 40);
+    seen[key] = true;
+    var t = Math.floor(n / 10), o = n % 10;
+    var q = { kind: kind, n: n, t: t, o: o };
+    if (kind === 'build') { q.build = true; q.answer = n; q.opts = []; }
+    else if (kind === 'digits') {
+      q.ask = (o === 0 || Math.random() < 0.55) ? 'tens' : 'ones';
+      q.answer = q.ask === 'tens' ? t : o;
+      var other = q.ask === 'tens' ? o : t;
+      var c = [q.answer, other];
+      var near = shuffle([q.answer + 1, q.answer - 1, q.answer + 2]);
+      for (var i = 0; i < near.length && c.length < 3; i++) if (near[i] >= 0 && near[i] <= 9 && c.indexOf(near[i]) === -1) c.push(near[i]);
+      q.opts = shuffle(c);
+    } else {
+      q.answer = n;
+      var cand = [];
+      if (o !== 0 && o !== t) cand.push(o * 10 + t);  // basamakları ters okuma: 47 / 74
+      cand = cand.concat(shuffle([n + 10, n - 10, n + 1, n - 1]));
+      var out = [n];
+      for (var k = 0; k < cand.length && out.length < 3; k++) {
+        var v = cand[k];
+        if (v >= 1 && v <= 99 && out.indexOf(v) === -1) out.push(v);
+      }
+      q.opts = shuffle(out);
+    }
+    return q;
+  }
+
+  // Onluk çubukları ve birlik küpleri
+  function pvBlocks(t, o, removable) {
+    var wrap = el('div', 'pv');
+    var rods = el('div', 'pv-rods'), cubes = el('div', 'pv-cubes');
+    for (var i = 0; i < t; i++) rods.appendChild(pvPiece('rod', i, removable));
+    for (var j = 0; j < o; j++) cubes.appendChild(pvPiece('cube', t + j, removable));
+    wrap.appendChild(rods);
+    wrap.appendChild(cubes);
+    return wrap;
+  }
+  function pvPiece(type, idx, removable) {
+    var p = el('div', 'pv-' + type + ' pop', svgUse(type === 'rod' ? 'i-rod' : 'i-cube'));
+    p.style.webkitAnimationDelay = p.style.animationDelay = (removable ? 0 : idx * 0.04) + 's';
+    if (removable) {
+      p.addEventListener('click', function () {
+        if (G.locked) return;
+        if (type === 'rod') G.bt--; else G.bo--;
+        Snd.tone(330, 0, 0.08, 'triangle', 0.15);
+        renderBuild();
+      });
+    }
+    return p;
+  }
+
+  function buildPvQuestion(stage, q) {
+    G.countReady = true;
+    if (q.kind === 'build') {
+      G.bt = 0; G.bo = 0;
+      var head = el('div', 'pv-target', '<span class="pv-num">' + q.n + '</span>');
+      stage.appendChild(head);
+      var area = el('div', 'pv-area');
+      area.id = 'pv-area';
+      stage.appendChild(area);
+      renderBuild();
+      say(q.n + ' sayısını kur!');
+      return;
+    }
+    if (q.kind === 'digits') {
+      stage.appendChild(el('div', 'pv-target', '<span class="pv-num">' + '<b class="d-t">' + q.t + '</b><b class="d-o">' + q.o + '</b></span>'));
+      stage.appendChild(el('div', 'pv-ask', q.n + ' sayısında kaç <strong>' + (q.ask === 'tens' ? 'onluk' : 'birlik') + '</strong> var?'));
+      var holder = el('div', 'pv-holder');
+      holder.id = 'pv-holder';
+      stage.appendChild(holder);
+      say(q.ask === 'tens' ? 'Onluklar soldaki rakam!' : 'Birlikler sağdaki rakam!');
+      return;
+    }
+    stage.appendChild(pvBlocks(q.t, q.o, false));
+    var eq = el('div', 'eq', '<span class="box">?</span>');
+    stage.appendChild(eq);
+    say(q.kind === 'tens' ? 'Her çubuk 10 tane!' : (q.t === 1 && q.o > 0 ? '1 onluk ve ' + q.o + ' birlik' : 'Onlukları ve birlikleri say!'));
+  }
+
+  function renderBuild() {
+    var area = $('pv-area');
+    if (!area) return;
+    area.innerHTML = '';
+    if (!G.bt && !G.bo) area.appendChild(el('div', 'pv-empty', 'Aşağıdaki düğmelerle çubuk ve küp ekle'));
+    else area.appendChild(pvBlocks(G.bt, G.bo, true));
+    var v = G.bt * 10 + G.bo;
+    area.appendChild(el('div', 'pv-now', '<span>' + G.bt + ' onluk</span> <span>' + G.bo + ' birlik</span> = <b>' + v + '</b>'));
+  }
+
+  function buildPvControls(box, q) {
+    var addRod = el('button', 'ch pvb k2', svgUse('i-rod', 'pvb-rod') + '<span>+10</span>');
+    var addCube = el('button', 'ch pvb k1', svgUse('i-cube', 'pvb-cube') + '<span>+1</span>');
+    var ok = el('button', 'ch pvb pvok', '<span class="tick"></span><span>Tamam</span>');
+    addRod.addEventListener('click', function () {
+      if (G.locked) return;
+      if (G.bt >= 9) { Snd.wrong(); return; }
+      G.bt++; Snd.tone(392, 0, 0.1, 'triangle', 0.2); renderBuild();
+    });
+    addCube.addEventListener('click', function () {
+      if (G.locked) return;
+      if (G.bo === 9) {
+        // 10 birlik = 1 onluk: küpler çubuğa dönüşür
+        if (G.bt >= 9) { Snd.wrong(); return; }
+        G.bo = 0; G.bt++;
+        say('10 birlik = 1 onluk!');
+        Snd.tone(523, 0, 0.12, 'triangle', 0.25); Snd.tone(784, 0.1, 0.2, 'triangle', 0.25);
+      } else {
+        G.bo++; Snd.count(G.bo);
+      }
+      renderBuild();
+    });
+    ok.addEventListener('click', function () { answer(ok, G.bt * 10 + G.bo); });
+    var list = [addRod, addCube, ok];
+    for (var i = 0; i < list.length; i++) {
+      list[i].style.webkitAnimationDelay = list[i].style.animationDelay = (0.08 * i + 0.1) + 's';
+      box.appendChild(list[i]);
+    }
+  }
+
+  function pvBuildHint() {
+    var q = G.cur;
+    if (G.bt !== q.t) return q.n + ' için ' + q.t + ' onluk gerekiyor!';
+    return 'Onluklar tamam! ' + q.o + ' birlik olmalı.';
+  }
+
+  // Yanlış cevapta: çubukları 10'ar 10'ar, küpleri birer birer sayar
+  function pvHint() {
+    var q = G.cur, stage = $('stage');
+    if (hintTimers.length) return true;
+    if (q.kind === 'digits') {
+      var holder = $('pv-holder');
+      if (holder && !holder.firstChild) holder.appendChild(pvBlocks(q.t, q.o, false));
+    }
+    var rods = stage.querySelectorAll('.pv-rod'), cubes = stage.querySelectorAll('.pv-cube');
+    if (!rods.length && !cubes.length) return false;
+    say(q.kind === 'digits' ? (q.ask === 'tens' ? 'Çubukları say!' : 'Küpleri say!') : 'Onluklarla sayalım!');
+    var qid = G.qid, total = 0, delay = 350;
+    var steps = [];
+    var onlyRods = q.kind === 'digits' && q.ask === 'tens', onlyCubes = q.kind === 'digits' && q.ask === 'ones';
+    if (!onlyCubes) for (var i = 0; i < rods.length; i++) steps.push([rods[i], 10]);
+    if (!onlyRods) for (var j = 0; j < cubes.length; j++) steps.push([cubes[j], 1]);
+    if (!steps.length) return false;
+    for (var m = 0; m < steps.length; m++) {
+      (function (node, add, idx) {
+        hintTimers.push(setTimeout(function () {
+          if (!G || G.qid !== qid || node.getAttribute('data-n')) return;
+          total += add;
+          node.setAttribute('data-n', total);
+          node.classList.add('counted');
+          node.appendChild(el('span', 'num', String(q.kind === 'digits' ? idx + 1 : total)));
+          Snd.count(idx + 1);
+          if (idx === steps.length - 1) hintTimers = [];
+        }, delay));
+      })(steps[m][0], steps[m][1], m);
+      delay += steps[m][1] === 10 ? 420 : 280;
+    }
+    return true;
+  }
+
   function buildChoices(q) {
     var box = $('choices');
     box.innerHTML = '';
+    if (q.build) { buildPvControls(box, q); return; }
     for (var i = 0; i < q.opts.length; i++) {
       (function (val, k) {
         var b = el('button', 'ch k' + k, String(val));
@@ -714,7 +924,7 @@
       G.results.push(clean);
       if (!clean) G.missQ++;
       G.streak = clean ? G.streak + 1 : 0;
-      btn.className = 'ch right';
+      btn.className = q.build ? 'ch pvb pvok right' : 'ch right';
       var others = $('choices').querySelectorAll('.ch');
       for (var i = 0; i < others.length; i++) if (others[i] !== btn) others[i].classList.add('fade');
       var box = $('stage').querySelector('.box');
@@ -730,11 +940,14 @@
     } else {
       G.wrongNow++;
       G.streak = 0;
-      btn.disabled = true;
-      btn.className += ' wrong';
       Snd.wrong();
       playMascot.face('sad', 700);
-      if (G.wrongNow >= 1 && countHint()) {
+      if (q.build) { restartAnim(btn, 'shake'); say(pvBuildHint()); return; }
+      btn.disabled = true;
+      btn.className += ' wrong';
+      if (G.op === 'pv') {
+        if (!pvHint()) say(pick(RETRY));
+      } else if (G.wrongNow >= 1 && countHint()) {
         say('Birlikte sayalım!');
       } else {
         say(pick(RETRY));
