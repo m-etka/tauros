@@ -601,3 +601,81 @@ svg { display: block; }
 .game-icon .clk-ico .clock { width: 4.6rem; height: 4.6rem; margin: 0 auto; }
 .portrait .clk-row { -webkit-flex-direction: column; flex-direction: column; }
 .portrait .clk-face { margin: 0 0 1rem; }
+
+/* ---------- Hece Treni ---------- */
+.hc-row {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+}
+.hc-pic {
+  width: 11rem; height: 11rem;
+  background: #fff; border-radius: 1.6rem;
+  border-bottom: .4rem solid #d7dfea;
+  padding: .8rem; margin-right: 1.6rem;
+  -webkit-flex: none; flex: none;
+}
+.hc-pic .pic { width: 100%; height: 100%; }
+.hc-side { text-align: center; }
+.hc-word {
+  font-size: 4.4rem; font-weight: 900; color: #2b2d42; line-height: 1.1;
+  background: rgba(255,255,255,.85); border-radius: 1.3rem; padding: .4rem 1.6rem;
+  display: inline-block;
+}
+.hc-side .hc-word { font-size: 3.6rem; }
+.hc-word .sy0 { color: #ef476f; }
+.hc-word .sy1 { color: #3a86ff; }
+.hc-word .dash { font-style: normal; color: #b8bfcc; margin: 0 .2rem; }
+.hc-q { font-size: 1.7rem; font-weight: 900; color: #2b2d42; margin-top: .8rem; }
+
+.train { display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; }
+.train.go { -webkit-transform: translateX(40rem); transform: translateX(40rem); opacity: 0;
+  -webkit-transition: -webkit-transform .9s ease-in, opacity .9s ease-in; transition: transform .9s ease-in, opacity .9s ease-in; }
+.train.shake { -webkit-animation: shake .4s; animation: shake .4s; }
+.wagons { display: -webkit-flex; display: flex; }
+.wg {
+  position: relative;
+  width: 6.4rem; height: 5rem;
+  margin: 0 .3rem 1rem;
+  border-radius: .8rem;
+  border: .3rem dashed #8e7dff;
+  background: rgba(255,255,255,.7);
+  font-size: 2.3rem; font-weight: 900; color: #2b2d42;
+  line-height: 4.4rem; text-align: center;
+}
+.wg:before, .wg:after {
+  content: ""; position: absolute; bottom: -1.15rem;
+  width: 1.4rem; height: 1.4rem; border-radius: 50%; background: #2b2d42;
+}
+.wg:before { left: .8rem; }
+.wg:after { right: .8rem; }
+.wg.full { border-style: solid; border-color: #6a57e0; background: #8e7dff; color: #fff; cursor: pointer;
+  -webkit-animation: objIn .25s ease-out; animation: objIn .25s ease-out; }
+.wg.hole { border-color: #ff8a3d; color: #ff8a3d; -webkit-animation: boxPulse 1.4s ease-in-out infinite; animation: boxPulse 1.4s ease-in-out infinite; }
+.wg.ok { background: #3bb273; border-color: #26874f; color: #fff; border-style: solid; }
+.wg.bad { background: #ef476f; border-color: #c22d52; }
+.loco { width: 6.4rem; height: 5.2rem; margin-left: .2rem; margin-bottom: .45rem; }
+.loco svg { width: 100%; height: 100%; }
+
+.ch.syl {
+  width: auto; min-width: 6.6rem; height: 5.6rem; padding: 0 1rem;
+  border-radius: 1.2rem; margin: 0 .45rem;
+  font-size: 2.3rem; background: #3a86ff; border-bottom: .45rem solid #1f63cf;
+}
+.ch.syl.k0, .ch.syl.k1, .ch.syl.k2 { background: #3a86ff; border-bottom-color: #1f63cf; }
+.ch.syl.used { opacity: .2; }
+.ch.syl.glow { background: #ffd23f; border-bottom-color: #e0a800; color: #2b2d42;
+  -webkit-animation: nudge 1s ease-in-out infinite; animation: nudge 1s ease-in-out infinite; }
+.ch.pic { background: #fff; border-bottom-color: #d7dfea; padding: .9rem; }
+.ch.pic .pic { width: 100%; height: 100%; }
+.ch.pic.right { background: #c9f2da; border-bottom-color: #3bb273; }
+.ch.pic.wrong { opacity: .3; }
+
+.game-icon .hc-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; height: 100%; }
+.game-icon .hc-ico span { display: block; width: 3.6rem; height: 2.8rem; margin: 0 .2rem; border-radius: .5rem; background: #fff; color: #ef476f; font-size: 1.8rem; line-height: 2.8rem; }
+.game-icon .hc-ico b { display: block; width: 3.8rem; height: 3rem; margin-left: .1rem; }
+.game-icon .hc-ico b svg { width: 100%; height: 100%; }
+.game-icon .hc-ico b svg rect[fill="#ef476f"] { fill: #ffd23f; }
+
+.portrait .hc-row { -webkit-flex-direction: column; flex-direction: column; }
+.portrait .hc-pic { margin: 0 0 1rem; }

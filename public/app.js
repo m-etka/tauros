@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.3.0';
+  var APP_VERSION = '1.4.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
 
   /* ------------------------------------------------------------------ */
@@ -216,12 +216,25 @@
   ];
   GAMES.clock = { id: 'clock', title: 'Saat', iconHTML: 'clock', color: '#8e7dff', levels: LEVELS_CLOCK };
 
+  // Hece Treni (Türkçe, sessiz): heceleri vagonlara diz, resmi bul
+  var LEVELS_HECE = [
+    { name: 'Resmi bul', sub: 'Heceli kelime', color: '#ef476f', kind: 'read', syl: [2], split: true },
+    { name: 'Treni kur', sub: '2 hece', color: '#ff8a3d', kind: 'build', syl: [2], extra: 1 },
+    { name: 'Eksik hece', sub: 'Vagonu bul', color: '#3bb273', kind: 'missing', syl: [2, 3] },
+    { name: 'Kaç hece?', sub: 'Hecele ve say', color: '#3a86ff', kind: 'count', syl: [1, 2, 3, 4] },
+    { name: 'Resmi bul', sub: 'Kelimeyi oku', color: '#8e7dff', kind: 'read', syl: [2, 3] },
+    { name: 'Treni kur', sub: '3-4 hece', color: '#e0a800', kind: 'build', syl: [3, 4], extra: 1 },
+    { name: 'Uzun tren', sub: 'Karışık vagon', color: '#ef476f', kind: 'build', syl: [2, 3, 4], extra: 2 },
+    { name: 'Şampiyon', sub: 'Hepsi', color: '#26874f', kind: 'mix', syl: [1, 2, 3, 4] }
+  ];
+  GAMES.hece = { id: 'hece', title: 'Hece Treni', iconHTML: 'hece', color: '#ef476f', levels: LEVELS_HECE };
+
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
     { title: 'Matematik', games: ['add', 'sub', 'pv', 'clock'] },
-    { title: 'Türkçe', games: [], soon: 'Yakında: Hece Treni' }
+    { title: 'Türkçe', games: ['hece'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'clock'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'clock', 'hece'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -233,6 +246,7 @@
     if (op === 'sub') return makeSubQuestion(lv, seen);
     if (op === 'pv') return makePvQuestion(lv, seen);
     if (op === 'clock') return makeClockQuestion(lv, seen);
+    if (op === 'hece') return makeHeceQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -349,6 +363,9 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'hece') {
+      return '<div class="game-icon" style="background:' + game.color + '"><div class="hc-ico"><span>ka</span><span>le</span><b>' + LOCO + '</b></div></div>';
+    }
     if (game.iconHTML === 'clock') {
       return '<div class="game-icon" style="background:' + game.color + '"><div class="clk-ico">' + clockSVG(10, 30, true) + '</div></div>';
     }
@@ -483,6 +500,7 @@
     if (G.op === 'sub') { buildSubQuestion(stage, q, lv); return; }
     if (G.op === 'pv') { buildPvQuestion(stage, q); return; }
     if (G.op === 'clock') { buildClockQuestion(stage, q); return; }
+    if (G.op === 'hece') { buildHeceQuestion(stage, q); return; }
     G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
@@ -1136,10 +1154,314 @@
     return 'Kısa kırmızı akrep ' + q.h + LOC[q.h] + '!';
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Hece Treni                                                          */
+  /* ------------------------------------------------------------------ */
+  /* ---------- Hece Treni: kelimeler ve resimler (SVG, viewBox 0 0 100 100) ---------- */
+  var WORDS = [
+    { id: 'top', s: ['top'] }, { id: 'mum', s: ['mum'] }, { id: 'ev', s: ['ev'] },
+    { id: 'muz', s: ['muz'] }, { id: 'kus', s: ['kuş'] }, { id: 'ay', s: ['ay'] },
+    { id: 'kale', s: ['ka', 'le'] }, { id: 'lale', s: ['la', 'le'] }, { id: 'inek', s: ['i', 'nek'] },
+    { id: 'elma', s: ['el', 'ma'] }, { id: 'kedi', s: ['ke', 'di'] }, { id: 'kalem', s: ['ka', 'lem'] },
+    { id: 'kutu', s: ['ku', 'tu'] }, { id: 'utu', s: ['ü', 'tü'] }, { id: 'balon', s: ['ba', 'lon'] },
+    { id: 'balik', s: ['ba', 'lık'] }, { id: 'kitap', s: ['ki', 'tap'] }, { id: 'masa', s: ['ma', 'sa'] },
+    { id: 'saat', s: ['sa', 'at'] }, { id: 'gunes', s: ['gü', 'neş'] }, { id: 'bulut', s: ['bu', 'lut'] },
+    { id: 'yildiz', s: ['yıl', 'dız'] }, { id: 'cicek', s: ['çi', 'çek'] }, { id: 'agac', s: ['a', 'ğaç'] },
+    { id: 'gemi', s: ['ge', 'mi'] }, { id: 'karpuz', s: ['kar', 'puz'] }, { id: 'cilek', s: ['çi', 'lek'] },
+    { id: 'ari', s: ['a', 'rı'] }, { id: 'kapi', s: ['ka', 'pı'] },
+    { id: 'araba', s: ['a', 'ra', 'ba'] }, { id: 'semsiye', s: ['şem', 'si', 'ye'] },
+    { id: 'yumurta', s: ['yu', 'mur', 'ta'] }, { id: 'kelebek', s: ['ke', 'le', 'bek'] },
+    { id: 'telefon', s: ['te', 'le', 'fon'] }, { id: 'ananas', s: ['a', 'na', 'nas'] },
+    { id: 'patates', s: ['pa', 'ta', 'tes'] }, { id: 'kaplumbaga', s: ['kap', 'lum', 'ba', 'ğa'] }
+  ];
+  var WORD = {};
+  for (var wi = 0; wi < WORDS.length; wi++) { WORDS[wi].w = WORDS[wi].s.join(''); WORD[WORDS[wi].id] = WORDS[wi]; }
+
+  var K = '#2b2d42';
+  var PIC = {
+    top: '<circle cx="50" cy="52" r="36" fill="#ef476f"/><path d="M15 46 Q50 24 85 46" stroke="#fff" stroke-width="7" fill="none"/><path d="M17 64 Q50 84 83 64" stroke="#fff" stroke-width="7" fill="none"/><ellipse cx="36" cy="36" rx="8" ry="5" fill="#fff" opacity=".5"/>',
+    mum: '<rect x="38" y="42" width="24" height="48" rx="3" fill="#fff3c4" stroke="#e0a800" stroke-width="3"/><line x1="50" y1="42" x2="50" y2="33" stroke="' + K + '" stroke-width="3"/><path d="M50 8 Q66 26 50 34 Q34 26 50 8Z" fill="#ff8a3d"/><path d="M50 18 Q58 28 50 32 Q42 28 50 18Z" fill="#ffd23f"/>',
+    ev: '<rect x="22" y="48" width="56" height="40" fill="#ffd23f"/><polygon points="12,50 50,16 88,50" fill="#ef476f"/><rect x="44" y="62" width="14" height="26" fill="#8b5a2b"/><rect x="28" y="56" width="12" height="12" fill="#bfe8ff" stroke="' + K + '" stroke-width="2"/><rect x="64" y="56" width="10" height="12" fill="#bfe8ff" stroke="' + K + '" stroke-width="2"/>',
+    muz: '<path d="M22 24 Q24 76 84 72 Q90 66 82 62 Q40 62 34 22Z" fill="#ffd23f" stroke="#e0a800" stroke-width="3"/><rect x="24" y="16" width="8" height="10" rx="2" fill="#8b5a2b"/>',
+    kus: '<ellipse cx="46" cy="58" rx="28" ry="20" fill="#3a86ff"/><polygon points="20,52 4,40 8,66" fill="#1f63cf"/><circle cx="70" cy="40" r="15" fill="#3a86ff"/><circle cx="74" cy="37" r="4" fill="#fff"/><circle cx="75" cy="37" r="2" fill="' + K + '"/><polygon points="84,40 96,44 84,48" fill="#ff8a3d"/><ellipse cx="42" cy="56" rx="15" ry="9" fill="#1f63cf"/><line x1="42" y1="78" x2="40" y2="90" stroke="#ff8a3d" stroke-width="3"/><line x1="54" y1="78" x2="56" y2="90" stroke="#ff8a3d" stroke-width="3"/>',
+    ay: '<path d="M58 10 A40 40 0 1 0 90 72 A32 32 0 1 1 58 10Z" fill="#ffd23f" stroke="#e0a800" stroke-width="3"/>',
+    kale: '<rect x="20" y="44" width="60" height="44" fill="#b8bfcc"/><rect x="10" y="30" width="20" height="58" fill="#9aa3b5"/><rect x="70" y="30" width="20" height="58" fill="#9aa3b5"/><rect x="10" y="22" width="6" height="9" fill="#9aa3b5"/><rect x="17" y="22" width="6" height="9" fill="#9aa3b5"/><rect x="24" y="22" width="6" height="9" fill="#9aa3b5"/><rect x="70" y="22" width="6" height="9" fill="#9aa3b5"/><rect x="77" y="22" width="6" height="9" fill="#9aa3b5"/><rect x="84" y="22" width="6" height="9" fill="#9aa3b5"/><path d="M41 88 V68 A9 9 0 0 1 59 68 V88Z" fill="#6b4226"/><line x1="50" y1="44" x2="50" y2="16" stroke="' + K + '" stroke-width="3"/><polygon points="50,16 68,22 50,28" fill="#ef476f"/>',
+    lale: '<line x1="50" y1="50" x2="50" y2="94" stroke="#3bb273" stroke-width="5"/><path d="M50 84 Q28 74 26 52 Q44 62 50 78Z" fill="#3bb273"/><path d="M50 84 Q72 74 74 52 Q56 62 50 78Z" fill="#3bb273"/><path d="M32 22 L32 44 Q50 62 68 44 L68 22 L59 34 L50 18 L41 34Z" fill="#ef476f"/>',
+    inek: '<rect x="12" y="42" width="60" height="34" rx="14" fill="#fff" stroke="' + K + '" stroke-width="3"/><ellipse cx="30" cy="54" rx="9" ry="7" fill="' + K + '"/><ellipse cx="52" cy="64" rx="7" ry="6" fill="' + K + '"/><rect x="18" y="74" width="8" height="16" fill="#fff" stroke="' + K + '" stroke-width="3"/><rect x="54" y="74" width="8" height="16" fill="#fff" stroke="' + K + '" stroke-width="3"/><rect x="64" y="24" width="28" height="34" rx="12" fill="#fff" stroke="' + K + '" stroke-width="3"/><ellipse cx="78" cy="52" rx="13" ry="8" fill="#ffb3c1"/><circle cx="72" cy="36" r="3" fill="' + K + '"/><circle cx="85" cy="36" r="3" fill="' + K + '"/><path d="M66 26 L60 16 M90 26 L96 16" stroke="#c9a26b" stroke-width="4" stroke-linecap="round"/>',
+    elma: '<path d="M50 30 C30 16 8 28 12 54 C16 82 36 92 50 86 C64 92 84 82 88 54 C92 28 70 16 50 30Z" fill="#ef476f"/><path d="M50 30 L54 12" stroke="#6b4226" stroke-width="4" stroke-linecap="round"/><path d="M55 18 C64 8 76 10 78 14 C70 22 60 22 55 18Z" fill="#3bb273"/><ellipse cx="30" cy="46" rx="6" ry="10" fill="#fff" opacity=".4"/>',
+    kedi: '<polygon points="22,42 20,10 46,30" fill="#ff8a3d"/><polygon points="78,42 80,10 54,30" fill="#ff8a3d"/><circle cx="50" cy="56" r="32" fill="#ff8a3d"/><ellipse cx="38" cy="52" rx="5" ry="7" fill="' + K + '"/><ellipse cx="62" cy="52" rx="5" ry="7" fill="' + K + '"/><polygon points="45,64 55,64 50,70" fill="#ef476f"/><path d="M50 70 Q44 78 38 74 M50 70 Q56 78 62 74" stroke="' + K + '" stroke-width="2.5" fill="none"/><path d="M30 66 L8 62 M30 70 L8 74 M70 66 L92 62 M70 70 L92 74" stroke="' + K + '" stroke-width="2"/>',
+    kalem: '<g transform="rotate(-35 50 50)"><rect x="8" y="42" width="12" height="16" fill="#ef476f"/><rect x="20" y="42" width="5" height="16" fill="#b8bfcc"/><rect x="25" y="42" width="50" height="16" fill="#ffd23f"/><polygon points="75,42 94,50 75,58" fill="#f2c49b"/><polygon points="88,47 94,50 88,53" fill="' + K + '"/></g>',
+    kutu: '<polygon points="16,40 30,24 86,24 72,40" fill="#e0a96d"/><rect x="16" y="40" width="56" height="46" fill="#c98b4d"/><polygon points="72,40 86,24 86,70 72,86" fill="#a8703a"/><rect x="40" y="40" width="8" height="46" fill="#e8c597"/>',
+    utu: '<path d="M12 76 L88 76 Q86 44 58 38 L30 38 Q14 48 12 76Z" fill="#3a86ff"/><rect x="10" y="76" width="80" height="9" rx="2" fill="#b8bfcc"/><path d="M34 38 Q34 22 50 22 L68 22 Q74 22 72 38" stroke="' + K + '" stroke-width="6" fill="none"/><circle cx="40" cy="58" r="5" fill="#ffd23f"/>',
+    balon: '<path d="M50 8 C28 8 18 26 18 40 C18 62 38 76 50 78 C62 76 82 62 82 40 C82 26 72 8 50 8Z" fill="#8e7dff"/><polygon points="46,78 50,84 54,78" fill="#8e7dff"/><path d="M50 84 Q42 90 50 94 Q58 98 50 100" stroke="#7a7a8c" stroke-width="2" fill="none"/><ellipse cx="36" cy="30" rx="6" ry="11" fill="#fff" opacity=".45"/>',
+    balik: '<polygon points="72,50 94,30 94,70" fill="#e0661c"/><ellipse cx="44" cy="50" rx="32" ry="22" fill="#ff8a3d"/><path d="M40 30 Q50 20 60 30" fill="#e0661c"/><circle cx="26" cy="45" r="6" fill="#fff"/><circle cx="25" cy="45" r="3" fill="' + K + '"/><path d="M48 40 Q56 50 48 60" stroke="#e0661c" stroke-width="3" fill="none"/>',
+    kitap: '<rect x="26" y="18" width="56" height="68" rx="3" fill="#26874f"/><rect x="20" y="14" width="56" height="68" rx="3" fill="#3bb273"/><rect x="22" y="80" width="56" height="7" fill="#fff" stroke="#c9cfdc" stroke-width="1"/><rect x="30" y="28" width="36" height="12" rx="2" fill="#fff" opacity=".8"/>',
+    masa: '<rect x="8" y="38" width="84" height="11" rx="3" fill="#c98b4d"/><rect x="15" y="49" width="9" height="40" fill="#a8703a"/><rect x="76" y="49" width="9" height="40" fill="#a8703a"/><rect x="40" y="26" width="20" height="12" rx="2" fill="#ef476f"/>',
+    gunes: '<g stroke="#ff8a3d" stroke-width="6" stroke-linecap="round"><line x1="50" y1="6" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="94"/><line x1="6" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="94" y2="50"/><line x1="19" y1="19" x2="29" y2="29"/><line x1="71" y1="71" x2="81" y2="81"/><line x1="19" y1="81" x2="29" y2="71"/><line x1="71" y1="29" x2="81" y2="19"/></g><circle cx="50" cy="50" r="24" fill="#ffd23f"/>',
+    bulut: '<path d="M24 72 A16 16 0 0 1 26 40 A22 22 0 0 1 66 32 A18 18 0 0 1 80 70Z" fill="#fff" stroke="#9fb3cc" stroke-width="4" stroke-linejoin="round"/>',
+    yildiz: '<path d="M50 6 L62 36 L94 38 L69 58 L77 90 L50 72 L23 90 L31 58 L6 38 L38 36Z" fill="#ffd23f" stroke="#e0a800" stroke-width="3" stroke-linejoin="round"/>',
+    cicek: '<line x1="50" y1="56" x2="50" y2="94" stroke="#3bb273" stroke-width="5"/><path d="M50 84 Q30 78 30 64 Q44 68 50 80Z" fill="#3bb273"/><circle cx="50" cy="22" r="13" fill="#ef476f"/><circle cx="67" cy="34" r="13" fill="#ef476f"/><circle cx="61" cy="54" r="13" fill="#ef476f"/><circle cx="39" cy="54" r="13" fill="#ef476f"/><circle cx="33" cy="34" r="13" fill="#ef476f"/><circle cx="50" cy="40" r="11" fill="#ffd23f"/>',
+    agac: '<rect x="43" y="56" width="14" height="36" fill="#8b5a2b"/><circle cx="50" cy="34" r="24" fill="#3bb273"/><circle cx="30" cy="50" r="16" fill="#3bb273"/><circle cx="70" cy="50" r="16" fill="#3bb273"/><circle cx="42" cy="28" r="5" fill="#ef476f"/><circle cx="62" cy="44" r="5" fill="#ef476f"/>',
+    gemi: '<rect x="50" y="22" width="10" height="20" fill="' + K + '"/><rect x="32" y="40" width="36" height="20" rx="2" fill="#fff" stroke="' + K + '" stroke-width="3"/><circle cx="42" cy="50" r="4" fill="#3a86ff"/><circle cx="56" cy="50" r="4" fill="#3a86ff"/><path d="M8 60 L92 60 L78 82 L22 82Z" fill="#ef476f"/><path d="M4 90 Q14 84 24 90 Q34 96 44 90 Q54 84 64 90 Q74 96 84 90 Q90 86 96 90" stroke="#3a86ff" stroke-width="4" fill="none"/>',
+    karpuz: '<path d="M8 36 A42 42 0 0 0 92 36Z" fill="#3bb273"/><path d="M15 36 A35 35 0 0 0 85 36Z" fill="#ef476f"/><ellipse cx="36" cy="48" rx="2.5" ry="4" fill="' + K + '"/><ellipse cx="50" cy="56" rx="2.5" ry="4" fill="' + K + '"/><ellipse cx="64" cy="48" rx="2.5" ry="4" fill="' + K + '"/><ellipse cx="44" cy="40" rx="2.5" ry="4" fill="' + K + '"/><ellipse cx="58" cy="40" rx="2.5" ry="4" fill="' + K + '"/>',
+    cilek: '<path d="M50 90 C24 72 16 46 28 34 C38 26 62 26 72 34 C84 46 76 72 50 90Z" fill="#ef476f"/><polygon points="30,30 40,18 50,28 60,18 70,30 50,36" fill="#3bb273"/><circle cx="40" cy="46" r="2.5" fill="#ffd23f"/><circle cx="58" cy="46" r="2.5" fill="#ffd23f"/><circle cx="48" cy="58" r="2.5" fill="#ffd23f"/><circle cx="36" cy="62" r="2.5" fill="#ffd23f"/><circle cx="62" cy="62" r="2.5" fill="#ffd23f"/><circle cx="50" cy="74" r="2.5" fill="#ffd23f"/>',
+    ari: '<ellipse cx="38" cy="34" rx="14" ry="18" fill="#e6f6ff" stroke="#9fb3cc" stroke-width="2"/><ellipse cx="60" cy="32" rx="14" ry="18" fill="#e6f6ff" stroke="#9fb3cc" stroke-width="2"/><ellipse cx="50" cy="60" rx="30" ry="20" fill="#ffd23f"/><rect x="40" y="41" width="7" height="38" fill="' + K + '"/><rect x="56" y="42" width="7" height="36" fill="' + K + '"/><circle cx="22" cy="58" r="12" fill="' + K + '"/><circle cx="19" cy="55" r="3" fill="#fff"/><polygon points="80,58 92,60 80,64" fill="' + K + '"/>',
+    kapi: '<rect x="26" y="8" width="48" height="86" rx="3" fill="#a8703a"/><rect x="33" y="16" width="34" height="30" rx="2" fill="#c98b4d"/><rect x="33" y="54" width="34" height="32" rx="2" fill="#c98b4d"/><circle cx="64" cy="52" r="4" fill="#ffd23f"/>',
+    araba: '<path d="M8 66 L12 48 L28 46 L40 28 L66 28 L80 46 L92 50 L92 66Z" fill="#ef476f"/><polygon points="43,32 52,32 52,46 33,46" fill="#bfe8ff"/><polygon points="56,32 64,32 75,46 56,46" fill="#bfe8ff"/><circle cx="30" cy="68" r="11" fill="' + K + '"/><circle cx="30" cy="68" r="4" fill="#b8bfcc"/><circle cx="72" cy="68" r="11" fill="' + K + '"/><circle cx="72" cy="68" r="4" fill="#b8bfcc"/><rect x="86" y="52" width="6" height="5" fill="#ffd23f"/>',
+    semsiye: '<path d="M50 50 V82 Q50 92 40 90" stroke="' + K + '" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M8 50 A42 38 0 0 1 92 50 Q82 42 71 50 Q61 42 50 50 Q39 42 29 50 Q18 42 8 50Z" fill="#8e7dff"/><path d="M50 12 Q36 30 29 50 M50 12 Q64 30 71 50" stroke="#6a57e0" stroke-width="2" fill="none"/>',
+    yumurta: '<path d="M50 10 C70 10 82 44 82 62 C82 80 68 92 50 92 C32 92 18 80 18 62 C18 44 30 10 50 10Z" fill="#fff6e6" stroke="#e0c9a6" stroke-width="4"/><ellipse cx="38" cy="40" rx="6" ry="10" fill="#fff"/>',
+    kelebek: '<circle cx="32" cy="36" r="18" fill="#ff8a3d"/><circle cx="68" cy="36" r="18" fill="#ff8a3d"/><circle cx="34" cy="66" r="13" fill="#ffd23f"/><circle cx="66" cy="66" r="13" fill="#ffd23f"/><circle cx="30" cy="34" r="6" fill="#fff" opacity=".7"/><circle cx="70" cy="34" r="6" fill="#fff" opacity=".7"/><ellipse cx="50" cy="52" rx="5" ry="26" fill="' + K + '"/><path d="M48 28 Q42 14 34 12 M52 28 Q58 14 66 12" stroke="' + K + '" stroke-width="2.5" fill="none"/>',
+    telefon: '<rect x="28" y="8" width="44" height="84" rx="9" fill="' + K + '"/><rect x="33" y="17" width="34" height="62" rx="2" fill="#3a86ff"/><circle cx="50" cy="85" r="3.5" fill="#6b6f8a"/><rect x="38" y="26" width="9" height="9" rx="2" fill="#ffd23f"/><rect x="53" y="26" width="9" height="9" rx="2" fill="#3bb273"/><rect x="38" y="40" width="9" height="9" rx="2" fill="#ef476f"/><rect x="53" y="40" width="9" height="9" rx="2" fill="#fff"/>',
+    ananas: '<polygon points="50,6 44,28 36,14 40,34 28,24 38,40 62,40 72,24 60,34 64,14 56,28" fill="#3bb273"/><ellipse cx="50" cy="64" rx="24" ry="30" fill="#ffd23f"/><path d="M32 46 L68 82 M28 62 L58 92 M42 38 L74 70 M68 46 L32 82 M72 62 L42 92 M58 38 L26 70" stroke="#e0a800" stroke-width="2.5"/>',
+    patates: '<path d="M20 52 C16 34 36 22 56 26 C78 30 90 44 84 62 C78 80 52 84 36 78 C24 74 22 64 20 52Z" fill="#c9a26b" stroke="#a8803f" stroke-width="3"/><circle cx="40" cy="44" r="2.5" fill="#8b6a35"/><circle cx="62" cy="50" r="2.5" fill="#8b6a35"/><circle cx="50" cy="64" r="2.5" fill="#8b6a35"/><circle cx="70" cy="40" r="2" fill="#8b6a35"/>',
+    kaplumbaga: '<ellipse cx="26" cy="74" rx="8" ry="6" fill="#8bd18b"/><ellipse cx="70" cy="74" rx="8" ry="6" fill="#8bd18b"/><polygon points="12,64 4,62 12,58" fill="#8bd18b"/><circle cx="86" cy="58" r="10" fill="#8bd18b"/><circle cx="89" cy="55" r="2.5" fill="' + K + '"/><path d="M14 66 A34 32 0 0 1 82 66Z" fill="#3bb273"/><path d="M30 66 L36 46 L48 40 L60 46 L66 66 M36 46 L24 56 M60 46 L72 56 M48 40 L48 34" stroke="#26874f" stroke-width="3" fill="none"/>',
+    saat: '<circle cx="50" cy="50" r="42" fill="' + K + '"/><circle cx="50" cy="50" r="36" fill="#fff"/><line x1="50" y1="50" x2="50" y2="22" stroke="#3a86ff" stroke-width="5" stroke-linecap="round"/><line x1="50" y1="50" x2="68" y2="50" stroke="#ef476f" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="50" r="5" fill="' + K + '"/><g fill="' + K + '"><rect x="48" y="16" width="4" height="7"/><rect x="48" y="77" width="4" height="7"/><rect x="16" y="48" width="7" height="4"/><rect x="77" y="48" width="7" height="4"/></g>'
+  };
+  function picSVG(id) { return '<svg class="pic" data-id="' + id + '" viewBox="0 0 100 100">' + PIC[id] + '</svg>'; }
+
+  function wordsWith(syl) {
+    var out = [];
+    for (var i = 0; i < WORDS.length; i++) if (syl.indexOf(WORDS[i].s.length) !== -1) out.push(WORDS[i]);
+    return out;
+  }
+  function allSyllables() {
+    var out = [];
+    for (var i = 0; i < WORDS.length; i++) for (var j = 0; j < WORDS[i].s.length; j++) if (out.indexOf(WORDS[i].s[j]) === -1) out.push(WORDS[i].s[j]);
+    return out;
+  }
+  var ALL_SYL = allSyllables();
+  // Benzer heceler önce (aynı harfle başlayan), sonra rastgele
+  function sylDistractors(word, n, exclude) {
+    var near = [], far = [];
+    var first = {};
+    for (var i = 0; i < word.s.length; i++) first[word.s[i].charAt(0)] = true;
+    var pool = shuffle(ALL_SYL.slice());
+    for (var j = 0; j < pool.length; j++) {
+      var sy = pool[j];
+      if (word.s.indexOf(sy) !== -1 || (exclude && exclude.indexOf(sy) !== -1)) continue;
+      if (first[sy.charAt(0)]) near.push(sy); else far.push(sy);
+    }
+    return near.concat(far).slice(0, n);
+  }
+  function similarWords(word, n) {
+    var near = [], far = [], pool = shuffle(WORDS.slice());
+    for (var i = 0; i < pool.length; i++) {
+      var w = pool[i];
+      if (w.id === word.id) continue;
+      if (w.s[0] === word.s[0] || w.w.charAt(0) === word.w.charAt(0)) near.push(w); else far.push(w);
+    }
+    return near.slice(0, 1).concat(far).slice(0, n);
+  }
+
+  function makeHeceQuestion(lv, seen) {
+    var kind = lv.kind, extra = lv.extra || 1, split = !!lv.split;
+    if (kind === 'mix') {
+      kind = pick(['read', 'build', 'build', 'missing', 'count']);
+      extra = 2;
+    }
+    var syl = lv.syl;
+    if (kind === 'missing') syl = [2, 3, 4];
+    if (kind === 'build' && lv.kind === 'mix') syl = [2, 3, 4];
+    if (kind === 'read' && lv.kind === 'mix') syl = [2, 3, 4];
+    var list = wordsWith(syl), w, tries = 0;
+    do { w = pick(list); tries++; } while (seen[w.id] && tries < 60);
+    seen[w.id] = true;
+    var q = { kind: kind, word: w, split: split };
+    if (kind === 'build') {
+      q.build = true; q.ctrl = 'hece'; q.keepBtn = true;
+      q.answer = w.w;
+      q.cards = shuffle(w.s.concat(sylDistractors(w, extra)));
+      q.opts = [];
+    } else if (kind === 'missing') {
+      q.hole = rnd(0, w.s.length - 1);
+      q.answer = w.s[q.hole];
+      q.opts = shuffle([q.answer].concat(sylDistractors(w, 2)));
+      q.optClass = 'syl';
+    } else if (kind === 'count') {
+      var n = w.s.length;
+      q.answer = n;
+      var o = [n, n + 1, n - 1, n + 2];
+      var c = [];
+      for (var i = 0; i < o.length && c.length < 3; i++) if (o[i] >= 1 && o[i] <= 5 && c.indexOf(o[i]) === -1) c.push(o[i]);
+      q.opts = shuffle(c);
+    } else {
+      q.answer = w.id;
+      var ws = similarWords(w, 2);
+      q.opts = shuffle([w.id, ws[0].id, ws[1].id]);
+      q.optClass = 'pic';
+      q.optHTML = function (id) { return picSVG(id); };
+    }
+    return q;
+  }
+
+  function sylHTML(s, hole) {
+    var h = '';
+    for (var i = 0; i < s.length; i++) {
+      if (i) h += '<i class="dash">-</i>';
+      h += '<b class="sy sy' + (i % 2) + '">' + (i === hole ? '?' : s[i]) + '</b>';
+    }
+    return h;
+  }
+
+  var LOCO = '<svg viewBox="0 0 80 64"><rect x="4" y="20" width="44" height="30" rx="4" fill="#ef476f"/><rect x="40" y="6" width="30" height="44" rx="4" fill="#ef476f"/><rect x="46" y="12" width="18" height="14" rx="2" fill="#bfe8ff"/><rect x="10" y="8" width="10" height="14" fill="#2b2d42"/><rect x="0" y="46" width="76" height="6" rx="2" fill="#2b2d42"/><circle cx="18" cy="54" r="8" fill="#2b2d42"/><circle cx="18" cy="54" r="3" fill="#b8bfcc"/><circle cx="56" cy="54" r="8" fill="#2b2d42"/><circle cx="56" cy="54" r="3" fill="#b8bfcc"/></svg>';
+  function trainHTML(n, fill, hole) {
+    var h = '<div class="train" id="train"><div class="wagons">';
+    for (var i = 0; i < n; i++) {
+      var txt = fill ? fill[i] : '';
+      var cls = 'wg' + (i === hole ? ' hole' : '') + (txt ? ' full' : '');
+      h += '<div class="' + cls + '" data-i="' + i + '"><span>' + (i === hole ? '?' : txt) + '</span></div>';
+    }
+    h += '</div><div class="loco">' + LOCO + '</div></div>';
+    return h;
+  }
+
+  function buildHeceQuestion(stage, q) {
+    G.countReady = true;
+    var w = q.word;
+    if (q.kind === 'read') {
+      var word = el('div', 'hc-word' + (q.split ? ' split' : ''), q.split ? sylHTML(w.s) : w.w);
+      stage.appendChild(word);
+      say(q.split ? 'Heceleri oku, resmi bul!' : 'Kelimeyi oku, resmi bul!');
+      return;
+    }
+    var row = el('div', 'hc-row');
+    row.appendChild(el('div', 'hc-pic', picSVG(w.id)));
+    stage.appendChild(row);
+    if (q.kind === 'count') {
+      row.appendChild(el('div', 'hc-side', '<div class="hc-word">' + w.w + '</div><div class="hc-q">Kaç hece var?</div>'));
+      say('El çırparak hecele!');
+      return;
+    }
+    if (q.kind === 'missing') {
+      var fill = w.s.slice();
+      row.appendChild(el('div', 'hc-side', trainHTML(w.s.length, fill, q.hole)));
+      say('Hangi vagon eksik?');
+      q.onRight = function () {
+        var hole = $('train').querySelector('.hole');
+        hole.className = 'wg full ok';
+        hole.innerHTML = '<span>' + q.answer + '</span>';
+        heceLeave();
+      };
+      return;
+    }
+    // build
+    G.hw = []; // vagonlardaki kart indeksleri
+    for (var i = 0; i < w.s.length; i++) G.hw.push(-1);
+    row.appendChild(el('div', 'hc-side', trainHTML(w.s.length)));
+    say(w.s.length + ' vagonu doldur!');
+    var wagons = $('train').querySelectorAll('.wg');
+    for (var k = 0; k < wagons.length; k++) {
+      (function (wi) {
+        wagons[wi].addEventListener('click', function () {
+          if (G.locked || G.hw[wi] < 0) return;
+          var ci = G.hw[wi];
+          G.hw[wi] = -1;
+          var card = $('choices').querySelectorAll('.ch')[ci];
+          if (card) card.className = 'ch syl';
+          Snd.tone(330, 0, 0.08, 'triangle', 0.15);
+          renderTrain();
+        });
+      })(k);
+    }
+  }
+
+  function renderTrain() {
+    var q = G.cur, wagons = $('train').querySelectorAll('.wg');
+    for (var i = 0; i < wagons.length; i++) {
+      var ci = G.hw[i];
+      wagons[i].className = 'wg' + (ci >= 0 ? ' full' : '');
+      wagons[i].innerHTML = '<span>' + (ci >= 0 ? q.cards[ci] : '') + '</span>';
+    }
+  }
+
+  function buildHeceControls(box, q) {
+    for (var i = 0; i < q.cards.length; i++) {
+      (function (ci) {
+        var b = el('button', 'ch syl', q.cards[ci]);
+        b.style.webkitAnimationDelay = b.style.animationDelay = (0.06 * ci + 0.1) + 's';
+        b.addEventListener('click', function () {
+          if (G.locked || b.className.indexOf('used') !== -1) return;
+          var slot = G.hw.indexOf(-1);
+          if (slot < 0) return;
+          G.hw[slot] = ci;
+          b.className = 'ch syl used';
+          Snd.tone(523 + slot * 60, 0, 0.1, 'triangle', 0.2);
+          renderTrain();
+          if (G.hw.indexOf(-1) < 0) {
+            var made = '';
+            for (var k = 0; k < G.hw.length; k++) made += q.cards[G.hw[k]];
+            G.locked = true;
+            later(function () {
+              G.locked = false;
+              var tr = $('train');
+              if (made === q.answer) { answer(tr, made); heceLeave(); }
+              else answer(tr, made);
+            }, 250);
+          }
+        });
+        box.appendChild(b);
+      })(i);
+    }
+  }
+
+  // Tren doğru kelimeyle yola çıkar
+  function heceLeave() {
+    var tr = $('train');
+    if (!tr) return;
+    var ws = tr.querySelectorAll('.wg');
+    for (var i = 0; i < ws.length; i++) ws[i].className += ' ok';
+    Snd.tone(392, 0.15, 0.15, 'square', 0.08); Snd.tone(392, 0.35, 0.15, 'square', 0.08);
+    later(function () { tr.className = 'train go'; }, 300);
+  }
+
+  // Yanlış dizilişte: yanlış vagonlar boşalır, doğrular kalır
+  function heceBuildWrong() {
+    var q = G.cur, w = q.word, firstWrong = -1;
+    var wagons = $('train').querySelectorAll('.wg');
+    for (var i = 0; i < G.hw.length; i++) {
+      if (q.cards[G.hw[i]] !== w.s[i]) { wagons[i].className = 'wg full bad'; if (firstWrong < 0) firstWrong = i; }
+    }
+    var qid = G.qid;
+    later(function () {
+      if (G.qid !== qid) return;
+      var cards = $('choices').querySelectorAll('.ch');
+      for (var k = 0; k < G.hw.length; k++) {
+        if (q.cards[G.hw[k]] !== w.s[k]) { cards[G.hw[k]].className = 'ch syl'; G.hw[k] = -1; }
+      }
+      renderTrain();
+      // ilk boş vagonun doğru hecesini parlat
+      var slot = G.hw.indexOf(-1);
+      for (var c = 0; c < q.cards.length; c++) {
+        if (q.cards[c] === w.s[slot] && cards[c].className.indexOf('used') === -1) { cards[c].className = 'ch syl glow'; break; }
+      }
+    }, 700);
+    return firstWrong === 0 ? 'İlk hece "' + w.s[0] + '" olmalı!' : (firstWrong + 1) + '. vagonu düzelt: "' + w.s[firstWrong] + '"';
+  }
+
+  function heceHint(val) {
+    var q = G.cur, w = q.word;
+    if (q.kind === 'read') {
+      var word = $('stage').querySelector('.hc-word');
+      if (word && !q.split) { word.className = 'hc-word split'; word.innerHTML = sylHTML(w.s); }
+      return 'Hecele: ' + w.s.join('-');
+    }
+    if (q.kind === 'count') {
+      var wd = $('stage').querySelector('.hc-word');
+      if (wd) { wd.className = 'hc-word split'; wd.innerHTML = sylHTML(w.s); }
+      return w.s.join(' - ') + ': ' + w.s.length + ' hece!';
+    }
+    return '"' + w.w + '" kelimesini hecele: ' + w.s.join('-');
+  }
+
   function buildChoices(q) {
     var box = $('choices');
     box.innerHTML = '';
-    if (q.build) { if (q.ctrl === 'clock') buildClockControls(box, q); else buildPvControls(box, q); return; }
+    if (q.build) {
+      if (q.ctrl === 'clock') buildClockControls(box, q);
+      else if (q.ctrl === 'hece') buildHeceControls(box, q);
+      else buildPvControls(box, q);
+      return;
+    }
     for (var i = 0; i < q.opts.length; i++) {
       (function (val, k) {
         var b = el('button', 'ch k' + k + (q.optClass ? ' ' + q.optClass : ''), q.optHTML ? q.optHTML(val) : String(val));
@@ -1160,7 +1482,7 @@
       G.results.push(clean);
       if (!clean) G.missQ++;
       G.streak = clean ? G.streak + 1 : 0;
-      btn.className = q.build ? 'ch pvb pvok right' : 'ch right' + (q.optClass ? ' ' + q.optClass : '');
+      if (!q.keepBtn) btn.className = q.build ? 'ch pvb pvok right' : 'ch right' + (q.optClass ? ' ' + q.optClass : '');
       var others = $('choices').querySelectorAll('.ch');
       for (var i = 0; i < others.length; i++) if (others[i] !== btn) others[i].classList.add('fade');
       var box = $('stage').querySelector('.box');
@@ -1179,10 +1501,12 @@
       G.streak = 0;
       Snd.wrong();
       playMascot.face('sad', 700);
-      if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : pvBuildHint()); return; }
+      if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : pvBuildHint()); return; }
       btn.disabled = true;
       btn.className += ' wrong';
-      if (G.op === 'clock') {
+      if (G.op === 'hece') {
+        say(heceHint(val));
+      } else if (G.op === 'clock') {
         say(clockHint(val));
       } else if (G.op === 'pv') {
         if (!pvHint()) say(pick(RETRY));
