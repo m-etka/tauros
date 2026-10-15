@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.6.0';
+  var APP_VERSION = '1.7.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -254,14 +254,27 @@
   ];
   GAMES.pat = { id: 'pat', title: 'Örüntü Treni', iconHTML: 'pat', color: '#f09a2a', levels: LEVELS_PAT };
 
+  // Bakkal Mandi: paralarımız (20 liraya kadar)
+  var LEVELS_SHOP = [
+    { name: 'Kaç lira?', sub: '1 liralar', color: '#e0a800', kind: 'coins' },
+    { name: '5 ve 1', sub: "10'a kadar", color: '#8e7dff', kind: 'mix5' },
+    { name: 'Kumbara', sub: "20'ye kadar", color: '#ef476f', kind: 'mix10' },
+    { name: 'Öde', sub: "10 liraya kadar", color: '#3bb273', kind: 'pay', max: 10, notes: [1, 5, 10] },
+    { name: 'Neyi alabilirim?', sub: 'Cebindeki para', color: '#3a86ff', kind: 'afford' },
+    { name: 'Öde', sub: "20 liraya kadar", color: '#ff8a3d', kind: 'pay', max: 20, notes: [1, 5, 10, 20] },
+    { name: 'Para üstü', sub: '10 ve 20 ile', color: '#ef476f', kind: 'change' },
+    { name: 'Şampiyon', sub: 'Hepsi', color: '#26874f', kind: 'mix' }
+  ];
+  GAMES.shop = { id: 'shop', title: 'Bakkal Mandi', iconHTML: 'shop', color: '#c98b4d', levels: LEVELS_SHOP };
+
   GAMES.hece = { id: 'hece', title: 'Hece Treni', iconHTML: 'hece', color: '#ef476f', levels: LEVELS_HECE };
 
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
-    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'clock'] },
+    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'clock', 'shop'] },
     { title: 'Türkçe', games: ['hece'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'clock', 'hece'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'clock', 'shop', 'hece'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -276,6 +289,7 @@
     if (op === 'hece') return makeHeceQuestion(lv, seen);
     if (op === 'cmp') return makeCmpQuestion(lv, seen);
     if (op === 'pat') return makePatQuestion(lv, seen);
+    if (op === 'shop') return makeShopQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -392,6 +406,9 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'shop') {
+      return '<div class="game-icon" style="background:' + game.color + '"><div class="sh-ico">' + moneySVG(10) + moneySVG(1) + moneySVG(1) + '</div></div>';
+    }
     if (game.iconHTML === 'pat') {
       return '<div class="game-icon" style="background:' + game.color + '"><div class="pt-ico">' +
         patItemSVG({ s: 'circle', c: '#ef476f' }) + patItemSVG({ s: 'square', c: '#ffd23f' }) +
@@ -537,6 +554,7 @@
     if (G.op === 'hece') { buildHeceQuestion(stage, q); return; }
     if (G.op === 'cmp') { buildCmpQuestion(stage, q); return; }
     if (G.op === 'pat') { buildPatQuestion(stage, q); return; }
+    if (G.op === 'shop') { buildShopQuestion(stage, q); return; }
     G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
@@ -1824,6 +1842,260 @@
     return 'Tekrar eden: ' + names.join(', ') + '!';
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Bakkal Mandi (paralar)                                              */
+  /* ------------------------------------------------------------------ */
+  // Gerçek banknotların kopyası değil; renkleri benzeyen sade çizimler.
+  var NOTE_COLORS = { 5: ['#a77bca', '#8a5fb0'], 10: ['#e5626a', '#c2414a'], 20: ['#3bb273', '#26874f'] };
+  function moneySVG(v) {
+    if (v === 1) {
+      return '<svg class="money coin" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#e9c046" stroke="#c9a227" stroke-width="2.5"/>' +
+        '<circle cx="20" cy="20" r="13" fill="none" stroke="#c9a227" stroke-width="1.5"/>' +
+        '<text x="20" y="22" text-anchor="middle" font-size="15" font-weight="900" fill="#7a5c00" font-family="Roboto, Arial, sans-serif">1</text>' +
+        '<text x="20" y="31" text-anchor="middle" font-size="6.5" font-weight="900" fill="#7a5c00" font-family="Roboto, Arial, sans-serif">TL</text></svg>';
+    }
+    var c = NOTE_COLORS[v];
+    return '<svg class="money note" viewBox="0 0 64 34"><rect x="1" y="1" width="62" height="32" rx="3" fill="' + c[0] + '" stroke="' + c[1] + '" stroke-width="2"/>' +
+      '<rect x="5" y="5" width="54" height="24" rx="2" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.2"/>' +
+      '<circle cx="52" cy="17" r="6.5" fill="#fff" opacity=".35"/>' +
+      '<text x="9" y="23" font-size="16" font-weight="900" fill="#fff" font-family="Roboto, Arial, sans-serif">' + v + '</text>' +
+      '<text x="' + (v >= 10 ? 29 : 21) + '" y="23" font-size="8" font-weight="900" fill="#fff" font-family="Roboto, Arial, sans-serif">TL</text></svg>';
+  }
+  function sumOf(a) { var t = 0; for (var i = 0; i < a.length; i++) t += a[i]; return t; }
+  // Bir tutarı en az parayla ayır (20, 10, 5, 1)
+  function breakdown(n, notes) {
+    var out = [], ns = (notes || [20, 10, 5, 1]).slice().sort(function (a, b) { return b - a; });
+    for (var i = 0; i < ns.length; i++) while (n >= ns[i]) { out.push(ns[i]); n -= ns[i]; }
+    return out;
+  }
+  function liraWords(a) {
+    var cnt = {}, order = [], parts = [];
+    for (var i = 0; i < a.length; i++) { if (!cnt[a[i]]) { cnt[a[i]] = 0; order.push(a[i]); } cnt[a[i]]++; }
+    for (var j = 0; j < order.length; j++) parts.push((cnt[order[j]] > 1 ? cnt[order[j]] + ' tane ' : '') + order[j] + ' lira');
+    return parts.join(' + ');
+  }
+  var SHOP_ITEMS = ['elma', 'muz', 'cilek', 'karpuz', 'ananas', 'patates', 'yumurta', 'top', 'balon', 'kalem', 'kitap', 'mum', 'kutu'];
+  var ITEM_NAMES = { elma: 'elma', muz: 'muz', cilek: 'çilek', karpuz: 'karpuz', ananas: 'ananas', patates: 'patates', yumurta: 'yumurta', top: 'top', balon: 'balon', kalem: 'kalem', kitap: 'kitap', mum: 'mum', kutu: 'kutu' };
+
+  function makeShopQuestion(lv, seen) {
+    var kind = lv.kind, max = lv.max, notes = lv.notes;
+    if (kind === 'mix') {
+      kind = pick(['mix10', 'pay', 'afford', 'change', 'pay']);
+      max = 20; notes = [1, 5, 10, 20];
+    }
+    var q = { kind: kind }, key, tries = 0, pieces;
+    if (kind === 'coins' || kind === 'mix5' || kind === 'mix10') {
+      do {
+        if (kind === 'coins') { pieces = []; var n = rnd(2, 10); for (var i = 0; i < n; i++) pieces.push(1); }
+        else if (kind === 'mix5') { pieces = [5]; var k = rnd(1, 5); for (var j = 0; j < k; j++) pieces.push(1); if (Math.random() < 0.25) pieces = [5, 5].concat(pieces.slice(1, 1)); }
+        else {
+          pieces = [];
+          var target = rnd(6, 20), opts = [10, 5, 1];
+          while (sumOf(pieces) < target) {
+            var left = target - sumOf(pieces), cand = [];
+            for (var c = 0; c < opts.length; c++) if (opts[c] <= left) cand.push(opts[c]);
+            pieces.push(pick(cand));
+          }
+          pieces.sort(function (a, b) { return b - a; });
+          if (pieces.length > 8) { tries++; key = null; continue; }
+        }
+        key = kind + pieces.join(',');
+        tries++;
+      } while ((!key || seen[key]) && tries < 60);
+      seen[key] = true;
+      q.pieces = pieces;
+      q.answer = sumOf(pieces);
+      var o = [q.answer], cc = shuffle([q.answer + 1, q.answer - 1, pieces.length, q.answer + 5, q.answer - 5]);
+      for (var m = 0; m < cc.length && o.length < 3; m++) if (cc[m] > 0 && cc[m] <= 25 && o.indexOf(cc[m]) === -1) o.push(cc[m]);
+      q.opts = shuffle(o);
+      q.optClass = 'tm';
+      q.optHTML = function (v) { return '<span class="tm-big">' + v + '</span><span class="tm-small">lira</span>'; };
+      return q;
+    }
+    if (kind === 'pay') {
+      var price;
+      do { price = max === 10 ? rnd(3, 10) : rnd(11, 20); q.item = pick(SHOP_ITEMS); key = 'pay' + price + q.item; tries++; } while (seen[key] && tries < 40);
+      seen[key] = true;
+      q.price = price; q.answer = price; q.build = true; q.ctrl = 'shop'; q.opts = []; q.notes = notes || [1, 5, 10, 20];
+      return q;
+    }
+    if (kind === 'afford') {
+      var wallet, items;
+      do {
+        wallet = rnd(5, 15);
+        items = shuffle(SHOP_ITEMS.slice()).slice(0, 3);
+        key = 'af' + wallet + items[0];
+        tries++;
+      } while (seen[key] && tries < 40);
+      seen[key] = true;
+      q.wallet = breakdown(wallet, [10, 5, 1]);
+      q.walletSum = wallet;
+      q.prices = {};
+      q.prices[items[0]] = Math.max(1, wallet - rnd(0, 3));
+      q.prices[items[1]] = wallet + rnd(1, 4);
+      q.prices[items[2]] = wallet + rnd(2, 7);
+      q.answer = items[0];
+      q.opts = shuffle(items.slice());
+      q.optClass = 'pic shopitem';
+      q.optHTML = function (id) { return picSVG(id) + '<span class="tag">' + q.prices[id] + ' TL</span>'; };
+      return q;
+    }
+    // para üstü
+    var p2, note;
+    do { p2 = rnd(2, 19); note = p2 < 10 ? pick([10, 20]) : 20; q.item = pick(SHOP_ITEMS); key = 'ch' + p2 + note; tries++; } while (seen[key] && tries < 40);
+    seen[key] = true;
+    q.price = p2; q.note = note; q.answer = note - p2;
+    var co = [q.answer], cand2 = shuffle([q.answer + 1, q.answer - 1, p2, q.answer + 2, q.answer - 2]);
+    for (var x = 0; x < cand2.length && co.length < 3; x++) if (cand2[x] >= 0 && cand2[x] <= 20 && co.indexOf(cand2[x]) === -1) co.push(cand2[x]);
+    q.opts = shuffle(co);
+    q.optClass = 'tm';
+    q.optHTML = function (v) { return '<span class="tm-big">' + v + '</span><span class="tm-small">lira</span>'; };
+    return q;
+  }
+
+  function moneyRow(pieces, removable) {
+    var row = el('div', 'money-row');
+    for (var i = 0; i < pieces.length; i++) {
+      (function (v, idx) {
+        var m = el('div', 'mpiece ' + (v === 1 ? 'is-coin' : 'is-note') + ' pop', moneySVG(v));
+        m.setAttribute('data-v', v);
+        m.style.webkitAnimationDelay = m.style.animationDelay = (removable ? 0 : idx * 0.05) + 's';
+        if (removable) {
+          m.addEventListener('click', function () {
+            if (G.locked) return;
+            G.paid.splice(idx, 1);
+            Snd.tone(330, 0, 0.08, 'triangle', 0.15);
+            renderPaid();
+          });
+        }
+        row.appendChild(m);
+      })(pieces[i], i);
+    }
+    return row;
+  }
+  function shopItemCard(id, price) {
+    return el('div', 'sh-item', '<div class="hc-pic">' + picSVG(id) + '</div><div class="tag big">' + price + ' TL</div>');
+  }
+
+  function buildShopQuestion(stage, q) {
+    G.countReady = true;
+    var k = q.kind;
+    if (k === 'coins' || k === 'mix5' || k === 'mix10') {
+      var box = el('div', 'wallet');
+      box.appendChild(moneyRow(q.pieces.slice().sort(function (a, b) { return b - a; }), false));
+      stage.appendChild(box);
+      stage.appendChild(el('div', 'cmp-ask', 'Toplam kaç lira?'));
+      say(k === 'coins' ? 'Paraları say!' : 'Önce büyük paraları say!');
+      return;
+    }
+    if (k === 'pay') {
+      G.paid = [];
+      var row = el('div', 'hc-row');
+      row.appendChild(shopItemCard(q.item, q.price));
+      var area = el('div', 'pv-area pay-area');
+      area.id = 'pay-area';
+      row.appendChild(area);
+      stage.appendChild(row);
+      renderPaid();
+      say(ITEM_NAMES[q.item] + ' ' + q.price + ' lira. Tam parayı ver!');
+      return;
+    }
+    if (k === 'afford') {
+      var w = el('div', 'wallet');
+      w.appendChild(el('div', 'wallet-t', 'Cebindeki para:'));
+      w.appendChild(moneyRow(q.wallet, false));
+      stage.appendChild(w);
+      stage.appendChild(el('div', 'cmp-ask small', 'Hangisini <b>alabilirsin</b>?'));
+      say('Paranın yettiğini seç!');
+      return;
+    }
+    // para üstü
+    var r2 = el('div', 'hc-row');
+    r2.appendChild(shopItemCard(q.item, q.price));
+    var side = el('div', 'hc-side');
+    side.appendChild(el('div', 'wallet-t', 'Mandi verdi:'));
+    side.appendChild(moneyRow([q.note], false));
+    side.appendChild(el('div', 'hc-q', 'Para üstü kaç lira?'));
+    r2.appendChild(side);
+    stage.appendChild(r2);
+    say(q.note + ' liradan ' + q.price + ' lira çıkar!');
+  }
+
+  function renderPaid() {
+    var area = $('pay-area');
+    if (!area) return;
+    area.innerHTML = '';
+    var sorted = G.paid;
+    if (!sorted.length) area.appendChild(el('div', 'pv-empty pay-empty', 'Aşağıdaki paralara dokun'));
+    else area.appendChild(moneyRow(sorted, true));
+    area.appendChild(el('div', 'pv-now', 'Verdiğin: <b>' + sumOf(G.paid) + ' lira</b>'));
+  }
+
+  function buildShopControls(box, q) {
+    var list = [];
+    for (var i = 0; i < q.notes.length; i++) {
+      (function (v) {
+        var b = el('button', 'ch pvb paybtn', moneySVG(v));
+        b.addEventListener('click', function () {
+          if (G.locked) return;
+          if (G.paid.length >= 12) { Snd.wrong(); return; }
+          G.paid.push(v);
+          G.paid.sort(function (a, c) { return c - a; });
+          Snd.tone(v === 1 ? 880 : 520, 0, 0.1, 'triangle', 0.2);
+          renderPaid();
+        });
+        list.push(b);
+      })(q.notes[i]);
+    }
+    var ok = el('button', 'ch pvb pvok', '<span class="tick"></span><span>Öde</span>');
+    ok.addEventListener('click', function () { answer(ok, sumOf(G.paid)); });
+    list.push(ok);
+    for (var j = 0; j < list.length; j++) {
+      list[j].style.webkitAnimationDelay = list[j].style.animationDelay = (0.07 * j + 0.1) + 's';
+      box.appendChild(list[j]);
+    }
+  }
+
+  function shopPayHint() {
+    var q = G.cur, paid = sumOf(G.paid);
+    if (paid > q.price) return 'Fazla verdin! ' + q.price + ' lira olmalı. Bir parayı geri al.';
+    if (paid < q.price) return 'Biraz daha! ' + (q.price - paid) + ' lira eksik.';
+    return 'Örneğin: ' + liraWords(breakdown(q.price, q.notes));
+  }
+
+  // Paraların üstüne ara toplamları yazar
+  function labelRunning() {
+    var ps = $('stage').querySelectorAll('.wallet .mpiece');
+    if (!ps.length || hintTimers.length) return;
+    var qid = G.qid, total = 0, delay = 300;
+    for (var i = 0; i < ps.length; i++) {
+      (function (node, v, d) {
+        hintTimers.push(setTimeout(function () {
+          if (!G || G.qid !== qid) return;
+          total += v;
+          var old = node.querySelector('.num');
+          if (old) node.removeChild(old);
+          node.appendChild(el('span', 'num', String(total)));
+          Snd.count(Math.min(total, 20));
+        }, d));
+      })(ps[i], +ps[i].getAttribute('data-v'), delay);
+      delay += 380;
+    }
+    hintTimers.push(setTimeout(function () { hintTimers = []; }, delay));
+  }
+
+  function shopHint(val) {
+    var q = G.cur;
+    if (q.kind === 'afford') {
+      return 'Cebinde ' + q.walletSum + ' lira var. Fiyatı ' + q.walletSum + ' lira ya da daha az olanı seç!';
+    }
+    if (q.kind === 'change') {
+      return q.note + ' ' + MINUS + ' ' + q.price + ' = ? Ödediğinden fiyatı çıkar!';
+    }
+    labelRunning();
+    return 'Birlikte sayalım: ' + liraWords(q.pieces);
+  }
+
   function buildChoices(q) {
     var box = $('choices');
     box.innerHTML = '';
@@ -1831,6 +2103,7 @@
     if (q.build) {
       if (q.ctrl === 'clock') buildClockControls(box, q);
       else if (q.ctrl === 'hece') buildHeceControls(box, q);
+      else if (q.ctrl === 'shop') buildShopControls(box, q);
       else buildPvControls(box, q);
       return;
     }
@@ -1873,10 +2146,12 @@
       G.streak = 0;
       Snd.wrong();
       playMascot.face('sad', 700);
-      if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : pvBuildHint()); return; }
+      if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : q.ctrl === 'shop' ? shopPayHint() : pvBuildHint()); return; }
       btn.disabled = true;
       btn.className += ' wrong';
-      if (G.op === 'pat') {
+      if (G.op === 'shop') {
+        say(shopHint(val));
+      } else if (G.op === 'pat') {
         say(patHint(val));
       } else if (G.op === 'cmp') {
         say(cmpHint(val));

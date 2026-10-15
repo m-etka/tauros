@@ -732,3 +732,40 @@ svg { display: block; }
 .game-icon .pt-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; height: 100%; }
 .game-icon .pt-ico .pt { width: 2.2rem; height: 2.2rem; margin: 0 .15rem; background: #fff; border-radius: .4rem; padding: .2rem; }
 .game-icon .pt-ico b { display: block; width: 2.2rem; height: 2.2rem; margin: 0 .15rem; border: .2rem dashed #fff; border-radius: .4rem; color: #fff; font-size: 1.4rem; line-height: 1.8rem; }
+
+/* ---------- Bakkal Mandi ---------- */
+.money { display: block; }
+.money-row { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; }
+.mpiece { position: relative; margin: .25rem; }
+.mpiece.is-coin .money { width: 3.6rem; height: 3.6rem; }
+.mpiece.is-note .money { width: 7.2rem; height: 3.8rem; }
+.mpiece .num {
+  position: absolute; right: -.5rem; top: -.7rem;
+  min-width: 1.9rem; height: 1.9rem; padding: 0 .3rem; border-radius: 1rem;
+  background: #2b2d42; color: #fff; font-size: 1rem; font-weight: 900; line-height: 1.9rem; text-align: center;
+  -webkit-animation: objIn .2s ease-out; animation: objIn .2s ease-out;
+}
+.wallet { background: rgba(255,255,255,.85); border-radius: 1.4rem; padding: .8rem 1.2rem; margin-bottom: .8rem; max-width: 40rem; text-align: center; }
+.wallet-t { font-size: 1.2rem; font-weight: 900; color: #6b6f8a; margin-bottom: .3rem; }
+.cmp-ask.small { font-size: 1.8rem; }
+.sh-item { position: relative; margin-right: 1.6rem; }
+.sh-item .hc-pic { margin-right: 0; width: 10rem; height: 10rem; }
+.tag {
+  display: inline-block; background: #ffd23f; color: #2b2d42; font-weight: 900;
+  border-radius: .6rem; padding: .1rem .5rem; font-size: 1rem; border-bottom: .2rem solid #e0a800;
+}
+.tag.big { position: absolute; right: -.8rem; top: -.8rem; font-size: 1.6rem; padding: .2rem .7rem; -webkit-transform: rotate(8deg); transform: rotate(8deg); }
+.pay-area { min-width: 26rem; max-width: 34rem; }
+.pay-area .money-row { min-height: 8rem; -webkit-align-content: center; align-content: center; }
+.pay-area .mpiece { cursor: pointer; }
+.pay-empty { height: 8rem; line-height: 8rem; }
+.ch.paybtn { background: #fff; border-bottom-color: #d7dfea; }
+.ch.paybtn .money.coin { width: 4rem; height: 4rem; }
+.ch.paybtn .money.note { width: 7rem; height: 3.7rem; }
+.ch.pic.shopitem { position: relative; overflow: visible; }
+.ch.pic.shopitem .tag { position: absolute; left: 50%; bottom: -.9rem; width: 4.6rem; margin-left: -2.3rem; font-size: 1.1rem; }
+.hc-side .money-row { margin-bottom: .4rem; }
+.hc-side .mpiece.is-note .money { width: 9rem; height: 4.8rem; }
+.game-icon .sh-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; height: 100%; }
+.game-icon .sh-ico .note { width: 5.4rem; height: 2.9rem; margin-right: .3rem; }
+.game-icon .sh-ico .coin { width: 2.3rem; height: 2.3rem; margin: 0 .1rem; }
