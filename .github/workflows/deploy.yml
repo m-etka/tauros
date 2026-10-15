@@ -90,6 +90,24 @@ jobs:
             echo "::warning::$DOMAIN için başka bir DNS kaydı var ($(echo "$REC" | jq -r '.type + " " + .content')). Dokunulmadı."
           fi
 
+      # Cloudflare Web Analytics (çerezsiz, anonim ziyaret sayacı). Token'da yetki yoksa yalnızca uyarır.
+      - name: Web Analytics (mandi.etka.org)
+        if: env.SKIP != '1'
+        run: |
+          API=https://api.cloudflare.com/client/v4
+          AUTH="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          LIST=$(curl -s -H "$AUTH" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/rum/site_info/list?per_page=100")
+          if [ "$(echo "$LIST" | jq -r '.success')" != "true" ]; then
+            echo "::warning::Web Analytics API'ye erişilemedi (token'da 'Account > Web Analytics' izni yok olabilir): $(echo "$LIST" | jq -c '.errors')"
+            exit 0
+          fi
+          if echo "$LIST" | jq -e '.result[]? | select(.ruleset.zone_name? == "etka.org" or .host == "mandi.etka.org") | select(.host == "mandi.etka.org")' >/dev/null; then
+            echo "::notice::Web Analytics zaten açık: $(echo "$LIST" | jq -c '[.result[] | select(.host=="mandi.etka.org") | {host, auto_install}]')"
+          else
+            RES=$(curl -s -X POST -H "$AUTH" -H "Content-Type: application/json" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/rum/site_info" --data '{"host":"mandi.etka.org","auto_install":true}')
+            echo "::notice::Web Analytics kurulumu: $(echo "$RES" | jq -c '{success, errors, host: .result.host, auto_install: .result.auto_install}')"
+          fi
+
       # Yayından sonra canlı adresleri kontrol et (sorun varsa adım kırmızı olur)
       - name: Canlı kontrol
         if: env.SKIP != '1'
@@ -116,8 +134,9 @@ jobs:
             chk "boyut etiketi" 'curl -s $B/app.js | grep -q "var SIZE_KB = .[0-9]"'
           done
           # Eski cihazlar (iPad 3 / iOS 9) için: Cloudflare sayfayı değiştiriyor mu, dosyalar yönlendiriliyor mu, sertifika zinciri ne?
-          curl -s https://mandi.etka.org/ > /tmp/live.html
-          if cmp -s /tmp/live.html public/index.html; then echo "::notice::Canlı index.html depodakiyle aynı"; else echo "::warning::Canlı index.html farklı (Cloudflare bir şey ekliyor olabilir): $(diff public/index.html /tmp/live.html | grep '^>' | head -5 | cut -c1-160 | tr '\n' ' ')"; fi
+          # Web Analytics sayaç betiği Cloudflare tarafından eklenir; karşılaştırmada yok sayılır
+          curl -s https://mandi.etka.org/ | sed -E 's#<script[^>]*cloudflareinsights[^<]*</script>##g' > /tmp/live.html
+          if cmp -s /tmp/live.html public/index.html || diff -q <(tr -d '\n' < /tmp/live.html) <(tr -d '\n' < public/index.html) >/dev/null; then echo "::notice::Canlı index.html depodakiyle aynı (sayaç hariç)"; elif false; then echo "::notice::Canlı index.html depodakiyle aynı"; else echo "::warning::Canlı index.html farklı (Cloudflare bir şey ekliyor olabilir): $(diff public/index.html /tmp/live.html | grep '^>' | head -5 | cut -c1-160 | tr '\n' ' ')"; fi
           CODES=""; for f in / style.css app.js manifest.json icons/icon-192.png offline.appcache; do CODES="$CODES $f=$(curl -s -o /dev/null -w '%{http_code}' https://mandi.etka.org/${f#/})"; done
           echo "::notice::AppCache dosyaları:$CODES"
           CHAIN=$(echo | openssl s_client -connect mandi.etka.org:443 -servername mandi.etka.org -showcerts 2>/dev/null | grep -E '^ *[0-9]+ s:|^ *i:' | sed 's/^ *//' | tr '\n' ' ')

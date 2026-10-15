@@ -9,6 +9,7 @@ Ana sayfa konu başlıkları (Matematik, Türkçe...) altında oyun kartları g�
 
 - **Hece Treni** (Türkçe, 1. sınıf heceleme; sessiz): 8 seviye — resmi bul, heceleri vagonlara diz, eksik hece, kaç hece; 37 SVG resimli kelime (`WORDS`/`PIC` in app.js).
 - **Büyük mü, Küçük mü?** (1. sınıf karşılaştırma): 8 seviye — çok/az tabak, timsah ağzı ile >, <, =, 99'a kadar, en büyük/en küçük.
+- **Örüntü Treni** (1. sınıf örüntüler): 8 seviye — renk/şekil/renk+şekil örüntüleri, eksik vagon, ritmik sayma (2-5-10), ileri-geri sayı örüntüleri.
 - **Saat** (1. sınıf, tam ve yarım saat): 8 seviye — okuma, akrep/yelkovanı sürükleyerek kurma (içte akrep, dışta yelkovan), dijital eşleştirme, kaç saat sonra.
 - **Onluk ve Birlik** (1. sınıf, 100'e kadar basamak değeri): 8 seviye — çubuk/küp okuma, +10/+1 ile sayı kurma (10 küp = 1 çubuk), kaç onluk/birlik.
 - **Çıkarma** (1. sınıf, 20'ye kadar onluk bozmadan): 8 seviye — nesneler çizilir, kurbağa geri zıplar, onluk kutuda pullar silinir, gizli sayı.

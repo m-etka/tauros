@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.5.2';
+  var APP_VERSION = '1.6.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -241,14 +241,27 @@
   ];
   GAMES.cmp = { id: 'cmp', title: 'Büyük mü, Küçük mü?', icon: '3&lt;7', color: '#14a3a3', levels: LEVELS_CMP };
 
+  // Örüntü Treni: renk, şekil ve sayı örüntüleri (ritmik sayma)
+  var LEVELS_PAT = [
+    { name: 'Renkler', sub: 'kırmızı, mavi...', color: '#ef476f', kind: 'color', units: ['AB'] },
+    { name: 'Renk dizisi', sub: 'AAB, ABC', color: '#ff8a3d', kind: 'color', units: ['AAB', 'ABB', 'ABC'] },
+    { name: 'Şekiller', sub: 'daire, kare...', color: '#3a86ff', kind: 'shape', units: ['AB', 'ABC', 'AAB'] },
+    { name: 'Renk ve şekil', sub: 'İkisine bak', color: '#8e7dff', kind: 'both', units: ['AB', 'ABC', 'ABB'] },
+    { name: 'Eksik vagon', sub: 'Ortadaki ?', color: '#e0a800', kind: 'hole', units: ['AB', 'ABB', 'ABC', 'AAB'] },
+    { name: 'Ritmik sayma', sub: "2'şer, 5'er, 10'ar", color: '#3bb273', kind: 'count', steps: [2, 5, 10] },
+    { name: 'İleri geri', sub: 'Sayı örüntüsü', color: '#ef476f', kind: 'count2', steps: [1, 2, 5, 10] },
+    { name: 'Şampiyon', sub: 'Hepsi', color: '#26874f', kind: 'mix' }
+  ];
+  GAMES.pat = { id: 'pat', title: 'Örüntü Treni', iconHTML: 'pat', color: '#f09a2a', levels: LEVELS_PAT };
+
   GAMES.hece = { id: 'hece', title: 'Hece Treni', iconHTML: 'hece', color: '#ef476f', levels: LEVELS_HECE };
 
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
-    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'clock'] },
+    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'clock'] },
     { title: 'Türkçe', games: ['hece'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'clock', 'hece'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'clock', 'hece'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -262,6 +275,7 @@
     if (op === 'clock') return makeClockQuestion(lv, seen);
     if (op === 'hece') return makeHeceQuestion(lv, seen);
     if (op === 'cmp') return makeCmpQuestion(lv, seen);
+    if (op === 'pat') return makePatQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -378,6 +392,11 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'pat') {
+      return '<div class="game-icon" style="background:' + game.color + '"><div class="pt-ico">' +
+        patItemSVG({ s: 'circle', c: '#ef476f' }) + patItemSVG({ s: 'square', c: '#ffd23f' }) +
+        patItemSVG({ s: 'circle', c: '#ef476f' }) + patItemSVG({ s: 'square', c: '#ffd23f' }) + '<b>?</b></div></div>';
+    }
     if (game.iconHTML === 'hece') {
       return '<div class="game-icon" style="background:' + game.color + '"><div class="hc-ico"><span>ka</span><span>le</span><b>' + LOCO + '</b></div></div>';
     }
@@ -517,6 +536,7 @@
     if (G.op === 'clock') { buildClockQuestion(stage, q); return; }
     if (G.op === 'hece') { buildHeceQuestion(stage, q); return; }
     if (G.op === 'cmp') { buildCmpQuestion(stage, q); return; }
+    if (G.op === 'pat') { buildPatQuestion(stage, q); return; }
     G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
@@ -1669,6 +1689,141 @@
     return big + ', ' + numAbl(small) + ' büyük. Timsahın ağzı büyüğe açılır!';
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Örüntü Treni                                                        */
+  /* ------------------------------------------------------------------ */
+  var PT_COLORS = [
+    { c: '#ef476f', n: 'kırmızı' }, { c: '#3a86ff', n: 'mavi' }, { c: '#ffd23f', n: 'sarı' },
+    { c: '#3bb273', n: 'yeşil' }, { c: '#8e7dff', n: 'mor' }
+  ];
+  var PT_SHAPES = {
+    circle: { n: 'daire', d: '<circle cx="20" cy="20" r="15"/>' },
+    square: { n: 'kare', d: '<rect x="6" y="6" width="28" height="28" rx="4"/>' },
+    triangle: { n: 'üçgen', d: '<polygon points="20,4 37,35 3,35"/>' },
+    star: { n: 'yıldız', d: '<path d="M20 3l5 11 12 1.5-9 8.5 2.5 12L20 30l-10.5 6 2.5-12-9-8.5L15 14z"/>' },
+    heart: { n: 'kalp', d: '<path d="M20 35 C6 25 2 16 8 10 C13 5 19 8 20 12 C21 8 27 5 32 10 C38 16 34 25 20 35Z"/>' }
+  };
+  var PT_SHAPE_KEYS = ['circle', 'square', 'triangle', 'star', 'heart'];
+  function colorName(c) { for (var i = 0; i < PT_COLORS.length; i++) if (PT_COLORS[i].c === c) return PT_COLORS[i].n; return ''; }
+  function patKey(it) { return typeof it === 'number' ? it : it.s + '|' + it.c; }
+  function patItemSVG(it) {
+    return '<svg class="pt" viewBox="0 0 40 40"><g fill="' + it.c + '" stroke="rgba(0,0,0,.18)" stroke-width="2" stroke-linejoin="round">' + PT_SHAPES[it.s].d + '</g></svg>';
+  }
+  function itemName(it, kind) {
+    if (kind === 'color') return colorName(it.c);
+    if (kind === 'shape') return PT_SHAPES[it.s].n;
+    return colorName(it.c) + ' ' + PT_SHAPES[it.s].n;
+  }
+  function fromKey(k) { var p = String(k).split('|'); return { s: p[0], c: p[1] }; }
+
+  function makePatQuestion(lv, seen) {
+    var kind = lv.kind;
+    if (kind === 'mix') kind = pick(['color', 'shape', 'both', 'hole', 'count', 'count2']);
+    var q = { kind: kind }, tries = 0, key;
+    if (kind === 'count' || kind === 'count2') {
+      var steps = lv.steps || [1, 2, 5, 10], step, start, dir, n = 6, seq;
+      do {
+        step = pick(steps);
+        dir = (kind === 'count2' && Math.random() < 0.45) ? -1 : 1;
+        var span = step * (n - 1);
+        if (dir > 0) start = step === 1 ? rnd(1, 20) : step * rnd(0, Math.max(0, Math.floor((100 - span) / step)));
+        else start = step === 1 ? rnd(n, 20) : step * rnd(Math.ceil(span / step), Math.floor(100 / step));
+        if (step >= 5 && start > 100 - span && dir > 0) start = 0;
+        seq = [];
+        for (var i = 0; i < n; i++) seq.push(start + dir * step * i);
+        key = seq.join(',');
+        tries++;
+      } while ((seen[key] || seq[0] < 0 || seq[n - 1] > 100 || seq[n - 1] < 0) && tries < 60);
+      seen[key] = true;
+      q.seq = seq; q.step = step; q.dir = dir; q.num = true;
+      q.hole = (kind === 'count2' && Math.random() < 0.5) ? rnd(2, n - 2) : n - 1;
+      q.answer = seq[q.hole];
+      var c = [q.answer], cand = shuffle([q.answer + 1, q.answer - 1, q.answer + step * dir, q.answer - step * dir, q.answer + 10, q.answer + 2]);
+      for (var j = 0; j < cand.length && c.length < 3; j++) if (cand[j] >= 0 && cand[j] <= 110 && c.indexOf(cand[j]) === -1) c.push(cand[j]);
+      q.opts = shuffle(c);
+      return q;
+    }
+    // renk / şekil / ikisi / eksik vagon
+    var units = lv.units || ['AB', 'ABB', 'ABC'];
+    var sub = kind === 'hole' ? pick(['color', 'shape', 'both']) : kind;
+    var unit, items, seq2;
+    do {
+      unit = pick(units);
+      var letters = unit.replace(/(.)(?=.*\1)/g, '').split('');   // tekil harfler: A, B, C
+      var cols = shuffle(PT_COLORS.slice()), shs = shuffle(PT_SHAPE_KEYS.slice());
+      var fixedShape = pick(['circle', 'square', 'heart']), fixedColor = pick(PT_COLORS).c;
+      items = {};
+      for (var k = 0; k < letters.length; k++) {
+        if (sub === 'color') items[letters[k]] = { s: fixedShape, c: cols[k].c };
+        else if (sub === 'shape') items[letters[k]] = { s: shs[k], c: fixedColor };
+        else items[letters[k]] = { s: shs[k], c: cols[k].c };
+      }
+      // renk+şekil: bir öğe diğerinin rengini ya da şeklini paylaşsın (dikkat gerektirsin)
+      if (sub === 'both' && letters.length > 1) items[letters[1]].s = Math.random() < 0.5 ? items[letters[0]].s : items[letters[1]].s;
+      if (sub === 'both' && letters.length > 1 && items[letters[1]].s === items[letters[0]].s && items[letters[1]].c === items[letters[0]].c) items[letters[1]].c = cols[3].c;
+      seq2 = [];
+      var len = 7;
+      for (var m = 0; m < len; m++) seq2.push(items[unit.charAt(m % unit.length)]);
+      key = sub + unit + patKey(seq2[0]) + patKey(seq2[1]);
+      tries++;
+    } while (seen[key] && tries < 40);
+    seen[key] = true;
+    q.sub = sub; q.unit = unit; q.items = items; q.seq = seq2;
+    q.hole = kind === 'hole' ? rnd(unit.length, 5) : seq2.length - 1;
+    q.answer = patKey(seq2[q.hole]);
+    var opts = [q.answer];
+    for (var l in items) if (items.hasOwnProperty(l) && opts.indexOf(patKey(items[l])) === -1 && opts.length < 3) opts.push(patKey(items[l]));
+    while (opts.length < 3) {
+      var ex = sub === 'color' ? { s: seq2[0].s, c: pick(PT_COLORS).c } : sub === 'shape' ? { s: pick(PT_SHAPE_KEYS), c: seq2[0].c } : { s: pick(PT_SHAPE_KEYS), c: pick(PT_COLORS).c };
+      if (opts.indexOf(patKey(ex)) === -1) opts.push(patKey(ex));
+    }
+    q.opts = shuffle(opts);
+    q.optClass = 'pic';
+    q.optHTML = function (k) { return patItemSVG(fromKey(k)); };
+    return q;
+  }
+
+  function buildPatQuestion(stage, q) {
+    G.countReady = true;
+    var h = '<div class="train pt-train" id="train"><div class="wagons">';
+    for (var i = 0; i < q.seq.length; i++) {
+      var hole = i === q.hole;
+      var inner = hole ? '?' : (q.num ? String(q.seq[i]) : patItemSVG(q.seq[i]));
+      h += '<div class="wg pt' + (q.num ? ' num' : '') + (hole ? ' hole' : '') + '" data-i="' + i + '"><span>' + inner + '</span></div>';
+    }
+    h += '</div><div class="loco">' + LOCO + '</div></div>';
+    stage.appendChild(el('div', 'pt-wrap', h));
+    if (q.num) {
+      say(q.hole === q.seq.length - 1 ? 'Sıradaki sayı ne?' : 'Eksik sayı ne?');
+    } else {
+      say(q.hole === q.seq.length - 1 ? 'Sıradaki vagonda ne var?' : 'Eksik vagonda ne var?');
+    }
+    q.onRight = function () {
+      var hw = $('train').querySelector('.hole');
+      hw.className = 'wg pt full' + (q.num ? ' num' : '');
+      hw.innerHTML = '<span>' + (q.num ? String(q.answer) : patItemSVG(fromKey(q.answer))) + '</span>';
+      heceLeave();
+    };
+  }
+
+  // İpucu: tekrar eden birimi bantla göster; sayılarda adımı yaz
+  function patHint(val) {
+    var q = G.cur, ws = $('train').querySelectorAll('.wg');
+    if (q.num) {
+      for (var i = 1; i < ws.length; i++) {
+        if (!ws[i].querySelector('.stp')) ws[i].appendChild(el('i', 'stp', (q.dir > 0 ? '+' : MINUS) + q.step));
+      }
+      return 'Her vagonda ' + q.step + (q.dir > 0 ? ' artıyor!' : ' azalıyor!');
+    }
+    var L = q.unit.length;
+    for (var j = 0; j < ws.length; j++) {
+      ws[j].className = ws[j].className.replace(/ band\d/g, '') + ' band' + (Math.floor(j / L) % 2);
+    }
+    var names = [];
+    for (var k = 0; k < L; k++) names.push(itemName(q.seq[k], q.sub));
+    return 'Tekrar eden: ' + names.join(', ') + '!';
+  }
+
   function buildChoices(q) {
     var box = $('choices');
     box.innerHTML = '';
@@ -1721,7 +1876,9 @@
       if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : pvBuildHint()); return; }
       btn.disabled = true;
       btn.className += ' wrong';
-      if (G.op === 'cmp') {
+      if (G.op === 'pat') {
+        say(patHint(val));
+      } else if (G.op === 'cmp') {
         say(cmpHint(val));
       } else if (G.op === 'hece') {
         say(heceHint(val));

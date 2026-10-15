@@ -711,3 +711,24 @@ svg { display: block; }
 .croc-box.hint { border-style: dashed !important; -webkit-animation: none; animation: none; }
 .croc { width: 100%; height: 100%; display: block; }
 .ch.sign { font-size: 4.4rem; line-height: 1; }
+
+/* ---------- Örüntü Treni ---------- */
+.pt-wrap { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; }
+.wg.pt { width: 5rem; height: 5rem; margin: 0 .2rem 1rem; background: #fff; border: .3rem solid #c9cfdc; line-height: 4.4rem; }
+.wg.pt span { display: block; height: 100%; }
+.wg.pt .pt { width: 3.4rem; height: 3.4rem; margin: .5rem auto 0; display: block; }
+.wg.pt.num { font-size: 2rem; }
+.wg.pt.hole { border: .3rem dashed #ff8a3d; color: #ff8a3d; background: rgba(255,255,255,.8); }
+.wg.pt.full { background: #fff; border-color: #3bb273; }
+.wg.pt.ok { background: #c9f2da; border-color: #3bb273; color: #2b2d42; border-style: solid; }
+.wg.pt.band0 { background: #fff3c4; border-color: #e0a800; }
+.wg.pt.band1 { background: #dfe9ff; border-color: #3a86ff; }
+.wg .stp {
+  position: absolute; left: -1.3rem; top: -1.6rem;
+  font-style: normal; font-size: 1rem; font-weight: 900; color: #3a86ff;
+  background: #fff; border-radius: .6rem; padding: 0 .3rem; line-height: 1.5rem;
+}
+.ch.pic .pt { width: 100%; height: 100%; }
+.game-icon .pt-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; height: 100%; }
+.game-icon .pt-ico .pt { width: 2.2rem; height: 2.2rem; margin: 0 .15rem; background: #fff; border-radius: .4rem; padding: .2rem; }
+.game-icon .pt-ico b { display: block; width: 2.2rem; height: 2.2rem; margin: 0 .15rem; border: .2rem dashed #fff; border-radius: .4rem; color: #fff; font-size: 1.4rem; line-height: 1.8rem; }
