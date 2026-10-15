@@ -679,3 +679,5 @@ svg { display: block; }
 
 .portrait .hc-row { -webkit-flex-direction: column; flex-direction: column; }
 .portrait .hc-pic { margin: 0 0 1rem; }
+.about h2.about-sep { margin-top: 2rem; padding-top: 1.2rem; border-top: .2rem solid #e6eaf2; }
+.about h3 { font-size: 1.2rem; font-weight: 900; margin: 1rem 0 .3rem; color: #2b2d42; }
