@@ -2,6 +2,28 @@
 <html lang="tr" manifest="offline.appcache">
 <head>
 <meta charset="utf-8">
+<script>
+/* AppCache olaylarını en baştan kaydet (eski iPad/Android teşhisi için) */
+(function () {
+  var log = window.__acLog = [];
+  var ac = window.applicationCache;
+  if (!ac || !ac.addEventListener) return;
+  var names = ['checking', 'noupdate', 'downloading', 'progress', 'cached', 'updateready', 'obsolete', 'error'];
+  for (var i = 0; i < names.length; i++) {
+    (function (n) {
+      ac.addEventListener(n, function (e) {
+        var last = log[log.length - 1];
+        if (n === 'progress') {
+          var t = 'progress ' + (e && e.loaded != null ? e.loaded + '/' + e.total : '');
+          if (last && last.indexOf('progress') === 0) log[log.length - 1] = t; else log.push(t);
+        } else {
+          log.push(n + (n === 'error' && e && e.reason ? '(' + e.reason + ')' : ''));
+        }
+      });
+    })(names[i]);
+  }
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#ff8a3d">
 <meta name="mobile-web-app-capable" content="yes">
@@ -42,7 +64,7 @@
   "applicationCategory": "EducationalApplication",
   "applicationSubCategory": "Matematik",
   "operatingSystem": "Android, iOS, Windows, macOS, Linux (web tarayıcısı)",
-  "browserRequirements": "Chrome 40 veya üzeri; eski tabletlerde (Android 4.2) çalışır",
+  "browserRequirements": "Denendi: iPad 3 (iOS 9.3.5 Safari, internetsiz dahil), Samsung Galaxy Tab 3 Lite (Android 4.2 Chrome), güncel iPhone Safari",
   "isAccessibleForFree": true,
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" },
   "learningResourceType": "Eğitsel oyun",
@@ -165,7 +187,13 @@
         </ol>
 
         <h2>Hangi cihazlarda çalışır?</h2>
-        <p>Eski tabletler düşünülerek yapıldı: Samsung Galaxy Tab 3 Lite (SM-T110) gibi Android 4.2 cihazlarda Chrome ile akıcı çalışır. Güncel Android ve iOS telefon/tabletlerde ve bilgisayarlarda da oynanabilir. Kurulum dosyası veya uygulama mağazası gerekmez.</p>
+        <p>Eski tabletler düşünülerek yapıldı. Kurulum dosyası veya uygulama mağazası gerekmez. Denendiği cihazlar:</p>
+        <ul>
+          <li><strong>iPad 3</strong> (iOS 9.3.5, Safari): internetsiz kullanım dahil çalışıyor.</li>
+          <li><strong>Samsung Galaxy Tab 3 Lite</strong> (SM-T110, Android 4.2, Chrome).</li>
+          <li><strong>iPhone</strong> (güncel iOS, Safari).</li>
+        </ul>
+        <p>Güncel Android ve iOS cihazlarda ve bilgisayarlarda da oynanabilir. Not: Safari'de <strong>Gizli (Private) modda</strong> ya da çerezler tamamen engelliyken internetsiz kullanım ve yıldız kaydı çalışmaz; normal modda açın.</p>
 
         <h2>Öğretmenler için: sınıfta kullanım</h2>
         <p>Oyun akıllı tahtada, sınıf tabletlerinde veya öğrencilerin evdeki cihazlarında açılabilir; kurulum, hesap ya da öğrenci bilgisi gerekmez. Bir kez açıldıktan sonra okul internetinin kesik olduğu anlarda da çalışır. Her cihaz kendi ilerlemesini ayrı tutar. Seviyeler sırayla açıldığı için toplama konusunu somuttan (nesneler, onluk kutu) soyuta (yalnızca sayılar) doğru ilerleyen bir pekiştirme etkinliği olarak kullanılabilir.</p>

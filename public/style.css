@@ -448,7 +448,7 @@ svg { display: block; }
   background: rgba(255,255,255,.6);
 }
 .bar-space { width: 3.2rem; }
-.ver { display: block; margin: .35rem auto 0; font-size: .8rem; color: #8a90a8; padding: .2rem .6rem; }
+.ver { display: block; margin: .35rem auto 0; max-width: 90%; font-size: .8rem; line-height: 1.3; color: #8a90a8; padding: .2rem .6rem; -webkit-user-select: text; user-select: text; }
 
 /* Çıkarma: giden nesneler */
 .obj, .obj-cell { position: relative; }
@@ -479,7 +479,7 @@ svg { display: block; }
 .about h2 { font-size: 1.4rem; font-weight: 900; margin: 1.2rem 0 .4rem; line-height: 1.25; }
 .about h2:first-child { margin-top: 0; }
 .about p { margin-bottom: .6rem; }
-.about ol { padding-left: 1.6rem; margin-bottom: .6rem; }
+.about ol, .about ul { padding-left: 1.6rem; margin-bottom: .6rem; }
 .about li { margin-bottom: .3rem; }
 .about-cta { text-align: center; margin-top: 1.2rem; }
 #s-home { padding-bottom: 4.5rem; }

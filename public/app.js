@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.1.1';
+  var APP_VERSION = '1.1.2';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
 
   /* ------------------------------------------------------------------ */
@@ -882,6 +882,8 @@
   }
   /* Yedek: Service Worker'ı olmayan ya da kuramayan eski tarayıcılar AppCache kullanır.
    * (Service Worker sayfayı kontrol ediyorsa tarayıcı AppCache'i yok sayar.) */
+  var PRIVATE_MSG = 'Gizli modda veya çerezler engelliyken internetsiz çalışmaz';
+  var storageOK; // aşağıda belirlenir
   var ac = window.applicationCache;
   if (ac) {
     var acReady = function () {
@@ -901,7 +903,7 @@
       if (navigator.serviceWorker && navigator.serviceWorker.controller) return;
       // İnternetsizken açılışta da 'error' gelir; önbellek varsa sorun yok
       if (ac.status !== 0) acReady();
-      else status.innerHTML = 'İnternetsiz mod kurulamadı (sürüm yazısına dokunun)';
+      else status.innerHTML = storageOK === false ? PRIVATE_MSG : 'İnternetsiz mod kurulamadı (sürüm yazısına dokunun)';
     });
     ac.addEventListener('obsolete', function () { status.innerHTML = 'İnternetsiz mod kaldırıldı'; });
     if (ac.status === 1) acReady(); // IDLE: zaten önbellekte
@@ -917,6 +919,34 @@
     m = ua.match(/Version\/(\d+)[^ ]* Safari/);
     return m ? 'Safari ' + m[1] : '';
   }
+  // Gizli mod / "Tüm çerezleri engelle" açıkken eski Safari'de depolama ve AppCache kapalıdır
+  storageOK = (function () {
+    try {
+      window.localStorage.setItem('mandi.t', '1');
+      window.localStorage.removeItem('mandi.t');
+      return true;
+    } catch (e) { return false; }
+  })();
+  if (!storageOK && !(navigator.serviceWorker && navigator.serviceWorker.controller)) {
+    status.innerHTML = PRIVATE_MSG;
+  }
+
+  // Cihazın kendisinden manifest dosyasını kontrol et
+  var manifestCheck = '';
+  function checkManifest(done) {
+    try {
+      var x = new XMLHttpRequest();
+      x.open('GET', 'offline.appcache?t=' + Date.now(), true);
+      x.onreadystatechange = function () {
+        if (x.readyState !== 4) return;
+        var ct = (x.getResponseHeader('Content-Type') || '').split(';')[0];
+        manifestCheck = 'manifest ' + x.status + ' ' + ct;
+        done();
+      };
+      x.send();
+    } catch (e) { manifestCheck = 'manifest hata'; done(); }
+  }
+
   // Teşhis: hangi çevrimdışı yöntem kullanılıyor, durumu ne
   function offlineInfo() {
     var parts = [];
@@ -924,6 +954,10 @@
     else parts.push('SW yok');
     if (ac) parts.push('AC ' + ['yok', 'hazır', 'kontrol', 'iniyor', 'yeni', 'silindi'][ac.status]);
     if (window.navigator.standalone) parts.push('ana ekran');
+    if (!storageOK) parts.push('depolama KAPALI');
+    var log = window.__acLog;
+    if (ac && log) parts.push('olaylar: ' + (log.length ? log.join('>') : 'hiç'));
+    if (manifestCheck) parts.push(manifestCheck);
     return parts.join(', ');
   }
   function checkAll() {
@@ -937,6 +971,10 @@
     if (!navigator.onLine) { verBtn.innerHTML = info + ' · internet yok'; return; }
     verBtn.innerHTML = info + ' · kontrol ediliyor...';
     checkAll();
+    checkManifest(function () {
+      info = verText + (chromeVersion() ? ' · ' + chromeVersion() : '') + ' · ' + offlineInfo();
+      verBtn.innerHTML = info + ' · kontrol ediliyor...';
+    });
     setTimeout(function () { if (!reloading) verBtn.innerHTML = info + ' · güncel'; }, 4000);
   });
 
