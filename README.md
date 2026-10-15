@@ -23,7 +23,7 @@ Her seviye 8 sorudur. Hatasız bitirilen sorulara göre 1-3 yıldız verilir ve 
 2. Menü → **Ana ekrana ekle**.
 3. Ana sayfanın altında "İnternetsiz oynanabilir" yazısı görününce internet artık gerekmez.
 
-Denendiği cihazlar: iPad 3 (iOS 9.3.5, Safari — internetsiz dahil; gizli modda çalışmaz), Samsung Galaxy Tab 3 Lite (SM-T110, Android 4.2, Chrome), güncel iPhone (Safari).
+Yeni cihazların neredeyse tamamında çalışır. Denenen eski cihazlar: iPad 3 (iOS 9.3.5, Safari — internetsiz dahil; gizli modda çalışmaz), Samsung Galaxy Tab 3 Lite (SM-T110, Android 4.2, Chrome).
 
 Güncellemeler: tablet internete bağlıyken oyunu bir kez açıp kapatmak yeterli.
 
