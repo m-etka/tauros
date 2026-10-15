@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.5.0';
+  var APP_VERSION = '1.5.1';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
 
   /* ------------------------------------------------------------------ */
@@ -1482,12 +1482,18 @@
   var ABL_ONES = ["'dan", "'den", "'den", "'ten", "'ten", "'ten", "'dan", "'den", "'den", "'dan"];
   var ABL_TENS = ["", "'dan", "'den", "'dan", "'tan", "'den", "'tan", "'ten", "'den", "'dan"];
   function numAbl(n) { return n + (n % 10 || n === 0 ? ABL_ONES[n % 10] : ABL_TENS[n / 10]); }
-  // Timsah ağzı: dir 1 = '>' (ağız sola açık, büyük solda), -1 = '<'
+  // Timsah ağzı: dir 1 = '>' (ağız sola, büyük sayıya açık), -1 = '<'
   function crocSVG(dir) {
-    return '<svg class="croc" viewBox="0 0 100 80"><g' + (dir < 0 ? ' transform="translate(100 0) scale(-1 1)"' : '') + '>' +
-      '<path d="M8 10 L92 36 L92 46 L8 72 L18 41Z" fill="#3bb273" stroke="#26874f" stroke-width="3" stroke-linejoin="round"/>' +
-      '<path d="M20 19 L26 27 L31 22 L37 30 L42 25 L48 33 L53 28 L58 35 M20 63 L26 55 L31 60 L37 52 L42 57 L48 49 L53 54 L58 47" stroke="#fff" stroke-width="3" fill="none" stroke-linejoin="round"/>' +
-      '<circle cx="74" cy="30" r="6" fill="#fff"/><circle cx="76" cy="30" r="3" fill="#2b2d42"/></g></svg>';
+    // Arkada kafa ve göz, önde açık ağız (pembe), dişler ve burun delikleri: ağız büyüğe açılır
+    return '<svg class="croc" viewBox="0 0 120 80"><g' + (dir < 0 ? ' transform="translate(120 0) scale(-1 1)"' : '') + '>' +
+      '<polygon points="90,40 16,12 16,68" fill="#ff8fab"/>' +
+      '<path d="M94 32 L14 6 Q4 6 6 15 L88 43 Z" fill="#3bb273" stroke="#26874f" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '<path d="M94 48 L14 74 Q4 74 6 65 L88 37 Z" fill="#3bb273" stroke="#26874f" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '<path d="M24 14 L27 21 L31 16 L35 24 L39 19 L43 27 L47 22 L51 30 M24 66 L27 59 L31 64 L35 56 L39 61 L43 53 L47 58 L51 50" stroke="#fff" stroke-width="2.5" fill="none" stroke-linejoin="round"/>' +
+      '<circle cx="98" cy="40" r="17" fill="#3bb273" stroke="#26874f" stroke-width="2.5"/>' +
+      '<circle cx="100" cy="27" r="9" fill="#3bb273" stroke="#26874f" stroke-width="2.5"/><circle cx="100" cy="27" r="5.5" fill="#fff"/><circle cx="98.5" cy="27" r="3" fill="#2b2d42"/>' +
+      '<circle cx="11" cy="9" r="1.8" fill="#26874f"/><circle cx="11" cy="71" r="1.8" fill="#26874f"/>' +
+      '</g></svg>';
   }
   function signOf(a, b) { return a > b ? '>' : (a < b ? '<' : '='); }
   function cmpPair(max, eqChance) {
@@ -1606,7 +1612,7 @@
     }
     var eq = el('div', 'eq cmp-eq', '<span class="n c1">' + q.a + '</span><span class="box">?</span><span class="n c2">' + q.b + '</span>');
     stage.appendChild(eq);
-    say(q.kind === 'signobj' ? 'Timsah çok olanı yer!' : pick(['Timsah büyük sayıyı yer!', 'Hangi işaret?']));
+    say(q.kind === 'signobj' ? 'Timsah ağzını çok olana açar!' : pick(['Timsah ağzını büyüğe açar!', 'Hangi işaret?']));
     q.onRight = function () {
       if (q.answer !== '=') {
         var bx = eq.querySelector('.box');

@@ -61,7 +61,7 @@ Yanlış cevapta Mandi çubukları 10'ar 10'ar, küpleri birer birer sayarak gö
 7. En büyük / en küçük — üç sayıdan
 8. Şampiyon — karışık
 
-"Timsah ağzı" yöntemi: timsah büyük sayıyı yer. Yanlışta nesneler her tabakta ayrı sayılır.
+"Timsah ağzı" yöntemi: timsahın ağzı büyük sayıya açılır, sivri ucu küçüğü gösterir. Yanlışta nesneler her tabakta ayrı sayılır.
 
 ## Oyun: Saat (8 seviye, her biri 8 soru)
 
