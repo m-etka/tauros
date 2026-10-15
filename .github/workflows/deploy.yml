@@ -91,13 +91,14 @@ jobs:
         run: |
           # Yeni sürümün kenar sunuculara yayılmasını bekle (en fazla ~2 dk)
           for i in $(seq 1 12); do
-            if curl -s "https://mandi.etka.org/app.js?t=$i" | grep -q "var BUILD = .${GITHUB_SHA::7}." && curl -s "https://mandi-oyun.pages.dev/app.js?t=$i" | grep -q "var BUILD = .${GITHUB_SHA::7}."; then echo "Yeni sürüm yayında ($i. deneme)"; break; fi
+            if curl -s "https://mandi.etka.org/app.js?t=$i" | grep -q "var BUILD = .${GITHUB_SHA::7}."; then echo "Yeni sürüm yayında ($i. deneme)"; break; fi
             sleep 10
           done
           fail=0
           for HOST in mandi-oyun.pages.dev mandi.etka.org; do
             B="https://$HOST"
-            chk() { if eval "$2"; then echo "OK   $HOST $1"; else echo "::error::$HOST $1 hatalı"; fail=1; fi; }
+            # Asıl adres hata verir; pages.dev yedek adresi geç güncellenebildiği için yalnızca uyarır
+            chk() { if eval "$2"; then echo "OK   $HOST $1"; elif [ "$HOST" = mandi.etka.org ]; then echo "::error::$HOST $1 hatalı"; fail=1; else echo "::warning::$HOST $1 henüz güncel değil"; fi; }
             chk "/"          '[ "$(curl -s -o /dev/null -w %{http_code} $B/)" = 200 ]'
             chk "/llms.txt"  'curl -s $B/llms.txt | head -1 | grep -q "^# Mandi"'
             chk "/robots.txt" 'curl -s $B/robots.txt | grep -q "^Sitemap:"'
