@@ -8,8 +8,9 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.5.1';
+  var APP_VERSION = '1.5.2';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
+  var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
   /* ------------------------------------------------------------------ */
   /* Yardımcılar                                                         */
@@ -1827,7 +1828,8 @@
   /* ------------------------------------------------------------------ */
   var status = $('offline-status');
   var verBtn = $('ver');
-  var verText = 'Sürüm ' + APP_VERSION + (BUILD.indexOf('__') === 0 ? '' : ' · ' + BUILD);
+  var verText = 'Sürüm ' + APP_VERSION + (BUILD.indexOf('__') === 0 ? '' : ' · ' + BUILD) +
+    (SIZE_KB.indexOf('__') === 0 ? '' : ' · ' + SIZE_KB + ' KB');
   verBtn.innerHTML = verText;
 
   /* Güncelleme: oyun önbellekten (internetsiz) açılır. Yeni sürüm yayınlanınca

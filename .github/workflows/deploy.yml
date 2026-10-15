@@ -37,6 +37,11 @@ jobs:
         run: |
           sed -i "s/mandi-v1/mandi-${GITHUB_SHA::8}/" public/sw.js
           sed -i "s/__BUILD__/${GITHUB_SHA::7}/" public/app.js public/offline.appcache
+          # İnternetsiz kullanım için indirilen dosyaların toplam boyutu (sürüm satırında gösterilir)
+          SIZE=$(cat public/index.html public/style.css public/app.js public/manifest.json public/icons/icon-192.png public/icons/icon-512.png | wc -c)
+          KB=$(( (SIZE + 1023) / 1024 ))
+          sed -i "s/__SIZE__/$KB/" public/app.js
+          echo "::notice::Internetsiz paket boyutu: $KB KB"
 
       - name: Pages projesini oluştur (yoksa)
         if: env.SKIP != '1'
@@ -108,6 +113,7 @@ jobs:
             chk "/offline.appcache" 'curl -sI $B/offline.appcache | grep -qi "content-type: text/cache-manifest"'
             chk "appcache build" 'curl -s $B/offline.appcache | grep -q "build ${GITHUB_SHA::7}"'
             chk "sürüm etiketi" 'curl -s $B/app.js | grep -q "var BUILD = .${GITHUB_SHA::7}."'
+            chk "boyut etiketi" 'curl -s $B/app.js | grep -q "var SIZE_KB = .[0-9]"'
           done
           # Eski cihazlar (iPad 3 / iOS 9) için: Cloudflare sayfayı değiştiriyor mu, dosyalar yönlendiriliyor mu, sertifika zinciri ne?
           curl -s https://mandi.etka.org/ > /tmp/live.html
