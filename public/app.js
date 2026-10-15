@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.4.0';
+  var APP_VERSION = '1.5.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
 
   /* ------------------------------------------------------------------ */
@@ -227,14 +227,27 @@
     { name: 'Uzun tren', sub: 'Karışık vagon', color: '#ef476f', kind: 'build', syl: [2, 3, 4], extra: 2 },
     { name: 'Şampiyon', sub: 'Hepsi', color: '#26874f', kind: 'mix', syl: [1, 2, 3, 4] }
   ];
+  // Büyük mü, küçük mü? (karşılaştırma, timsah ağzı)
+  var LEVELS_CMP = [
+    { name: 'Çok olan', sub: 'Hangi tabak?', color: '#ef476f', kind: 'more', max: 10 },
+    { name: 'Az olan', sub: 'Hangi tabak?', color: '#ff8a3d', kind: 'less', max: 10 },
+    { name: 'Timsah', sub: '> < =', color: '#3bb273', kind: 'signobj', max: 10 },
+    { name: 'Sayılarla', sub: "20'ye kadar", color: '#3a86ff', kind: 'sign', max: 20 },
+    { name: 'Eşit mi?', sub: "20'ye kadar", color: '#8e7dff', kind: 'sign', max: 20, eq: 0.35 },
+    { name: 'Büyük sayılar', sub: "99'a kadar", color: '#e0a800', kind: 'sign', max: 99 },
+    { name: 'En büyük', sub: 'En küçük', color: '#ef476f', kind: 'extreme', max: 99 },
+    { name: 'Şampiyon', sub: 'Hepsi', color: '#26874f', kind: 'mix', max: 99 }
+  ];
+  GAMES.cmp = { id: 'cmp', title: 'Büyük mü, Küçük mü?', icon: '3&lt;7', color: '#14a3a3', levels: LEVELS_CMP };
+
   GAMES.hece = { id: 'hece', title: 'Hece Treni', iconHTML: 'hece', color: '#ef476f', levels: LEVELS_HECE };
 
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
-    { title: 'Matematik', games: ['add', 'sub', 'pv', 'clock'] },
+    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'clock'] },
     { title: 'Türkçe', games: ['hece'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'clock', 'hece'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'clock', 'hece'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -247,6 +260,7 @@
     if (op === 'pv') return makePvQuestion(lv, seen);
     if (op === 'clock') return makeClockQuestion(lv, seen);
     if (op === 'hece') return makeHeceQuestion(lv, seen);
+    if (op === 'cmp') return makeCmpQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -501,6 +515,7 @@
     if (G.op === 'pv') { buildPvQuestion(stage, q); return; }
     if (G.op === 'clock') { buildClockQuestion(stage, q); return; }
     if (G.op === 'hece') { buildHeceQuestion(stage, q); return; }
+    if (G.op === 'cmp') { buildCmpQuestion(stage, q); return; }
     G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
@@ -649,11 +664,18 @@
     var qid = G.qid;
     node.addEventListener('click', function () {
       if (!G || G.qid !== qid || !G.countReady || node.getAttribute('data-n') || node.classList.contains('gone')) return;
-      G.counter++;
-      node.setAttribute('data-n', G.counter);
+      var grp = node.parentNode, n;
+      if (grp && grp.getAttribute && grp.getAttribute('data-sep')) {   // her grup kendi içinde sayılır
+        n = (+grp.getAttribute('data-c') || 0) + 1;
+        grp.setAttribute('data-c', n);
+      } else {
+        G.counter++;
+        n = G.counter;
+      }
+      node.setAttribute('data-n', n);
       node.classList.add('counted');
-      node.appendChild(el('span', 'num', String(G.counter)));
-      Snd.count(G.counter);
+      node.appendChild(el('span', 'num', String(n)));
+      Snd.count(n);
     });
   }
 
@@ -1453,9 +1475,197 @@
     return '"' + w.w + '" kelimesini hecele: ' + w.s.join('-');
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Büyük mü, küçük mü?                                                 */
+  /* ------------------------------------------------------------------ */
+  // Ayrılma eki: 7'den, 3'ten, 40'tan ...
+  var ABL_ONES = ["'dan", "'den", "'den", "'ten", "'ten", "'ten", "'dan", "'den", "'den", "'dan"];
+  var ABL_TENS = ["", "'dan", "'den", "'dan", "'tan", "'den", "'tan", "'ten", "'den", "'dan"];
+  function numAbl(n) { return n + (n % 10 || n === 0 ? ABL_ONES[n % 10] : ABL_TENS[n / 10]); }
+  // Timsah ağzı: dir 1 = '>' (ağız sola açık, büyük solda), -1 = '<'
+  function crocSVG(dir) {
+    return '<svg class="croc" viewBox="0 0 100 80"><g' + (dir < 0 ? ' transform="translate(100 0) scale(-1 1)"' : '') + '>' +
+      '<path d="M8 10 L92 36 L92 46 L8 72 L18 41Z" fill="#3bb273" stroke="#26874f" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M20 19 L26 27 L31 22 L37 30 L42 25 L48 33 L53 28 L58 35 M20 63 L26 55 L31 60 L37 52 L42 57 L48 49 L53 54 L58 47" stroke="#fff" stroke-width="3" fill="none" stroke-linejoin="round"/>' +
+      '<circle cx="74" cy="30" r="6" fill="#fff"/><circle cx="76" cy="30" r="3" fill="#2b2d42"/></g></svg>';
+  }
+  function signOf(a, b) { return a > b ? '>' : (a < b ? '<' : '='); }
+  function cmpPair(max, eqChance) {
+    var a, b;
+    if (Math.random() < eqChance) { a = rnd(max > 20 ? 10 : 1, max); return [a, a]; }
+    if (max > 20) {
+      var r = Math.random();
+      if (r < 0.35) {                       // basamakları ters: 47 / 74
+        var t = rnd(1, 9), o = rnd(1, 9);
+        if (t === o) o = (o % 9) + 1;
+        a = t * 10 + o; b = o * 10 + t;
+      } else if (r < 0.7) {                 // aynı onluk: 63 / 68
+        var tt = rnd(1, 9) * 10;
+        a = tt + rnd(0, 9); do { b = tt + rnd(0, 9); } while (b === a);
+      } else { a = rnd(10, 99); do { b = rnd(10, 99); } while (b === a); }
+    } else {
+      a = rnd(1, max); do { b = rnd(Math.max(1, a - 5), Math.min(max, a + 5)); } while (b === a);
+    }
+    return Math.random() < 0.5 ? [a, b] : [b, a];
+  }
+
+  function makeCmpQuestion(lv, seen) {
+    var kind = lv.kind, max = lv.max, eq = lv.eq || 0.12;
+    if (kind === 'mix') {
+      kind = pick(['more', 'less', 'signobj', 'sign', 'sign', 'extreme']);
+      if (kind === 'more' || kind === 'less' || kind === 'signobj') max = 10;
+    }
+    var q = { kind: kind }, key, tries = 0, pr;
+    if (kind === 'extreme') {
+      var nums;
+      do {
+        var base = rnd(1, 8) * 10, c = [];
+        var cands = shuffle([base + rnd(0, 9), (base % 100) + rnd(0, 9) + 10, rnd(10, 99)]);
+        nums = [];
+        for (var i = 0; i < cands.length; i++) if (nums.indexOf(cands[i]) === -1 && cands[i] <= 99) nums.push(cands[i]);
+        while (nums.length < 3) { var x = rnd(10, 99); if (nums.indexOf(x) === -1) nums.push(x); }
+        key = nums.join(',');
+        tries++;
+      } while (seen[key] && tries < 40);
+      seen[key] = true;
+      q.big = Math.random() < 0.6;
+      q.nums = nums;
+      q.answer = q.big ? Math.max.apply(null, nums) : Math.min.apply(null, nums);
+      q.opts = shuffle(nums.slice());
+      return q;
+    }
+    var bad;
+    do {
+      pr = (kind === 'more' || kind === 'less') ? cmpPair(max, 0) : cmpPair(max, eq);
+      key = kind + pr.join(',');
+      tries++;
+      bad = seen[key] || ((kind === 'more' || kind === 'less') && pr[0] === pr[1]) ||
+        ((kind === 'more' || kind === 'less' || kind === 'signobj') && Math.abs(pr[0] - pr[1]) > 4);
+    } while (bad && tries < 60);
+    seen[key] = true;
+    q.a = pr[0]; q.b = pr[1];
+    if (kind === 'more' || kind === 'less') {
+      q.noChoices = true; q.keepBtn = true;
+      q.answer = ((kind === 'more') === (q.a > q.b)) ? 'L' : 'R';
+      q.item = pick(ITEMS);
+      return q;
+    }
+    q.answer = signOf(q.a, q.b);
+    q.opts = ['<', '=', '>'];
+    q.optClass = 'sign';
+    q.optHTML = function (v) { return v === '=' ? '=' : v === '<' ? '&lt;' : '&gt;'; };
+    q.answerText = q.answer === '<' ? '&lt;' : q.answer === '>' ? '&gt;' : '=';
+    return q;
+  }
+
+  function cmpPlate(n, item, color, side, q) {
+    var plate = el('button', 'plate');
+    var g = objGroup(n, item, color, side === 'R' ? n : 0);
+    g.setAttribute('data-sep', '1');
+    plate.appendChild(g);
+    plate.addEventListener('click', function (e) {
+      // nesneye dokunmak sayar; tabağın boş yerine dokunmak seçer
+      var t = e.target;
+      while (t && t !== plate) { if (t.className && String(t.className).indexOf('obj') === 0) return; t = t.parentNode; }
+      answer(plate, side);
+    });
+    var pick2 = el('span', 'plate-pick', 'Bunu seç');
+    plate.appendChild(pick2);
+    return plate;
+  }
+
+  function buildCmpQuestion(stage, q) {
+    G.countReady = true;
+    var pair = pick(PAIRS);
+    if (q.kind === 'more' || q.kind === 'less') {
+      var row = el('div', 'plates');
+      row.appendChild(cmpPlate(q.a, q.item, pair[0], 'L', q));
+      row.appendChild(cmpPlate(q.b, q.item, pair[1], 'R', q));
+      stage.appendChild(row);
+      say(q.kind === 'more' ? 'Hangisinde <b>daha çok</b> var?' : 'Hangisinde <b>daha az</b> var?');
+      q.onRight = function () {
+        var ps = stage.querySelectorAll('.plate');
+        ps[q.answer === 'L' ? 0 : 1].className = 'plate right';
+        ps[q.answer === 'L' ? 1 : 0].className = 'plate fade';
+      };
+      return;
+    }
+    if (q.kind === 'extreme') {
+      stage.appendChild(el('div', 'cmp-ask', q.big ? 'En <b>büyük</b> sayı hangisi?' : 'En <b>küçük</b> sayı hangisi?'));
+      say('Önce onluklara bak!');
+      return;
+    }
+    if (q.kind === 'signobj') {
+      var item = pick(ITEMS), vis = el('div', 'visual cmp-vis');
+      var g1 = objGroup(q.a, item, pair[0], 0), g2 = objGroup(q.b, item, pair[1], q.a);
+      g1.setAttribute('data-sep', '1'); g2.setAttribute('data-sep', '1');
+      vis.appendChild(g1);
+      vis.appendChild(el('div', 'cmp-gap'));
+      vis.appendChild(g2);
+      stage.appendChild(vis);
+    }
+    var eq = el('div', 'eq cmp-eq', '<span class="n c1">' + q.a + '</span><span class="box">?</span><span class="n c2">' + q.b + '</span>');
+    stage.appendChild(eq);
+    say(q.kind === 'signobj' ? 'Timsah çok olanı yer!' : pick(['Timsah büyük sayıyı yer!', 'Hangi işaret?']));
+    q.onRight = function () {
+      if (q.answer !== '=') {
+        var bx = eq.querySelector('.box');
+        bx.innerHTML = crocSVG(q.answer === '>' ? 1 : -1);
+        bx.className = 'box done croc-box';
+      }
+    };
+  }
+
+  // Grupları ayrı ayrı numaralar (yanlış cevapta)
+  function countGroups() {
+    var groups = $('stage').querySelectorAll('.group');
+    if (!groups.length || hintTimers.length) return;
+    var qid = G.qid, delay = 300;
+    for (var g = 0; g < groups.length; g++) {
+      var objs = groups[g].querySelectorAll('.obj');
+      for (var i = 0; i < objs.length; i++) {
+        (function (node, n) {
+          hintTimers.push(setTimeout(function () {
+            if (!G || G.qid !== qid) return;
+            var old = node.querySelector('.num');
+            if (old) node.removeChild(old);
+            node.setAttribute('data-n', n);
+            node.classList.add('counted');
+            node.appendChild(el('span', 'num', String(n)));
+            Snd.count(n);
+          }, delay));
+        })(objs[i], i + 1);
+        delay += 220;
+      }
+      delay += 300;
+    }
+    hintTimers.push(setTimeout(function () { hintTimers = []; }, delay));
+  }
+
+  function cmpHint(val) {
+    var q = G.cur;
+    if (q.kind === 'more' || q.kind === 'less') {
+      countGroups();
+      return 'Birlikte sayalım: ' + q.a + ' ve ' + q.b;
+    }
+    if (q.kind === 'extreme') {
+      var tens = [];
+      for (var i = 0; i < q.nums.length; i++) tens.push(Math.floor(q.nums[i] / 10));
+      return 'Onluklar: ' + tens.join(', ') + '. ' + (q.big ? 'En büyük' : 'En küçük') + ' onluğu bul!';
+    }
+    if (q.kind === 'signobj') countGroups();
+    var bx = $('stage').querySelector('.cmp-eq .box');
+    if (q.answer === '=') return q.a + ' ile ' + q.b + ' aynı: eşit!';
+    if (bx) { bx.innerHTML = crocSVG(q.answer === '>' ? 1 : -1); bx.className = 'box croc-box hint'; }
+    var big = Math.max(q.a, q.b), small = Math.min(q.a, q.b);
+    if (big > 9 && small > 9 && Math.floor(big / 10) === Math.floor(small / 10)) return 'Onluklar aynı, birliklere bak! ' + big + ' büyük.';
+    return big + ', ' + numAbl(small) + ' büyük. Timsahın ağzı büyüğe açılır!';
+  }
+
   function buildChoices(q) {
     var box = $('choices');
     box.innerHTML = '';
+    if (q.noChoices) return;
     if (q.build) {
       if (q.ctrl === 'clock') buildClockControls(box, q);
       else if (q.ctrl === 'hece') buildHeceControls(box, q);
@@ -1504,7 +1714,9 @@
       if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : pvBuildHint()); return; }
       btn.disabled = true;
       btn.className += ' wrong';
-      if (G.op === 'hece') {
+      if (G.op === 'cmp') {
+        say(cmpHint(val));
+      } else if (G.op === 'hece') {
         say(heceHint(val));
       } else if (G.op === 'clock') {
         say(clockHint(val));

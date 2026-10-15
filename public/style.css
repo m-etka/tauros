@@ -681,3 +681,33 @@ svg { display: block; }
 .portrait .hc-pic { margin: 0 0 1rem; }
 .about h2.about-sep { margin-top: 2rem; padding-top: 1.2rem; border-top: .2rem solid #e6eaf2; }
 .about h3 { font-size: 1.2rem; font-weight: 900; margin: 1rem 0 .3rem; color: #2b2d42; }
+
+/* ---------- Büyük mü, küçük mü? ---------- */
+.plates { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: stretch; align-items: stretch; }
+.plate {
+  position: relative;
+  min-width: 15rem; margin: 0 1rem; padding: 1rem 1rem 3.2rem;
+  border-radius: 2rem; background: #fff; border-bottom: .45rem solid #d7dfea;
+  display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;
+}
+.plate .group { background: none; }
+.plate-pick {
+  position: absolute; left: 50%; bottom: .7rem; width: 9rem; margin-left: -4.5rem;
+  background: #3a86ff; color: #fff; border-radius: 1rem; padding: .35rem 0;
+  font-size: 1.1rem; font-weight: 900; border-bottom: .25rem solid #1f63cf;
+}
+.plate:active { -webkit-transform: translateY(.2rem); transform: translateY(.2rem); }
+.plate.right { background: #c9f2da; border-bottom-color: #3bb273; -webkit-animation: chRight .45s ease-out; animation: chRight .45s ease-out; }
+.plate.right .plate-pick { background: #3bb273; border-bottom-color: #26874f; }
+.plate.wrong { opacity: .45; -webkit-animation: shake .4s; animation: shake .4s; }
+.plate.fade { opacity: .35; }
+.cmp-ask { font-size: 2.2rem; font-weight: 900; color: #2b2d42; text-align: center; }
+.cmp-ask b { color: #ef476f; }
+.cmp-vis { -webkit-align-items: center; align-items: center; }
+.cmp-gap { width: 7rem; }
+.cmp-eq .n { min-width: 5.5rem; }
+.cmp-eq .box { margin: 0 .8rem; min-width: 6.4rem; }
+.croc-box { padding: .4rem; background: #fff !important; border-color: #3bb273 !important; }
+.croc-box.hint { border-style: dashed !important; -webkit-animation: none; animation: none; }
+.croc { width: 100%; height: 100%; display: block; }
+.ch.sign { font-size: 4.4rem; line-height: 1; }
