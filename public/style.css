@@ -769,3 +769,21 @@ svg { display: block; }
 .game-icon .sh-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; height: 100%; }
 .game-icon .sh-ico .note { width: 5.4rem; height: 2.9rem; margin-right: .3rem; }
 .game-icon .sh-ico .coin { width: 2.3rem; height: 2.3rem; margin: 0 .1rem; }
+
+/* ---------- Şekil Avcısı ---------- */
+.geo { display: block; width: 100%; height: 100%; overflow: visible; }
+.geo-word { font-size: 4.6rem; font-weight: 900; color: #d65db1; background: rgba(255,255,255,.85); border-radius: 1.4rem; padding: .3rem 2rem; }
+.geo-big { width: 13rem; height: 13rem; background: #fff; border-radius: 1.6rem; border-bottom: .4rem solid #d7dfea; padding: 1rem; margin-bottom: .8rem; }
+.geo-grid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-justify-content: center; justify-content: center; width: 31rem; background: rgba(255,255,255,.85); border-radius: 1.4rem; padding: .5rem; margin-bottom: .6rem; }
+.geo-cell { position: relative; width: 5.4rem; height: 5.4rem; margin: .25rem; padding: .35rem; border-radius: .8rem; -webkit-transition: opacity .3s; transition: opacity .3s; }
+.geo-cell.on { background: #fff3c4; box-shadow: 0 0 0 .2rem #e0a800; }
+.geo-cell.off { opacity: .25; }
+.geo-cell .num {
+  position: absolute; right: -.3rem; top: -.4rem; width: 1.8rem; height: 1.8rem; border-radius: 50%;
+  background: #2b2d42; color: #fff; font-size: 1rem; font-weight: 900; line-height: 1.8rem; text-align: center;
+}
+.ch.pic .geo { width: 100%; height: 100%; }
+.ch.word { width: auto; min-width: 9rem; height: 5.6rem; padding: 0 1.2rem; border-radius: 1.4rem; font-size: 2rem; margin: 0 .6rem; }
+.game-icon .geo-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; height: 100%; }
+.game-icon .geo-ico .geo { width: 3.4rem; height: 3.4rem; margin: 0 .2rem; }
+.ch.pic.geoopt { padding: .45rem; }

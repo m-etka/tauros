@@ -1,7 +1,7 @@
 {
   "name": "Mandi'nin Oyun Bahçesi",
   "short_name": "Mandi",
-  "description": "1. sınıf çocuklar için ücretsiz, reklamsız eğitici oyunlar: toplama, çıkarma, onluk ve birlik, karşılaştırma, örüntü, saat, paralar, Hece Treni. İnternetsiz çalışır.",
+  "description": "1. sınıf çocuklar için ücretsiz, reklamsız eğitici oyunlar: toplama, çıkarma, onluk ve birlik, karşılaştırma, örüntü, şekiller, saat, paralar, Hece Treni. İnternetsiz çalışır.",
   "lang": "tr",
   "start_url": "./",
   "scope": "./",

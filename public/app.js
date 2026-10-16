@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.7.0';
+  var APP_VERSION = '1.8.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -267,14 +267,27 @@
   ];
   GAMES.shop = { id: 'shop', title: 'Bakkal Mandi', iconHTML: 'shop', color: '#c98b4d', levels: LEVELS_SHOP };
 
+  // Şekil Avcısı: üçgen, kare, dikdörtgen, daire
+  var LEVELS_GEO = [
+    { name: 'Şekli bul', sub: 'Adı verilen', color: '#d65db1', kind: 'find' },
+    { name: 'Adı ne?', sub: 'Şekli tanı', color: '#3a86ff', kind: 'name' },
+    { name: 'Hangisi farklı?', sub: 'Dönse de aynı', color: '#3bb273', kind: 'odd' },
+    { name: 'Kaç köşe?', sub: 'Köşeleri say', color: '#ff8a3d', kind: 'corners' },
+    { name: 'Kaç kenar?', sub: 'Kenarları say', color: '#8e7dff', kind: 'edges' },
+    { name: 'Şekil say', sub: 'Kaç tane?', color: '#ef476f', kind: 'count' },
+    { name: 'Etrafımızda', sub: 'Nesnenin şekli', color: '#e0a800', kind: 'real' },
+    { name: 'Şampiyon', sub: 'Hepsi', color: '#26874f', kind: 'mix' }
+  ];
+  GAMES.geo = { id: 'geo', title: 'Şekil Avcısı', iconHTML: 'geo', color: '#d65db1', levels: LEVELS_GEO };
+
   GAMES.hece = { id: 'hece', title: 'Hece Treni', iconHTML: 'hece', color: '#ef476f', levels: LEVELS_HECE };
 
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
-    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'clock', 'shop'] },
+    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop'] },
     { title: 'Türkçe', games: ['hece'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'clock', 'shop', 'hece'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'hece'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -290,6 +303,7 @@
     if (op === 'cmp') return makeCmpQuestion(lv, seen);
     if (op === 'pat') return makePatQuestion(lv, seen);
     if (op === 'shop') return makeShopQuestion(lv, seen);
+    if (op === 'geo') return makeGeoQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -406,6 +420,10 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'geo') {
+      return '<div class="game-icon" style="background:' + game.color + '"><div class="geo-ico">' +
+        shapeSVG({ t: 'tri', v: 0, r: 0, c: '#ffd23f' }) + shapeSVG({ t: 'sq', r: 0, c: '#3a86ff' }) + shapeSVG({ t: 'circ', c: '#3bb273' }) + '</div></div>';
+    }
     if (game.iconHTML === 'shop') {
       return '<div class="game-icon" style="background:' + game.color + '"><div class="sh-ico">' + moneySVG(10) + moneySVG(1) + moneySVG(1) + '</div></div>';
     }
@@ -555,6 +573,7 @@
     if (G.op === 'cmp') { buildCmpQuestion(stage, q); return; }
     if (G.op === 'pat') { buildPatQuestion(stage, q); return; }
     if (G.op === 'shop') { buildShopQuestion(stage, q); return; }
+    if (G.op === 'geo') { buildGeoQuestion(stage, q); return; }
     G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
@@ -2096,6 +2115,227 @@
     return 'Birlikte sayalım: ' + liraWords(q.pieces);
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Şekil Avcısı                                                        */
+  /* ------------------------------------------------------------------ */
+  var GEO = {
+    tri: { n: 'üçgen', k: 3 },
+    sq: { n: 'kare', k: 4 },
+    rect: { n: 'dikdörtgen', k: 4 },
+    circ: { n: 'daire', k: 0 }
+  };
+  var GEO_TYPES = ['tri', 'sq', 'rect', 'circ'];
+  var GEO_COLORS = ['#ef476f', '#3a86ff', '#ffd23f', '#3bb273', '#8e7dff', '#ff8a3d'];
+  var TRI_PTS = [
+    [[50, 10], [92, 84], [8, 84]],      // eşkenar
+    [[14, 14], [14, 86], [86, 86]],     // dik
+    [[50, 6], [78, 92], [22, 92]],      // ikizkenar uzun
+    [[20, 22], [90, 64], [10, 88]]      // çeşitkenar
+  ];
+  function geoPoints(sh) {
+    if (sh.t === 'tri') return TRI_PTS[sh.v || 0];
+    if (sh.t === 'sq') return [[16, 16], [84, 16], [84, 84], [16, 84]];
+    if (sh.t === 'rect') return sh.v ? [[30, 6], [70, 6], [70, 94], [30, 94]] : [[6, 30], [94, 30], [94, 70], [6, 70]];
+    return null;
+  }
+  function randShape(t) {
+    var sh = { t: t, c: pick(GEO_COLORS), v: 0, r: 0 };
+    if (t === 'tri') { sh.v = rnd(0, 3); sh.r = rnd(0, 23) * 15; }
+    else if (t === 'sq') sh.r = rnd(-12, 12);
+    else if (t === 'rect') { sh.v = rnd(0, 1); sh.r = pick([0, 0, -10, 10]); }
+    sh.s = t === 'circ' ? 1 : (0.86 + Math.random() * 0.14);   // boyut
+    return sh;
+  }
+  // mark: 'corners' köşelere numaralı nokta, 'edges' kenarlara numara
+  function shapeSVG(sh, mark) {
+    var sc = sh.s || 1, tr = 'rotate(' + (sh.r || 0) + ' 50 50) translate(50 50) scale(' + sc + ') translate(-50 -50)';
+    var body, pts = geoPoints(sh), extra = '';
+    if (!pts) body = '<circle cx="50" cy="50" r="40"/>';
+    else {
+      var ps = [];
+      for (var i = 0; i < pts.length; i++) ps.push(pts[i][0] + ',' + pts[i][1]);
+      body = '<polygon points="' + ps.join(' ') + '"/>';
+      if (mark === 'corners') {
+        for (var j = 0; j < pts.length; j++) {
+          extra += '<circle cx="' + pts[j][0] + '" cy="' + pts[j][1] + '" r="9" fill="#2b2d42" stroke="#fff" stroke-width="2"/>' +
+            '<text x="' + pts[j][0] + '" y="' + (pts[j][1] + 4.5) + '" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" font-family="Roboto, Arial, sans-serif" transform="rotate(' + (-(sh.r || 0)) + ' ' + pts[j][0] + ' ' + pts[j][1] + ')">' + (j + 1) + '</text>';
+        }
+      } else if (mark === 'edges') {
+        for (var e = 0; e < pts.length; e++) {
+          var a = pts[e], b = pts[(e + 1) % pts.length], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+          extra += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="' + ['#ef476f', '#3a86ff', '#3bb273', '#e0a800'][e] + '" stroke-width="7" stroke-linecap="round"/>' +
+            '<circle cx="' + mx + '" cy="' + my + '" r="9" fill="#2b2d42"/><text x="' + mx + '" y="' + (my + 4.5) + '" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" font-family="Roboto, Arial, sans-serif" transform="rotate(' + (-(sh.r || 0)) + ' ' + mx + ' ' + my + ')">' + (e + 1) + '</text>';
+        }
+      }
+    }
+    return '<svg class="geo" viewBox="-6 -6 112 112"><g transform="' + tr + '"><g fill="' + sh.c + '" stroke="rgba(0,0,0,.2)" stroke-width="3" stroke-linejoin="round">' + body + '</g>' + extra + '</g></svg>';
+  }
+
+  // Günlük hayattan nesneler (yeni resimler)
+  PIC.tabak = '<circle cx="50" cy="50" r="42" fill="#fff" stroke="#b8c4d6" stroke-width="4"/><circle cx="50" cy="50" r="28" fill="#f2f5fa" stroke="#dbe2ec" stroke-width="3"/>';
+  PIC.pizza = '<polygon points="50,92 12,16 88,16" fill="#ffd23f"/><path d="M10 14 Q50 4 90 14 L86 22 Q50 13 14 22Z" fill="#c98b4d"/><circle cx="42" cy="34" r="6" fill="#ef476f"/><circle cx="60" cy="42" r="6" fill="#ef476f"/><circle cx="50" cy="64" r="5" fill="#ef476f"/><circle cx="36" cy="50" r="2.5" fill="#3bb273"/><circle cx="62" cy="28" r="2.5" fill="#3bb273"/>';
+  PIC.cadir = '<polygon points="50,10 94,86 6,86" fill="#ff8a3d"/><polygon points="50,38 66,86 34,86" fill="#c2560f"/><line x1="50" y1="10" x2="50" y2="2" stroke="#2b2d42" stroke-width="3"/><line x1="2" y1="88" x2="98" y2="88" stroke="#3bb273" stroke-width="5" stroke-linecap="round"/>';
+  PIC.levha = '<polygon points="50,10 92,84 8,84" fill="#fff" stroke="#ef476f" stroke-width="9" stroke-linejoin="round"/><rect x="46" y="38" width="8" height="24" rx="3" fill="#2b2d42"/><circle cx="50" cy="71" r="4.5" fill="#2b2d42"/>';
+  PIC.pencere = '<rect x="14" y="14" width="72" height="72" fill="#bfe8ff" stroke="#8b5a2b" stroke-width="7"/><line x1="50" y1="14" x2="50" y2="86" stroke="#8b5a2b" stroke-width="5"/><line x1="14" y1="50" x2="86" y2="50" stroke="#8b5a2b" stroke-width="5"/><path d="M22 22 L36 22 L22 36Z" fill="#fff" opacity=".7"/>';
+  PIC.tahta = '<rect x="12" y="12" width="76" height="76" fill="#fff" stroke="#2b2d42" stroke-width="4"/><g fill="#2b2d42"><rect x="12" y="12" width="19" height="19"/><rect x="50" y="12" width="19" height="19"/><rect x="31" y="31" width="19" height="19"/><rect x="69" y="31" width="19" height="19"/><rect x="12" y="50" width="19" height="19"/><rect x="50" y="50" width="19" height="19"/><rect x="31" y="69" width="19" height="19"/><rect x="69" y="69" width="19" height="19"/></g>';
+  var REAL = {
+    circ: ['saat', 'tabak'],
+    tri: ['pizza', 'cadir', 'levha'],
+    sq: ['pencere', 'tahta'],
+    rect: ['kapi', 'kitap', 'telefon']
+  };
+  var REAL_NAMES = { saat: 'saat', tabak: 'tabak', pizza: 'pizza dilimi', cadir: 'çadır', levha: 'uyarı levhası', pencere: 'pencere', tahta: 'dama tahtası', kapi: 'kapı', kitap: 'kitap', telefon: 'telefon' };
+
+  function makeGeoQuestion(lv, seen) {
+    var kind = lv.kind;
+    if (kind === 'mix') kind = pick(['find', 'name', 'odd', 'corners', 'edges', 'count', 'real']);
+    var q = { kind: kind }, key, tries = 0, t;
+    if (kind === 'find' || kind === 'name' || kind === 'real' || kind === 'corners' || kind === 'edges') {
+      var pool = (kind === 'corners' || kind === 'edges') ? ['tri', 'sq', 'rect'] : GEO_TYPES;
+      do {
+        t = pick(pool);
+        q.obj = kind === 'real' ? pick(REAL[t]) : null;
+        key = kind + t + (q.obj || '') + tries % 3;
+        tries++;
+      } while (seen[key] && tries < 30);
+      seen[key] = true;
+      q.t = t;
+      q.shape = randShape(t);
+      if (kind === 'corners' || kind === 'edges') {
+        q.answer = GEO[t].k;
+        q.opts = shuffle([3, 4, 5]);
+        q.optClass = 'tm';
+        q.optHTML = function (v) { return '<span class="tm-big">' + v + '</span><span class="tm-small">' + (kind === 'corners' ? 'köşe' : 'kenar') + '</span>'; };
+        return q;
+      }
+      var others = shuffle(GEO_TYPES.filter ? GEO_TYPES.filter(function (x) { return x !== t; }) : []).slice(0, 2);
+      // kare ile dikdörtgen sık karıştırılır: birbirine yanıltıcı olarak gelsin
+      if (t === 'sq' && others.indexOf('rect') === -1) others[0] = 'rect';
+      if (t === 'rect' && others.indexOf('sq') === -1) others[0] = 'sq';
+      var ts = shuffle([t].concat(others));
+      q.answer = t;
+      if (kind === 'name') {
+        q.opts = ts;
+        q.optClass = 'word';
+        q.optHTML = function (v) { return GEO[v].n; };
+      } else {
+        q.shapes = {};
+        for (var i = 0; i < ts.length; i++) q.shapes[ts[i]] = randShape(ts[i]);
+        q.opts = ts;
+        q.optClass = 'pic geoopt';
+        q.optHTML = function (v) { return shapeSVG(q.shapes[v]); };
+      }
+      return q;
+    }
+    if (kind === 'odd') {
+      var main, odd;
+      do {
+        main = pick(GEO_TYPES);
+        odd = pick(GEO_TYPES);
+        key = 'odd' + main + odd;
+        tries++;
+      } while ((odd === main || seen[key] || (main === 'circ' && odd === 'circ')) && tries < 30);
+      seen[key] = true;
+      q.main = main; q.oddT = odd;
+      var list = [], ids = ['a', 'b', 'c', 'd'];
+      var oi = rnd(0, 3);
+      q.shapes = {};
+      for (var j = 0; j < 4; j++) q.shapes[ids[j]] = randShape(j === oi ? odd : main);
+      q.answer = ids[oi];
+      q.opts = ids;
+      q.optClass = 'pic geoopt';
+      q.optHTML = function (v) { return shapeSVG(q.shapes[v]); };
+      return q;
+    }
+    // count: karışık şekiller içinde bir türü say
+    do {
+      t = pick(GEO_TYPES);
+      var cells = [], n = rnd(2, 6), total = rnd(8, 10);
+      for (var c = 0; c < total; c++) {
+        var tt;
+        if (c < n) tt = t;
+        else { do { tt = pick(GEO_TYPES); } while (tt === t); }
+        cells.push(randShape(tt));
+      }
+      cells = shuffle(cells);
+      key = 'count' + t + n;
+      tries++;
+    } while (seen[key] && tries < 30);
+    seen[key] = true;
+    q.t = t; q.cells = cells; q.answer = n;
+    var co = [n], cand = shuffle([n + 1, n - 1, n + 2]);
+    for (var m = 0; m < cand.length && co.length < 3; m++) if (cand[m] >= 1 && co.indexOf(cand[m]) === -1) co.push(cand[m]);
+    q.opts = shuffle(co);
+    return q;
+  }
+
+  function buildGeoQuestion(stage, q) {
+    G.countReady = true;
+    var k = q.kind;
+    if (k === 'find') {
+      stage.appendChild(el('div', 'geo-word', GEO[q.t].n));
+      say(pick(['Bu şekli bul!', 'Hangisi ' + GEO[q.t].n + '?']));
+      return;
+    }
+    if (k === 'name' || k === 'corners' || k === 'edges') {
+      var box = el('div', 'geo-big', shapeSVG(q.shape));
+      box.id = 'geo-big';
+      stage.appendChild(box);
+      if (k === 'name') { stage.appendChild(el('div', 'cmp-ask small', 'Bu şeklin adı ne?')); say('Şekli tanı!'); }
+      else { stage.appendChild(el('div', 'cmp-ask small', k === 'corners' ? 'Kaç <b>köşesi</b> var?' : 'Kaç <b>kenarı</b> var?')); say(k === 'corners' ? 'Sivri uçları say!' : 'Düz çizgileri say!'); }
+      return;
+    }
+    if (k === 'odd') {
+      stage.appendChild(el('div', 'cmp-ask', 'Hangisi <b>farklı</b>?'));
+      say('Döndürülse de şekil aynı kalır!');
+      return;
+    }
+    if (k === 'real') {
+      var row = el('div', 'hc-row');
+      row.appendChild(el('div', 'hc-pic', picSVG(q.obj)));
+      row.appendChild(el('div', 'hc-side', '<div class="hc-q">' + REAL_NAMES[q.obj] + '<br>hangi şekle benziyor?</div>'));
+      stage.appendChild(row);
+      say('Kenarlarına bak!');
+      return;
+    }
+    // count
+    var grid = el('div', 'geo-grid');
+    for (var i = 0; i < q.cells.length; i++) {
+      var cell = el('div', 'geo-cell', shapeSVG(q.cells[i]));
+      cell.setAttribute('data-t', q.cells[i].t);
+      grid.appendChild(cell);
+    }
+    stage.appendChild(grid);
+    stage.appendChild(el('div', 'cmp-ask small', 'Kaç tane <b>' + GEO[q.t].n + '</b> var?'));
+    say('Dikkatli say!');
+  }
+
+  function geoHint(val) {
+    var q = G.cur, k = q.kind;
+    if (k === 'corners' || k === 'edges') {
+      var big = $('geo-big');
+      if (big) big.innerHTML = shapeSVG(q.shape, k);
+      return GEO[q.t].n + ': ' + GEO[q.t].k + (k === 'corners' ? ' köşe!' : ' kenar!');
+    }
+    if (k === 'count') {
+      var cs = $('stage').querySelectorAll('.geo-cell'), n = 0;
+      for (var i = 0; i < cs.length; i++) {
+        if (cs[i].getAttribute('data-t') === q.t) {
+          n++;
+          cs[i].className = 'geo-cell on';
+          if (!cs[i].querySelector('.num')) cs[i].appendChild(el('span', 'num', String(n)));
+        } else cs[i].className = 'geo-cell off';
+      }
+      return GEO[q.t].n + "leri parlattım, say!";
+    }
+    if (k === 'odd') {
+      return 'Üçü ' + GEO[q.main].n + ', biri farklı!';
+    }
+    var tips = { tri: '3 köşesi var', sq: '4 eşit kenarı var', rect: 'iki uzun, iki kısa kenarı var', circ: 'köşesi yok, yuvarlak' };
+    if (k === 'real') return REAL_NAMES[q.obj] + ' bir ' + GEO[q.t].n + ': ' + tips[q.t] + '!';
+    return GEO[q.t].n + ': ' + tips[q.t] + '!';
+  }
+
   function buildChoices(q) {
     var box = $('choices');
     box.innerHTML = '';
@@ -2149,7 +2389,9 @@
       if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : q.ctrl === 'shop' ? shopPayHint() : pvBuildHint()); return; }
       btn.disabled = true;
       btn.className += ' wrong';
-      if (G.op === 'shop') {
+      if (G.op === 'geo') {
+        say(geoHint(val));
+      } else if (G.op === 'shop') {
         say(shopHint(val));
       } else if (G.op === 'pat') {
         say(patHint(val));
