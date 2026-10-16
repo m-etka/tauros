@@ -144,7 +144,7 @@ Sessiz oyundur (sesli okuma yok); 37 resimli kelime. Yanlışta yanlış vagonla
 2. Yaya ışığı — beklerim / bakıp geçerim
 3. Doğru mu? — sokak resimlerinde doğru-yanlış davranış (yaya geçidi, kaldırım, yolda top)
 4. Karşıya geçiş — kısa sorular (sola-sağa-sola bakma, servisten inme, arka koltuk)
-5. Levhalar — yaya geçidi, okul geçidi, dur, bisiklet yolu, ışıklı kavşak, girilmez
+5. Levhalar — yaya geçidi, okul geçidi, dur, bisiklet yolu, ışıklı kavşak, girilmez, park yeri, hastane, yaya giremez, otobüs durağı (adını bul / levhayı seç)
 6. Hangisi güvenli? — üç resimden güvenli davranışı seçme
 7. Arabada — emniyet kemeri, arka koltuk, bisiklette kask
 8. Şampiyon — karışık

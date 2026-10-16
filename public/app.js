@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.10.0';
+  var APP_VERSION = '1.10.1';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -2439,10 +2439,11 @@
       '</g>';
   }
   function tPedLight(x, y, green) {
-    return '<g><rect x="' + (x - 1.5) + '" y="' + (y - 30) + '" width="3" height="30" fill="' + TK + '"/>' +
-      '<rect x="' + (x - 7) + '" y="' + (y - 52) + '" width="14" height="24" rx="2.5" fill="' + TK + '"/>' +
-      '<circle cx="' + x + '" cy="' + (y - 46) + '" r="5" fill="' + (green ? '#5a4a52' : '#ff3b5c') + '"/>' +
-      '<circle cx="' + x + '" cy="' + (y - 34) + '" r="5" fill="' + (green ? '#2fe08a' : '#3c5a4a') + '"/></g>';
+    // kutu y-33..y-13: y=34 iken resmin üst kenarına sığar
+    return '<g><rect x="' + (x - 1.5) + '" y="' + (y - 14) + '" width="3" height="14" fill="' + TK + '"/>' +
+      '<rect x="' + (x - 6.5) + '" y="' + (y - 33) + '" width="13" height="21" rx="2.5" fill="' + TK + '"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 27.5) + '" r="4.2" fill="' + (green ? '#5a4a52' : '#ff3b5c') + '"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 17.5) + '" r="4.2" fill="' + (green ? '#2fe08a' : '#3c5a4a') + '"/></g>';
   }
   function tStreet(zebra) {
     var s = '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/>' +
@@ -2466,6 +2467,30 @@
       (helmet ? '<path d="M' + (x - 6.5) + ' ' + (y - 35) + ' A6.5 6.5 0 0 1 ' + (x + 6.5) + ' ' + (y - 35) + ' Z" fill="#ffd23f" stroke="#e0a800" stroke-width="1"/>' : '<path d="M' + (x - 5.2) + ' ' + (y - 36) + ' A5.2 5.2 0 0 1 ' + (x + 5.2) + ' ' + (y - 36) + ' Z" fill="#6b4226"/>') +
       '</g>';
   }
+  function tScooter(x, y, helmet) {
+    return '<g><rect x="' + (x - 14) + '" y="' + (y - 3) + '" width="24" height="3" rx="1.5" fill="#3a86ff"/>' +
+      '<circle cx="' + (x - 12) + '" cy="' + (y + 1) + '" r="3" fill="' + TK + '"/><circle cx="' + (x + 8) + '" cy="' + (y + 1) + '" r="3" fill="' + TK + '"/>' +
+      '<line x1="' + (x + 9) + '" y1="' + (y - 2) + '" x2="' + (x + 12) + '" y2="' + (y - 24) + '" stroke="' + TK + '" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<line x1="' + (x + 8) + '" y1="' + (y - 24) + '" x2="' + (x + 16) + '" y2="' + (y - 24) + '" stroke="' + TK + '" stroke-width="2.4" stroke-linecap="round"/>' +
+      '</g>' + tKid(x - 3, y - 3, '#ff8a3d', helmet) +
+      '<line x1="' + (x + 2) + '" y1="' + (y - 17) + '" x2="' + (x + 10) + '" y2="' + (y - 23) + '" stroke="' + TK + '" stroke-width="2.2" stroke-linecap="round"/>';
+  }
+  function tNight(scene) {
+    return scene + '<rect x="0" y="0" width="160" height="100" fill="#141a33" opacity=".72"/>' +
+      '<circle cx="138" cy="14" r="7" fill="#fff3c4"/><circle cx="141" cy="12" r="6" fill="#3a3f63"/>' +
+      '<g fill="#fff"><circle cx="20" cy="10" r="1"/><circle cx="52" cy="6" r="1"/><circle cx="96" cy="12" r="1"/></g>';
+  }
+  function tStopSign(x, y) {
+    return '<rect x="' + (x - 1.2) + '" y="' + (y - 30) + '" width="2.4" height="30" fill="' + TK + '"/>' +
+      '<rect x="' + (x - 9) + '" y="' + (y - 40) + '" width="18" height="12" rx="2" fill="#1f63cf"/>' +
+      '<rect x="' + (x - 6) + '" y="' + (y - 37.5) + '" width="12" height="5.5" rx="1" fill="#ffd23f"/>' +
+      '<circle cx="' + (x - 3.5) + '" cy="' + (y - 31.5) + '" r="1.3" fill="#fff"/><circle cx="' + (x + 3.5) + '" cy="' + (y - 31.5) + '" r="1.3" fill="#fff"/>';
+  }
+  function tBus(x, y) {
+    return '<rect x="' + x + '" y="' + (y - 24) + '" width="54" height="20" rx="4" fill="#ffd23f"/>' +
+      '<g fill="#bfe8ff"><rect x="' + (x + 5) + '" y="' + (y - 20) + '" width="9" height="7"/><rect x="' + (x + 17) + '" y="' + (y - 20) + '" width="9" height="7"/><rect x="' + (x + 29) + '" y="' + (y - 20) + '" width="9" height="7"/><rect x="' + (x + 42) + '" y="' + (y - 20) + '" width="9" height="12"/></g>' +
+      '<circle cx="' + (x + 12) + '" cy="' + (y - 4) + '" r="4" fill="' + TK + '"/><circle cx="' + (x + 43) + '" cy="' + (y - 4) + '" r="4" fill="' + TK + '"/>';
+  }
   // Araba içi (yandan): arka/ön koltuk, kemer
   function tCarInside(kidSeat, belt) {
     // araba sola bakar: ön cam solda, sürücü önde
@@ -2480,6 +2505,11 @@
     var dx = kidSeat === 'front' ? 54 : 62, kx = kidSeat === 'front' ? 74 : 110;
     s += person(dx, 33, 7, '#ff8a3d', TK, 16, 12);
     s += '<line x1="' + (dx - 7) + '" y1="' + 40 + '" x2="' + (dx + 6) + '" y2="52" stroke="#2b2d42" stroke-width="3"/>';
+    if (kidSeat === 'out') {
+      // çocuk camdan sarkıyor: baş ve kol arka camın dışında
+      return s + '<rect x="30" y="52" width="110" height="2" fill="#2f6fd6"/>' + person(134, 26, 6, '#3bb273', '#6b4226', 12, 9) +
+        '<line x1="139" y1="34" x2="152" y2="22" stroke="#f2c49b" stroke-width="3.5" stroke-linecap="round"/>';
+    }
     s += person(kx, 38, 6, '#3bb273', '#6b4226', 13, 10);
     if (belt) s += '<line x1="' + (kx - 6) + '" y1="44" x2="' + (kx + 6) + '" y2="53" stroke="#2b2d42" stroke-width="3.5"/><rect x="' + (kx + 3) + '" y="49" width="5" height="4" fill="#b8bfcc"/>';
     return s + '<rect x="30" y="52" width="110" height="2" fill="#2f6fd6"/>';
@@ -2497,10 +2527,18 @@
     bikeNoHelmet: { ok: false, t: 'Bisiklete binerken kask takmalıyız!', svg: function () { return '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/><rect x="0" y="76" width="160" height="24" fill="#8bd18b"/>' + tTree(24, 78) + tBike(80, 84, false); } },
     backBelt: { ok: true, t: 'Arka koltukta, emniyet kemeri takılı. Doğru!', svg: function () { return tCarInside('back', true); } },
     frontSeat: { ok: false, t: 'Çocuklar arabada arka koltukta oturmalı!', svg: function () { return tCarInside('front', true); } },
-    noBelt: { ok: false, t: 'Arabada emniyet kemeri mutlaka takılmalı!', svg: function () { return tCarInside('back', false); } }
+    noBelt: { ok: false, t: 'Arabada emniyet kemeri mutlaka takılmalı!', svg: function () { return tCarInside('back', false); } },
+    waitRed: { ok: true, t: 'Yaya ışığı kırmızı: kaldırımda bekliyor. Aferin!', svg: function () { return tStreet(true) + tPedLight(108, 34, false) + tCar(62, 64, '#3a86ff') + tKid(80, 96, '#ef476f') + tAdult(94, 96); } },
+    roadEdge: { ok: false, t: 'Yolda yürümek tehlikeli! Kaldırımda yürümeliyiz.', svg: function () { return tStreet(false) + tCar(14, 70, '#ef476f') + tKid(84, 72, '#3bb273') + tKid(100, 72, '#8e7dff'); } },
+    nightDark: { ok: false, t: 'Akşam koyu renk giyersek sürücüler bizi göremez. Açık renkli, parlak giyinmeliyiz.', svg: function () { return tNight(tStreet(false) + tCar(16, 70, '#5b5f73')) + '<polygon points="52,62 100,54 100,72" fill="#fff3c4" opacity=".35"/>' + tKid(110, 96, '#2e3350'); } },
+    nightBright: { ok: true, t: 'Akşam parlak yelek giymiş; sürücüler onu uzaktan görür. Aferin!', svg: function () { return tNight(tStreet(false) + tCar(16, 70, '#5b5f73')) + '<polygon points="52,62 100,54 100,72" fill="#fff3c4" opacity=".35"/>' + tKid(110, 96, '#ffd23f') + '<rect x="105" y="82" width="10" height="2" fill="#fff"/><rect x="105" y="86" width="10" height="2" fill="#fff"/>'; } },
+    busStopWait: { ok: true, t: 'Otobüsü kaldırımda, sırayla bekliyorlar. Doğru!', svg: function () { return tStreet(false) + tBus(8, 72) + tStopSign(98, 96) + tKid(112, 96, '#ef476f') + tKid(126, 96, '#3a86ff') + tAdult(142, 96); } },
+    headOut: { ok: false, t: 'Arabanın camından başımızı ya da kolumuzu çıkarmayız!', svg: function () { return tCarInside('out', false); } },
+    scooterHelmet: { ok: true, t: 'Scooter sürerken de kask takmak doğru!', svg: function () { return '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/><rect x="0" y="76" width="160" height="24" fill="#8bd18b"/>' + tTree(26, 78) + tScooter(84, 86, true); } },
+    scooterNoHelmet: { ok: false, t: 'Scooter sürerken kask takmalıyız!', svg: function () { return '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/><rect x="0" y="76" width="160" height="24" fill="#8bd18b"/>' + tTree(136, 78) + tScooter(78, 86, false); } }
   };
-  var STREET_SCENES = ['zebraGreen', 'zebraRed', 'midRoad', 'sidewalk', 'ballRoad', 'ballPark', 'holdHand'];
-  var RIDE_SCENES = ['backBelt', 'frontSeat', 'noBelt', 'bikeHelmet', 'bikeNoHelmet'];
+  var STREET_SCENES = ['zebraGreen', 'zebraRed', 'midRoad', 'sidewalk', 'ballRoad', 'ballPark', 'holdHand', 'waitRed', 'roadEdge', 'nightDark', 'nightBright', 'busStopWait'];
+  var RIDE_SCENES = ['backBelt', 'frontSeat', 'noBelt', 'bikeHelmet', 'bikeNoHelmet', 'headOut', 'scooterHelmet', 'scooterNoHelmet'];
   function sceneSVG(id) { return '<svg class="scene" viewBox="0 0 160 100" data-id="' + id + '">' + SCENES[id].svg() + '</svg>'; }
 
   // Araç trafik ışığı: lit = 'red' | 'yellow' | 'green'
@@ -2525,16 +2563,17 @@
     dur: { n: 'Dur', svg: '<polygon points="32,6 68,6 94,32 94,68 68,94 32,94 6,68 6,32" fill="#ef476f" stroke="#fff" stroke-width="4"/><text x="50" y="60" text-anchor="middle" font-size="27" font-weight="900" fill="#fff" font-family="Roboto, Arial, sans-serif">DUR</text>' },
     bisiklet: { n: 'Bisiklet yolu', svg: '<circle cx="50" cy="50" r="44" fill="#1f63cf"/><circle cx="32" cy="60" r="11" fill="none" stroke="#fff" stroke-width="4"/><circle cx="68" cy="60" r="11" fill="none" stroke="#fff" stroke-width="4"/><path d="M32 60 L44 42 L60 42 L68 60 M44 42 L50 60 L60 42 M60 42 L58 34 M42 36 L50 36" stroke="#fff" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>' },
     isik: { n: 'Işıklı kavşak', svg: '<polygon points="50,8 94,88 6,88" fill="#fff" stroke="#ef476f" stroke-width="8" stroke-linejoin="round"/><rect x="40" y="34" width="20" height="44" rx="4" fill="' + TK + '"/><circle cx="50" cy="44" r="5" fill="#ff3b5c"/><circle cx="50" cy="56" r="5" fill="#ffd23f"/><circle cx="50" cy="68" r="5" fill="#2fe08a"/>' },
-    girilmez: { n: 'Girilmez', svg: '<circle cx="50" cy="50" r="44" fill="#ef476f"/><rect x="18" y="42" width="64" height="16" rx="2" fill="#fff"/>' }
+    girilmez: { n: 'Girilmez', svg: '<circle cx="50" cy="50" r="44" fill="#ef476f"/><rect x="18" y="42" width="64" height="16" rx="2" fill="#fff"/>' },
+    park: { n: 'Park yeri', svg: '<rect x="6" y="6" width="88" height="88" rx="8" fill="#1f63cf"/><text x="50" y="76" text-anchor="middle" font-size="66" font-weight="900" fill="#fff" font-family="Roboto, Arial, sans-serif">P</text>' },
+    hastane: { n: 'Hastane', svg: '<rect x="6" y="6" width="88" height="88" rx="8" fill="#1f63cf"/><rect x="20" y="20" width="60" height="60" rx="4" fill="#fff"/><text x="50" y="72" text-anchor="middle" font-size="54" font-weight="900" fill="#ef476f" font-family="Roboto, Arial, sans-serif">H</text>' },
+    yayayok: { n: 'Yaya giremez', svg: '<circle cx="50" cy="50" r="44" fill="#fff" stroke="#ef476f" stroke-width="9"/><circle cx="52" cy="26" r="6" fill="' + TK + '"/><path d="M51 34 L47 54 L38 72 M48 50 L58 72 M49 40 L39 47 M51 40 L61 48" stroke="' + TK + '" stroke-width="5" stroke-linecap="round" fill="none"/><line x1="20" y1="80" x2="80" y2="20" stroke="#ef476f" stroke-width="8"/>' },
+    durak: { n: 'Otobüs durağı', svg: '<rect x="6" y="6" width="88" height="88" rx="8" fill="#1f63cf"/><rect x="20" y="28" width="60" height="38" rx="6" fill="#fff"/><g fill="#1f63cf"><rect x="25" y="33" width="14" height="12" rx="1"/><rect x="43" y="33" width="14" height="12" rx="1"/><rect x="61" y="33" width="14" height="12" rx="1"/></g><circle cx="32" cy="70" r="6" fill="#fff"/><circle cx="68" cy="70" r="6" fill="#fff"/>' }
   };
-  var SIGN_KEYS = ['yaya', 'okul', 'dur', 'bisiklet', 'isik', 'girilmez'];
+  var SIGN_KEYS = ['yaya', 'okul', 'dur', 'bisiklet', 'isik', 'girilmez', 'park', 'hastane', 'yayayok', 'durak'];
   function signSVG(k) { return '<svg class="tsign" viewBox="0 0 100 100" data-sign="' + k + '">' + SIGNS[k].svg + '</svg>'; }
 
   /* ---------- Trafik Kahramanı: sorular ---------- */
-  var LIGHT_ANS = { red: 'Dur', yellow: 'Hazırlan', green: 'Geç' };
   var LIGHT_TIP = { red: 'Kırmızı ışıkta araçlar durur.', yellow: 'Sarı ışıkta araçlar durmaya ya da kalkmaya hazırlanır.', green: 'Yeşil ışıkta araçlar geçer.' };
-  var LIGHT_REV = { red: 'durur', yellow: 'hazırlanır', green: 'geçer' };
-  var LIGHT_CAP = { red: 'Kırmızı', yellow: 'Sarı', green: 'Yeşil' };
   var TQ = [
     ['Karşıya nereden geçeriz?', 'Yaya geçidinden', 'Arabaların arasından', 'Nereden olursa', 'Karşıya yaya geçidinden geçeriz.'],
     ['Geçmeden önce nereye bakarız?', 'Sola, sağa, yine sola', 'Sadece yukarı', 'Hiçbir yere', 'Önce sola, sonra sağa, sonra yine sola bakarız.'],
@@ -2548,7 +2587,16 @@
     ['Yolda oyun oynanır mı?', 'Hayır, parkta oynarız', 'Evet, oynanır', 'Araba yoksa oynanır', 'Yolda oyun oynanmaz, parkta ya da bahçede oynarız.'],
     ['Akşam dışarıda ne giyeriz?', 'Açık renkli, parlak', 'Koyu renkli', 'Fark etmez', 'Açık renkli ve parlak giysiler sürücülerin bizi görmesini sağlar.'],
     ['Trafik polisi dur derse?', 'Dururuz', 'Koşarız', 'El sallayıp geçeriz', 'Trafik polisinin işaretlerine uyarız.'],
-    ['Yolda kiminle yürürüz?', 'Bir büyüğümüzle', 'Tek başımıza koşarak', 'Arabaların arkasından', 'Küçük çocuklar yolda bir büyükle, elini tutarak yürür.']
+    ['Yolda kiminle yürürüz?', 'Bir büyüğümüzle', 'Tek başımıza koşarak', 'Arabaların arkasından', 'Küçük çocuklar yolda bir büyükle, elini tutarak yürür.'],
+    ['Otobüs durağında nerede bekleriz?', 'Kaldırımda, sırayla', 'Yolun üstünde', 'Otobüsün önünde', 'Otobüsü kaldırımda, sırayla bekleriz.'],
+    ['Servisten inince karşıya nasıl geçeriz?', 'Servis gidince, bakarak', 'Servisin önünden koşarak', 'Servisin arkasından hemen', 'Servis gidince yolu görebiliriz; sonra sola, sağa bakıp geçeriz.'],
+    ['Park etmiş arabaların arasından geçilir mi?', 'Hayır, sürücü bizi görmez', 'Evet, kısa yoldur', 'Koşarsak geçilir', 'Park etmiş arabaların arasından çıkarsak sürücüler bizi göremez.'],
+    ['Yolda yürürken telefona bakılır mı?', 'Hayır, yola bakarız', 'Evet, bakılır', 'Sadece oyun için', 'Yolda yürürken gözümüz yolda olmalı.'],
+    ['Arabadan hangi kapıdan ineriz?', 'Kaldırım tarafından', 'Yol tarafından', 'Fark etmez', 'Arabadan kaldırım tarafındaki kapıdan ineriz.'],
+    ['Paten ve kaykayla nerede kayarız?', 'Parkta, güvenli yerde', 'Yolun ortasında', 'Arabaların arasında', 'Paten ve kaykay için park gibi güvenli yerler seçeriz.'],
+    ['Acil durumda hangi numarayı ararız?', '112', '123', '999', 'Kaza ya da acil bir durumda 112 aranır.'],
+    ['Yaya geçidi yolda nasıl görünür?', 'Beyaz çizgili', 'Kırmızı noktalı', 'Mavi dalgalı', 'Yaya geçidinin yolda beyaz çizgileri vardır; zebraya benzer.'],
+    ['Araba giderken kolumuzu camdan çıkarır mıyız?', 'Hayır, içeride tutarız', 'Evet, el sallarız', 'Yavaş giderken çıkarırız', 'Araba giderken başımız ve kolumuz içeride kalır.']
   ];
   var SIGN_TIP = {
     yaya: 'Mavi yaya geçidi levhası: buradan karşıya geçilir.',
@@ -2556,8 +2604,40 @@
     dur: 'DUR levhasında araçlar tamamen durur.',
     bisiklet: 'Bu yol bisikletliler içindir.',
     isik: 'Bu levha ileride trafik ışığı olduğunu söyler.',
-    girilmez: 'Bu yoldan araçlar giremez.'
+    girilmez: 'Bu yoldan araçlar giremez.',
+    park: 'Mavi P levhası: araçlar buraya park edebilir.',
+    hastane: 'H levhası yakında hastane olduğunu gösterir; burada korna çalınmaz.',
+    yayayok: 'Üstü çizili yaya: bu yola yayalar giremez.',
+    durak: 'Otobüs durağı: otobüs burada durur, yolcular kaldırımda bekler.'
   };
+
+  // Trafik ışığı soruları: show = gösterilen ışık ('none' = hepsi sönük, null = resim yok)
+  var LIGHT_Q = [
+    { id: 'f-red', show: 'red', text: 'Kırmızı ışık yandı.<br>Araçlar ne yapar?', answer: 'Dur', opts: ['Dur', 'Hazırlan', 'Geç'], tip: LIGHT_TIP.red },
+    { id: 'f-yel', show: 'yellow', text: 'Sarı ışık yandı.<br>Araçlar ne yapar?', answer: 'Hazırlan', opts: ['Dur', 'Hazırlan', 'Geç'], tip: LIGHT_TIP.yellow },
+    { id: 'f-grn', show: 'green', text: 'Yeşil ışık yandı.<br>Araçlar ne yapar?', answer: 'Geç', opts: ['Dur', 'Hazırlan', 'Geç'], tip: LIGHT_TIP.green },
+    { id: 'r-red', rev: 'red', text: 'Araçlar hangi ışıkta <b>durur</b>?', tip: LIGHT_TIP.red },
+    { id: 'r-yel', rev: 'yellow', text: 'Araçlar hangi ışıkta <b>hazırlanır</b>?', tip: LIGHT_TIP.yellow },
+    { id: 'r-grn', rev: 'green', text: 'Araçlar hangi ışıkta <b>geçer</b>?', tip: LIGHT_TIP.green },
+    { id: 'p-top', show: 'none', text: 'Trafik ışığında<br><b>en üstteki</b> renk hangisi?', answer: 'Kırmızı', opts: ['Kırmızı', 'Sarı', 'Yeşil'], tip: 'Yukarıdan aşağıya: kırmızı, sarı, yeşil.' },
+    { id: 'p-mid', show: 'none', text: 'Trafik ışığında<br><b>ortadaki</b> renk hangisi?', answer: 'Sarı', opts: ['Kırmızı', 'Sarı', 'Yeşil'], tip: 'Yukarıdan aşağıya: kırmızı, sarı, yeşil.' },
+    { id: 'p-bot', show: 'none', text: 'Trafik ışığında<br><b>en alttaki</b> renk hangisi?', answer: 'Yeşil', opts: ['Kırmızı', 'Sarı', 'Yeşil'], tip: 'Yukarıdan aşağıya: kırmızı, sarı, yeşil.' },
+    { id: 'x-red', show: 'red', text: 'Araçlara kırmızı yandı.<br>Yaya ışığı ne renk olur?', answer: 'Yeşil', opts: ['Kırmızı', 'Sarı', 'Yeşil'], tip: 'Araçlar kırmızıda durunca yayalara yeşil yanar.' },
+    { id: 'x-grn', show: 'green', text: 'Araçlara yeşil yandı.<br>Yaya ışığı ne renk olur?', answer: 'Kırmızı', opts: ['Kırmızı', 'Sarı', 'Yeşil'], tip: 'Araçlar geçerken yayalara kırmızı yanar; bekleriz.' },
+    { id: 'x-yel', show: 'yellow', text: 'Sarı ışık yandı.<br>Yayalar ne yapar?', answer: 'Bekler', opts: ['Bekler', 'Koşarak geçer', 'Geçer'], tip: 'Sarıda yayalar geçmeye başlamaz, bekler.' }
+  ];
+  // Yaya ışığı soruları: ped = true yeşil, false kırmızı, null ışık yok (yaya geçidi levhası)
+  var PED_Q = [
+    { id: 'red', ped: false, text: 'Yaya ışığı kırmızı.<br>Ne yaparsın?', answer: 'Beklerim', opts: ['Beklerim', 'Bakıp geçerim', 'Koşarak geçerim'], tip: 'Kırmızı yaya ışığında kaldırımda bekleriz.' },
+    { id: 'green', ped: true, text: 'Yaya ışığı yeşil.<br>Ne yaparsın?', answer: 'Bakıp geçerim', opts: ['Beklerim', 'Bakıp geçerim', 'Koşarak geçerim'], tip: 'Yeşil yaya ışığında sola, sağa bakıp yürüyerek geçeriz.' },
+    { id: 'car', ped: true, text: 'Işık yeşil ama bir araba<br>hızla geliyor.', answer: 'Araba durunca geçerim', opts: ['Araba durunca geçerim', 'Hemen koşarım', 'Arabaya el sallarım'], tip: 'Yeşilde bile araba durmadan yola çıkmayız.' },
+    { id: 'friend', ped: false, text: 'Karşıdan arkadaşın seslendi.<br>Işık kırmızı.', answer: 'Yeşili beklerim', opts: ['Yeşili beklerim', 'Koşarak giderim', 'Arabaların arasından geçerim'], tip: 'Arkadaşımız çağırsa da yeşil ışığı bekleriz.' },
+    { id: 'walk', ped: true, text: 'Yeşil ışıkta<br>nasıl geçeriz?', answer: 'Yürüyerek', opts: ['Yürüyerek', 'Koşarak', 'Zıplayarak'], tip: 'Yolda koşmayız; yürüyerek, dikkatle geçeriz.' },
+    { id: 'where', ped: false, text: 'Kırmızı ışıkta<br>nerede bekleriz?', answer: 'Kaldırımda', opts: ['Kaldırımda', 'Yolun içinde', 'Yaya geçidinin ortasında'], tip: 'Kırmızıda kaldırımda, yoldan uzakta bekleriz.' },
+    { id: 'first', ped: true, text: 'Yaya ışığı yeşil oldu.<br>Önce ne yaparsın?', answer: 'Sola, sağa bakarım', opts: ['Sola, sağa bakarım', 'Gözümü kaparım', 'Telefona bakarım'], tip: 'Yeşil yansa da önce sola, sağa bakarız.' },
+    { id: 'none', ped: null, text: 'Burada yaya ışığı yok.<br>Nasıl geçeriz?', answer: 'Sola, sağa, sola bakıp', opts: ['Sola, sağa, sola bakıp', 'Hiç bakmadan', 'Gözümü kapatıp'], tip: 'Işık yoksa sola, sağa, yine sola bakar; araç yoksa geçeriz.' },
+    { id: 'empty', ped: false, text: 'Işık kırmızı ama<br>hiç araba yok.', answer: 'Yine beklerim', opts: ['Yine beklerim', 'Hemen geçerim', 'Koşarak geçerim'], tip: 'Araba olmasa da kırmızıda bekleriz.' }
+  ];
 
   var LEVELS_TRAFFIC = [
     { name: 'Trafik ışığı', sub: 'Kırmızı, sarı, yeşil', color: '#ef476f', kind: 'lights' },
@@ -2582,31 +2662,28 @@
     if (kind === 'mix') kind = pick(['lights', 'ped', 'judge', 'quiz', 'signs', 'safe', 'car']);
     var q = { kind: kind, delay: 2300 };
     if (kind === 'lights') {
-      var lit = pick(['red', 'yellow', 'green']);
-      if (seen.lastLit === lit) lit = pick(['red', 'yellow', 'green']);
-      seen.lastLit = lit;
-      q.lit = lit; q.tip = LIGHT_TIP[lit];
-      if (Math.random() < 0.4) {
-        // ters soru: anlamı verilir, ışık seçilir
-        q.rev = true; q.answer = lit;
+      var lq = LIGHT_Q[trPick(seen, LIGHT_Q.map(function (x, i) { return i; }), 'l')];
+      q.item = lq; q.tip = lq.tip;
+      if (lq.rev) {
+        q.answer = lq.rev;
         q.opts = shuffle(['red', 'yellow', 'green']);
         q.optClass = 'pic tlopt';
         q.optHTML = function (v) { return carLightSVG(v); };
       } else {
-        q.answer = LIGHT_ANS[lit];
-        q.opts = ['Dur', 'Hazırlan', 'Geç'];
-        q.optClass = 'word';
+        q.answer = lq.answer;
+        // Dur/Hazırlan/Geç ve renkler ışıktaki sırayla durur; diğerleri karışır
+        var fixed = lq.opts[0] === 'Dur' || lq.opts[0] === 'Kırmızı';
+        q.opts = fixed ? lq.opts.slice() : shuffle(lq.opts.slice());
+        q.optClass = fixed ? 'word' : 'txt';
       }
       return q;
     }
     if (kind === 'ped') {
-      q.green = Math.random() < 0.5;
-      if (seen.lastPed === q.green && Math.random() < 0.6) q.green = !q.green;
-      seen.lastPed = q.green;
-      q.answer = q.green ? 'Bakıp geçerim' : 'Beklerim';
-      q.opts = shuffle(['Beklerim', 'Bakıp geçerim', 'Koşarak geçerim']);
+      var pq = PED_Q[trPick(seen, PED_Q.map(function (x, i) { return i; }), 'p')];
+      q.item = pq; q.tip = pq.tip;
+      q.answer = pq.answer;
+      q.opts = shuffle(pq.opts.slice());
       q.optClass = 'txt';
-      q.tip = q.green ? 'Yeşil yaya ışığında sola, sağa bakıp yürüyerek geçeriz.' : 'Kırmızı yaya ışığında kaldırımda bekleriz.';
       return q;
     }
     if (kind === 'judge' || kind === 'car') {
@@ -2632,9 +2709,18 @@
       var sg = trPick(seen, SIGN_KEYS, 'g');
       q.sign = sg; q.tip = SIGN_TIP[sg];
       var others = shuffle(SIGN_KEYS.filter(function (x) { return x !== sg; })).slice(0, 2);
-      q.answer = SIGNS[sg].n;
-      q.opts = shuffle([sg].concat(others)).map(function (k) { return SIGNS[k].n; });
-      q.optClass = 'txt';
+      if (Math.random() < 0.4) {
+        // ters soru: adı verilir, levha seçilir
+        q.revSign = true;
+        q.answer = sg;
+        q.opts = shuffle([sg].concat(others));
+        q.optClass = 'pic tsopt';
+        q.optHTML = function (v) { return signSVG(v); };
+      } else {
+        q.answer = SIGNS[sg].n;
+        q.opts = shuffle([sg].concat(others)).map(function (k) { return SIGNS[k].n; });
+        q.optClass = 'txt';
+      }
       return q;
     }
     // safe: üç sahneden güvenli olanı seç
@@ -2652,22 +2738,24 @@
   function buildTrafficQuestion(stage, q) {
     var k = q.kind, row;
     if (k === 'lights') {
-      if (q.rev) {
-        stage.appendChild(el('div', 'cmp-ask', 'Araçlar hangi ışıkta <b>' + LIGHT_REV[q.lit] + '</b>?'));
+      var lq = q.item;
+      if (lq.rev) {
+        stage.appendChild(el('div', 'cmp-ask', lq.text));
         say('Işığı seç!');
       } else {
         row = el('div', 'tr-row');
-        row.appendChild(el('div', 'tr-light', carLightSVG(q.lit)));
-        row.appendChild(el('div', 'tr-side', '<div class="hc-q">' + LIGHT_CAP[q.lit] + ' ışık yandı.<br>Araçlar ne yapar?</div>'));
+        row.appendChild(el('div', 'tr-light', carLightSVG(lq.show)));
+        row.appendChild(el('div', 'tr-side', '<div class="hc-q">' + lq.text + '</div>'));
         stage.appendChild(row);
-        say('Hangi ışık yanıyor?');
+        say(lq.show === 'none' ? 'Sırayı hatırla!' : 'Hangi ışık yanıyor?');
       }
     } else if (k === 'ped') {
+      var pq = q.item;
       row = el('div', 'tr-row');
-      row.appendChild(el('div', 'tr-ped', pedLightSVG(q.green)));
-      row.appendChild(el('div', 'tr-side', '<div class="hc-q">Yaya ışığı böyle.<br>Ne yaparsın?</div>'));
+      row.appendChild(pq.ped === null ? el('div', 'tr-sign', signSVG('yaya')) : el('div', 'tr-ped', pedLightSVG(pq.ped)));
+      row.appendChild(el('div', 'tr-side', '<div class="hc-q">' + pq.text + '</div>'));
       stage.appendChild(row);
-      say('Yaya ışığına bak!');
+      say(pq.ped === null ? 'Dikkatli ol!' : 'Yaya ışığına bak!');
     } else if (k === 'judge' || k === 'car') {
       stage.appendChild(el('div', 'tr-scene', sceneSVG(q.scene)));
       stage.appendChild(el('div', 'cmp-ask small', 'Bu <b>doğru</b> mu?'));
@@ -2675,6 +2763,9 @@
     } else if (k === 'quiz') {
       stage.appendChild(el('div', 'tr-quiz', q.text));
       say('Doğru cevabı seç!');
+    } else if (k === 'signs' && q.revSign) {
+      stage.appendChild(el('div', 'cmp-ask', 'Hangisi <b>' + SIGNS[q.sign].n + '</b> levhası?'));
+      say('Levhayı bul!');
     } else if (k === 'signs') {
       row = el('div', 'tr-row');
       row.appendChild(el('div', 'tr-sign', signSVG(q.sign)));
@@ -2716,7 +2807,11 @@
       trafficNote(SCENES[val].t, false);
       return 'Bu güvenli değil!';
     }
-    if (q.kind === 'ped' && val === 'Koşarak geçerim') {
+    if (q.kind === 'signs' && q.revSign) {
+      trafficNote('Bu levha: ' + SIGNS[val].n + '.', false);
+      return pick(RETRY);
+    }
+    if (q.kind === 'ped' && /Koşarak/.test(val)) {
       trafficNote('Yolda koşmayız; düşebiliriz, sürücüler bizi göremeyebilir.', false);
       return pick(RETRY);
     }
