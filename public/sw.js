@@ -6,6 +6,7 @@ var FILES = [
   './',
   'style.css',
   'app.js',
+  'bus.js',
   'manifest.json',
   'icons/icon-192.png',
   'icons/icon-512.png'

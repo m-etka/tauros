@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.9.0';
+  var APP_VERSION = '1.10.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -282,13 +282,22 @@
 
   GAMES.hece = { id: 'hece', title: 'Hece Treni', iconHTML: 'hece', color: '#ef476f', levels: LEVELS_HECE };
 
+  // Mandi Otobüsü: ağır oyun, ayrı dosyada (bus.js) sonradan yüklenir.
+  // Kilit: Bakkal Mandi'de yeterli yıldız.
+  var LEVELS_BUS = [
+    { name: 'İlk sefer', sub: 'Bilet parasını say', color: '#ff8a3d', kind: 'pay' },
+    { name: 'Yolcu say', sub: 'İnen, binen', color: '#3a86ff', kind: 'riders' },
+    { name: 'Para üstü', sub: 'Kasadan ver', color: '#3bb273', kind: 'change' }
+  ];
+  GAMES.bus = { id: 'bus', title: 'Mandi Otobüsü', iconHTML: 'bus', color: '#f2a900', levels: LEVELS_BUS, lazy: 'bus.js', unlock: { game: 'shop', stars: 12 } };
+
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
-    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop'] },
+    { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'bus'] },
     { title: 'Türkçe', games: ['hece'] },
     { title: 'Hayat Bilgisi', games: ['traffic'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'hece', 'traffic'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'bus', 'hece', 'traffic'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -422,6 +431,11 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'bus') {
+      return '<div class="game-icon" style="background:' + game.color + '"><svg class="bus-ico" viewBox="0 0 100 60"><rect x="4" y="6" width="90" height="40" rx="7" fill="#ffd23f" stroke="#2b2d42" stroke-width="3"/>' +
+        '<rect x="12" y="13" width="15" height="13" rx="2" fill="#bfe8ff"/><rect x="31" y="13" width="15" height="13" rx="2" fill="#bfe8ff"/><rect x="50" y="13" width="15" height="13" rx="2" fill="#bfe8ff"/><rect x="73" y="13" width="12" height="27" rx="2" fill="#bfe8ff"/>' +
+        '<rect x="4" y="31" width="64" height="5" fill="#ff8a3d"/><circle cx="24" cy="47" r="8" fill="#2b2d42"/><circle cx="24" cy="47" r="3" fill="#b8bfcc"/><circle cx="76" cy="47" r="8" fill="#2b2d42"/><circle cx="76" cy="47" r="3" fill="#b8bfcc"/></svg></div>';
+    }
     if (game.iconHTML === 'traffic') {
       return '<div class="game-icon" style="background:' + game.color + '"><div class="tr-ico">' + carLightSVG('green') + signSVG('yaya') + '</div></div>';
     }
@@ -450,6 +464,37 @@
     }
     return '<div class="game-icon" style="background:' + game.color + '">' + game.icon + '</div>';
   }
+  function lockReason(game) {
+    var u = game.unlock;
+    if (!u || totalStars(GAMES[u.game]) >= u.stars) return null;
+    return GAMES[u.game].title + "'de " + u.stars + ' yıldız topla';
+  }
+
+  /* Ağır oyunlar ayrı dosyadan, ana sayfa açıldıktan sonra yüklenir.
+   * Service Worker / AppCache bu dosyaları da saklar; internetsiz de açılır. */
+  var lazyState = {}, lazyWait = {};
+  function loadLazy(url, cb) {
+    if (lazyState[url] === 'ok') { if (cb) cb(true); return; }
+    if (!lazyWait[url]) lazyWait[url] = [];
+    if (cb) lazyWait[url].push(cb);
+    if (lazyState[url] === 'loading') return;
+    lazyState[url] = 'loading';
+    var sc = document.createElement('script');
+    var done = function (ok) {
+      lazyState[url] = ok ? 'ok' : null;
+      if (!ok && sc.parentNode) sc.parentNode.removeChild(sc);
+      var w = lazyWait[url]; lazyWait[url] = [];
+      for (var i = 0; i < w.length; i++) w[i](ok);
+    };
+    sc.onload = function () { done(true); };
+    sc.onerror = function () { done(false); };
+    sc.src = url;
+    document.getElementsByTagName('head')[0].appendChild(sc);
+  }
+  function loadAllLazy() {
+    for (var k in GAMES) if (GAMES.hasOwnProperty(k) && GAMES[k].lazy) loadLazy(GAMES[k].lazy);
+  }
+
   function renderHome() {
     $('home-hello').innerHTML = pick(HELLOS);
     var box = $('subjects');
@@ -460,9 +505,18 @@
       var g = el('div', 'games');
       for (var i = 0; i < subj.games.length; i++) {
         (function (game) {
-          var card = el('button', 'game-card', gameIcon(game) + '<h3>' + game.title + '</h3><p>' +
-            totalStars(game) + ' / ' + (game.levels.length * 3) + ' yıldız</p>');
-          card.addEventListener('click', function () { Snd.tap(); CUR = game; show('levels'); });
+          var why = lockReason(game);
+          var card = el('button', 'game-card' + (why ? ' locked' : ''), gameIcon(game) + '<h3>' + game.title + '</h3><p>' +
+            (why ? svgUse('i-lock', 'lk') + why : totalStars(game) + ' / ' + (game.levels.length * 3) + ' yıldız') + '</p>');
+          card.addEventListener('click', function () {
+            if (why) {
+              Snd.wrong(); restartAnim(card, 'shakeit');
+              $('home-hello').innerHTML = 'Önce ' + why + '!';
+              homeMascot.face('oh', 1200);
+              return;
+            }
+            Snd.tap(); CUR = game; show('levels');
+          });
           g.appendChild(card);
         })(GAMES[subj.games[i]]);
       }
@@ -521,11 +575,22 @@
   var G = null; // aktif oyun durumu
 
   function startLevel(i) {
+    if (CUR.lazy && !CUR.impl) {
+      var game = CUR, t = $('levels-title');
+      t.innerHTML = 'Yükleniyor...';
+      loadLazy(game.lazy, function (ok) {
+        if (ok && game.impl) { t.innerHTML = game.title; if (CUR === game && current === 'levels') startLevel(i); return; }
+        t.innerHTML = 'İnternete bağlanınca açılır';
+        setTimeout(function () { t.innerHTML = game.title; }, 2500);
+      });
+      return;
+    }
     show('play');
     G = { game: CUR, op: CUR.id, sign: CUR.op, lvl: i, lv: CUR.levels[i], q: 0, missQ: 0, streak: 0, seen: {}, cur: null, locked: false, wrongNow: 0, results: [] };
     renderDots();
     say(pick(['Hadi başlayalım!', 'Hazır mısın?', 'Haydi!']));
     playMascot.face('happy', 900);
+    if (CUR.impl && CUR.impl.setup) CUR.impl.setup(i);
     later(nextQuestion, 350);
   }
 
@@ -542,6 +607,7 @@
   }
 
   function nextQuestion() {
+    if (G.game.impl && G.game.impl.next) { G.game.impl.next(); return; }
     if (G.q >= QUESTIONS_PER_LEVEL) { finishLevel(); return; }
     var stage = $('stage');
     stopHint();
@@ -2662,6 +2728,7 @@
     var box = $('choices');
     box.innerHTML = '';
     if (q.noChoices) return;
+    if (q.controls) { q.controls(box, q); return; }
     if (q.build) {
       if (q.ctrl === 'clock') buildClockControls(box, q);
       else if (q.ctrl === 'hece') buildHeceControls(box, q);
@@ -2708,10 +2775,12 @@
       G.streak = 0;
       Snd.wrong();
       playMascot.face('sad', 700);
-      if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : q.ctrl === 'shop' ? shopPayHint() : pvBuildHint()); return; }
+      if (q.build) { restartAnim(btn, 'shake'); say(q.buildHint ? q.buildHint() : q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : q.ctrl === 'shop' ? shopPayHint() : pvBuildHint()); return; }
       btn.disabled = true;
       btn.className += ' wrong';
-      if (G.op === 'traffic') {
+      if (q.hint) {
+        say(q.hint(val));
+      } else if (G.op === 'traffic') {
         say(trafficHint(val));
       } else if (G.op === 'geo') {
         say(geoHint(val));
@@ -2972,5 +3041,15 @@
     setTimeout(function () { if (!reloading) verBtn.innerHTML = info + ' · güncel'; }, 4000);
   });
 
+  /* bus.js gibi sonradan yüklenen oyunlar için ortak araçlar */
+  window.Mandi = {
+    register: function (id, impl) { GAMES[id].impl = impl; },
+    $: $, el: el, rnd: rnd, pick: pick, shuffle: shuffle, later: later, say: say, Snd: Snd, burst: burst,
+    moneySVG: moneySVG, breakdown: breakdown, answer: answer, buildChoices: buildChoices, renderDots: renderDots, finishLevel: finishLevel,
+    restartAnim: restartAnim, mascot: playMascot, MINUS: MINUS, RETRY: RETRY,
+    G: function () { return G; }, screen: function () { return current; }
+  };
+
   show('home');
+  if (window.addEventListener) window.addEventListener('load', function () { setTimeout(loadAllLazy, 1500); });
 })();
