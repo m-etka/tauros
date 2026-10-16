@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.8.0';
+  var APP_VERSION = '1.9.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -285,9 +285,10 @@
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
     { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop'] },
-    { title: 'Türkçe', games: ['hece'] }
+    { title: 'Türkçe', games: ['hece'] },
+    { title: 'Hayat Bilgisi', games: ['traffic'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'hece'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'hece', 'traffic'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -304,6 +305,7 @@
     if (op === 'pat') return makePatQuestion(lv, seen);
     if (op === 'shop') return makeShopQuestion(lv, seen);
     if (op === 'geo') return makeGeoQuestion(lv, seen);
+    if (op === 'traffic') return makeTrafficQuestion(lv, seen);
     var a, b, key, tries = 0;
     do {
       if (lv.kind === 'frame20') {
@@ -420,6 +422,9 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'traffic') {
+      return '<div class="game-icon" style="background:' + game.color + '"><div class="tr-ico">' + carLightSVG('green') + signSVG('yaya') + '</div></div>';
+    }
     if (game.iconHTML === 'geo') {
       return '<div class="game-icon" style="background:' + game.color + '"><div class="geo-ico">' +
         shapeSVG({ t: 'tri', v: 0, r: 0, c: '#ffd23f' }) + shapeSVG({ t: 'sq', r: 0, c: '#3a86ff' }) + shapeSVG({ t: 'circ', c: '#3bb273' }) + '</div></div>';
@@ -574,6 +579,7 @@
     if (G.op === 'pat') { buildPatQuestion(stage, q); return; }
     if (G.op === 'shop') { buildShopQuestion(stage, q); return; }
     if (G.op === 'geo') { buildGeoQuestion(stage, q); return; }
+    if (G.op === 'traffic') { buildTrafficQuestion(stage, q); return; }
     G.countReady = true;
     var kind = lv.kind;
     if (kind === 'objects') {
@@ -2336,6 +2342,322 @@
     return GEO[q.t].n + ': ' + tips[q.t] + '!';
   }
 
+  /* ---------- Trafik: çizimler ---------- */
+  var TK = '#2b2d42';
+  function tKid(x, y, c, helmet) {
+    return '<g>' +
+      '<line x1="' + (x - 2) + '" y1="' + (y - 8) + '" x2="' + (x - 3.5) + '" y2="' + y + '" stroke="' + TK + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<line x1="' + (x + 2) + '" y1="' + (y - 8) + '" x2="' + (x + 3.5) + '" y2="' + y + '" stroke="' + TK + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<rect x="' + (x - 5) + '" y="' + (y - 18) + '" width="10" height="11" rx="3" fill="' + c + '"/>' +
+      '<line x1="' + (x - 5) + '" y1="' + (y - 15) + '" x2="' + (x - 8) + '" y2="' + (y - 9) + '" stroke="' + TK + '" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<line x1="' + (x + 5) + '" y1="' + (y - 15) + '" x2="' + (x + 8) + '" y2="' + (y - 9) + '" stroke="' + TK + '" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 23) + '" r="5.2" fill="#f2c49b"/>' +
+      (helmet ? '<path d="M' + (x - 6.5) + ' ' + (y - 23) + ' A6.5 6.5 0 0 1 ' + (x + 6.5) + ' ' + (y - 23) + ' Z" fill="#ffd23f" stroke="#e0a800" stroke-width="1"/>' : '<path d="M' + (x - 5.2) + ' ' + (y - 24) + ' A5.2 5.2 0 0 1 ' + (x + 5.2) + ' ' + (y - 24) + ' Z" fill="#6b4226"/>') +
+      '</g>';
+  }
+  function tAdult(x, y) {
+    return '<g>' +
+      '<line x1="' + (x - 2.5) + '" y1="' + (y - 12) + '" x2="' + (x - 4) + '" y2="' + y + '" stroke="' + TK + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<line x1="' + (x + 2.5) + '" y1="' + (y - 12) + '" x2="' + (x + 4) + '" y2="' + y + '" stroke="' + TK + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<rect x="' + (x - 6.5) + '" y="' + (y - 27) + '" width="13" height="16" rx="3.5" fill="#3a86ff"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 33) + '" r="6" fill="#f2c49b"/><path d="M' + (x - 6) + ' ' + (y - 34) + ' A6 6 0 0 1 ' + (x + 6) + ' ' + (y - 34) + ' Z" fill="' + TK + '"/>' +
+      '</g>';
+  }
+  function tCar(x, y, c, flip) {
+    return '<g' + (flip ? ' transform="translate(' + (2 * x + 36) + ' 0) scale(-1 1)"' : '') + '>' +
+      '<rect x="' + x + '" y="' + (y - 14) + '" width="36" height="10" rx="3" fill="' + c + '"/>' +
+      '<path d="M' + (x + 7) + ' ' + (y - 14) + ' L' + (x + 11) + ' ' + (y - 21) + ' L' + (x + 25) + ' ' + (y - 21) + ' L' + (x + 30) + ' ' + (y - 14) + 'Z" fill="' + c + '"/>' +
+      '<path d="M' + (x + 12) + ' ' + (y - 15) + ' L' + (x + 14) + ' ' + (y - 19) + ' L' + (x + 24) + ' ' + (y - 19) + ' L' + (x + 27) + ' ' + (y - 15) + 'Z" fill="#bfe8ff"/>' +
+      '<circle cx="' + (x + 9) + '" cy="' + (y - 4) + '" r="4" fill="' + TK + '"/><circle cx="' + (x + 27) + '" cy="' + (y - 4) + '" r="4" fill="' + TK + '"/>' +
+      '<rect x="' + (x + 33) + '" y="' + (y - 12) + '" width="3" height="3" fill="#ffd23f"/>' +
+      '</g>';
+  }
+  function tPedLight(x, y, green) {
+    return '<g><rect x="' + (x - 1.5) + '" y="' + (y - 30) + '" width="3" height="30" fill="' + TK + '"/>' +
+      '<rect x="' + (x - 7) + '" y="' + (y - 52) + '" width="14" height="24" rx="2.5" fill="' + TK + '"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 46) + '" r="5" fill="' + (green ? '#5a4a52' : '#ff3b5c') + '"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 34) + '" r="5" fill="' + (green ? '#2fe08a' : '#3c5a4a') + '"/></g>';
+  }
+  function tStreet(zebra) {
+    var s = '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/>' +
+      '<rect x="0" y="22" width="160" height="12" fill="#e4ddcf"/><rect x="0" y="33" width="160" height="2" fill="#b9b0a0"/>' +
+      '<rect x="0" y="35" width="160" height="40" fill="#5b5f73"/>' +
+      '<rect x="0" y="75" width="160" height="2" fill="#b9b0a0"/><rect x="0" y="77" width="160" height="23" fill="#e4ddcf"/>' +
+      '<g fill="#fff"><rect x="4" y="54" width="14" height="2"/><rect x="28" y="54" width="14" height="2"/><rect x="118" y="54" width="14" height="2"/><rect x="142" y="54" width="14" height="2"/></g>';
+    if (zebra) s += '<g fill="#fff"><rect x="62" y="38" width="36" height="4"/><rect x="62" y="46" width="36" height="4"/><rect x="62" y="54" width="36" height="4"/><rect x="62" y="62" width="36" height="4"/><rect x="62" y="70" width="36" height="4"/></g>';
+    return s;
+  }
+  function tTree(x, y) { return '<rect x="' + (x - 2) + '" y="' + (y - 14) + '" width="4" height="14" fill="#8b5a2b"/><circle cx="' + x + '" cy="' + (y - 20) + '" r="10" fill="#3bb273"/>'; }
+  function tBall(x, y) { return '<circle cx="' + x + '" cy="' + (y - 4) + '" r="4.5" fill="#ef476f"/><path d="M' + (x - 4.5) + ' ' + (y - 5) + ' Q' + x + ' ' + (y - 8) + ' ' + (x + 4.5) + ' ' + (y - 5) + '" stroke="#fff" stroke-width="1.5" fill="none"/>'; }
+  function tBike(x, y, helmet) {
+    return '<g><circle cx="' + (x - 11) + '" cy="' + (y - 7) + '" r="7" fill="none" stroke="' + TK + '" stroke-width="2.5"/>' +
+      '<circle cx="' + (x + 11) + '" cy="' + (y - 7) + '" r="7" fill="none" stroke="' + TK + '" stroke-width="2.5"/>' +
+      '<path d="M' + (x - 11) + ' ' + (y - 7) + ' L' + (x - 3) + ' ' + (y - 17) + ' L' + (x + 8) + ' ' + (y - 17) + ' L' + (x + 11) + ' ' + (y - 7) + ' M' + (x - 3) + ' ' + (y - 17) + ' L' + x + ' ' + (y - 7) + ' L' + (x + 8) + ' ' + (y - 17) + ' M' + (x + 8) + ' ' + (y - 17) + ' L' + (x + 7) + ' ' + (y - 22) + '" stroke="#ef476f" stroke-width="2.5" fill="none" stroke-linejoin="round"/>' +
+      '<rect x="' + (x - 6) + '" y="' + (y - 30) + '" width="9" height="11" rx="3" fill="#8e7dff" transform="rotate(15 ' + (x - 2) + ' ' + (y - 25) + ')"/>' +
+      '<line x1="' + (x + 2) + '" y1="' + (y - 27) + '" x2="' + (x + 7) + '" y2="' + (y - 22) + '" stroke="' + TK + '" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<line x1="' + (x - 2) + '" y1="' + (y - 19) + '" x2="' + x + '" y2="' + (y - 9) + '" stroke="' + TK + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 35) + '" r="5.2" fill="#f2c49b"/>' +
+      (helmet ? '<path d="M' + (x - 6.5) + ' ' + (y - 35) + ' A6.5 6.5 0 0 1 ' + (x + 6.5) + ' ' + (y - 35) + ' Z" fill="#ffd23f" stroke="#e0a800" stroke-width="1"/>' : '<path d="M' + (x - 5.2) + ' ' + (y - 36) + ' A5.2 5.2 0 0 1 ' + (x + 5.2) + ' ' + (y - 36) + ' Z" fill="#6b4226"/>') +
+      '</g>';
+  }
+  // Araba içi (yandan): arka/ön koltuk, kemer
+  function tCarInside(kidSeat, belt) {
+    // araba sola bakar: ön cam solda, sürücü önde
+    var s = '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/><rect x="0" y="86" width="160" height="14" fill="#5b5f73"/>' +
+      '<path d="M10 80 L10 60 Q12 52 26 50 L44 24 Q48 18 56 18 L118 18 Q128 18 132 26 L146 50 Q150 54 150 60 L150 80 Z" fill="#3a86ff"/>' +
+      '<path d="M30 52 L48 24 Q50 22 54 22 L84 22 L84 52 Z" fill="#dff3ff"/><path d="M90 22 L118 22 Q124 22 127 28 L140 52 L90 52 Z" fill="#dff3ff"/>' +
+      '<circle cx="38" cy="82" r="11" fill="' + TK + '"/><circle cx="38" cy="82" r="4" fill="#b8bfcc"/><circle cx="124" cy="82" r="11" fill="' + TK + '"/><circle cx="124" cy="82" r="4" fill="#b8bfcc"/>';
+    function person(x, y, r, shirt, hair, w, h) {
+      return '<rect x="' + (x - w / 2) + '" y="' + (y + r - 1) + '" width="' + w + '" height="' + h + '" rx="2" fill="' + shirt + '"/>' +
+        '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#f2c49b"/><path d="M' + (x - r) + ' ' + (y - 1) + ' A' + r + ' ' + r + ' 0 0 1 ' + (x + r) + ' ' + (y - 1) + 'Z" fill="' + hair + '"/>';
+    }
+    var dx = kidSeat === 'front' ? 54 : 62, kx = kidSeat === 'front' ? 74 : 110;
+    s += person(dx, 33, 7, '#ff8a3d', TK, 16, 12);
+    s += '<line x1="' + (dx - 7) + '" y1="' + 40 + '" x2="' + (dx + 6) + '" y2="52" stroke="#2b2d42" stroke-width="3"/>';
+    s += person(kx, 38, 6, '#3bb273', '#6b4226', 13, 10);
+    if (belt) s += '<line x1="' + (kx - 6) + '" y1="44" x2="' + (kx + 6) + '" y2="53" stroke="#2b2d42" stroke-width="3.5"/><rect x="' + (kx + 3) + '" y="49" width="5" height="4" fill="#b8bfcc"/>';
+    return s + '<rect x="30" y="52" width="110" height="2" fill="#2f6fd6"/>';
+  }
+
+  var SCENES = {
+    zebraGreen: { ok: true, t: 'Yaya geçidinden, yeşil ışıkta geçiyor. Aferin!', svg: function () { return tStreet(true) + tPedLight(108, 34, true) + tKid(80, 62, '#ef476f') + tCar(10, 52, '#ffd23f'); } },
+    zebraRed: { ok: false, t: 'Yaya ışığı kırmızıyken beklemeliyiz!', svg: function () { return tStreet(true) + tPedLight(108, 34, false) + tKid(80, 62, '#ef476f') + tCar(20, 52, '#3bb273'); } },
+    midRoad: { ok: false, t: 'Arabaların arasından geçmek tehlikeli! Yaya geçidini kullanmalıyız.', svg: function () { return tStreet(false) + tCar(30, 70, '#ef476f') + tCar(100, 52, '#ffd23f', true) + tKid(80, 66, '#8e7dff'); } },
+    sidewalk: { ok: true, t: 'Kaldırımda yürümek doğru!', svg: function () { return tStreet(false) + tCar(40, 70, '#ef476f') + tKid(60, 96, '#3a86ff') + tAdult(80, 96); } },
+    ballRoad: { ok: false, t: 'Yolda top oynanmaz! Parkta oynamalıyız.', svg: function () { return tStreet(false) + tCar(110, 70, '#3a86ff', true) + tKid(62, 62, '#ff8a3d') + tBall(76, 62); } },
+    ballPark: { ok: true, t: 'Parkta oynamak güvenli!', svg: function () { return '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/><rect x="0" y="58" width="160" height="42" fill="#8bd18b"/>' + tTree(24, 64) + tTree(140, 62) + tKid(70, 90, '#ff8a3d') + tBall(88, 90) + tKid(110, 86, '#8e7dff'); } },
+    holdHand: { ok: true, t: 'Büyüğünün elini tutarak, yaya geçidinden geçiyor.', svg: function () { return tStreet(true) + tPedLight(108, 34, true) + tAdult(86, 66) + tKid(74, 66, '#ef476f') + '<line x1="79" y1="57" x2="81" y2="52" stroke="#2b2d42" stroke-width="2.2"/>'; } },
+    bikeHelmet: { ok: true, t: 'Bisiklete binerken kask takmak doğru!', svg: function () { return '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/><rect x="0" y="76" width="160" height="24" fill="#8bd18b"/>' + tTree(140, 78) + tBike(70, 84, true); } },
+    bikeNoHelmet: { ok: false, t: 'Bisiklete binerken kask takmalıyız!', svg: function () { return '<rect x="0" y="0" width="160" height="100" fill="#cfe9ff"/><rect x="0" y="76" width="160" height="24" fill="#8bd18b"/>' + tTree(24, 78) + tBike(80, 84, false); } },
+    backBelt: { ok: true, t: 'Arka koltukta, emniyet kemeri takılı. Doğru!', svg: function () { return tCarInside('back', true); } },
+    frontSeat: { ok: false, t: 'Çocuklar arabada arka koltukta oturmalı!', svg: function () { return tCarInside('front', true); } },
+    noBelt: { ok: false, t: 'Arabada emniyet kemeri mutlaka takılmalı!', svg: function () { return tCarInside('back', false); } }
+  };
+  var STREET_SCENES = ['zebraGreen', 'zebraRed', 'midRoad', 'sidewalk', 'ballRoad', 'ballPark', 'holdHand'];
+  var RIDE_SCENES = ['backBelt', 'frontSeat', 'noBelt', 'bikeHelmet', 'bikeNoHelmet'];
+  function sceneSVG(id) { return '<svg class="scene" viewBox="0 0 160 100" data-id="' + id + '">' + SCENES[id].svg() + '</svg>'; }
+
+  // Araç trafik ışığı: lit = 'red' | 'yellow' | 'green'
+  function carLightSVG(lit) {
+    var c = { red: '#ff3b5c', yellow: '#ffd23f', green: '#2fe08a' }, dim = '#4a4d5e';
+    return '<svg class="tlight" viewBox="0 0 44 104" data-lit="' + lit + '"><rect x="2" y="2" width="40" height="100" rx="8" fill="' + TK + '"/>' +
+      '<circle cx="22" cy="21" r="12" fill="' + (lit === 'red' ? c.red : dim) + '"/>' +
+      '<circle cx="22" cy="52" r="12" fill="' + (lit === 'yellow' ? c.yellow : dim) + '"/>' +
+      '<circle cx="22" cy="83" r="12" fill="' + (lit === 'green' ? c.green : dim) + '"/></svg>';
+  }
+  // Yaya ışığı: duran / yürüyen insan
+  function pedLightSVG(green) {
+    var on = green ? '#2fe08a' : '#ff3b5c', fig;
+    if (green) fig = '<circle cx="30" cy="22" r="6" fill="' + on + '"/><path d="M30 29 L26 46 L18 60 M27 40 L36 58 M29 32 L20 38 M30 32 L40 40" stroke="' + on + '" stroke-width="5" stroke-linecap="round" fill="none"/>';
+    else fig = '<circle cx="30" cy="20" r="6" fill="' + on + '"/><path d="M30 27 L30 46 M30 46 L25 62 M30 46 L35 62 M30 31 L22 44 M30 31 L38 44" stroke="' + on + '" stroke-width="5" stroke-linecap="round" fill="none"/>';
+    return '<svg class="plight" viewBox="0 0 60 72" data-green="' + (green ? 1 : 0) + '"><rect x="2" y="2" width="56" height="68" rx="8" fill="' + TK + '"/>' + fig + '</svg>';
+  }
+  // Trafik levhaları (sade çizim)
+  var SIGNS = {
+    yaya: { n: 'Yaya geçidi', svg: '<rect x="6" y="6" width="88" height="88" rx="8" fill="#1f63cf"/><polygon points="50,14 88,84 12,84" fill="#fff"/><g fill="' + TK + '"><rect x="26" y="74" width="48" height="4"/><rect x="30" y="66" width="40" height="3"/></g><circle cx="52" cy="38" r="5" fill="' + TK + '"/><path d="M51 44 L48 56 L42 64 M49 52 L56 63 M50 47 L43 51 M51 47 L58 52" stroke="' + TK + '" stroke-width="4" stroke-linecap="round" fill="none"/>' },
+    okul: { n: 'Okul geçidi', svg: '<polygon points="50,8 94,88 6,88" fill="#fff" stroke="#ef476f" stroke-width="8" stroke-linejoin="round"/><circle cx="40" cy="44" r="5" fill="' + TK + '"/><path d="M40 50 L40 64 L35 76 M40 64 L45 76 M40 54 L33 60" stroke="' + TK + '" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="60" cy="50" r="4.5" fill="' + TK + '"/><path d="M60 55 L60 67 L56 77 M60 67 L64 77 M60 58 L54 62 M60 58 L66 63" stroke="' + TK + '" stroke-width="4" stroke-linecap="round" fill="none"/>' },
+    dur: { n: 'Dur', svg: '<polygon points="32,6 68,6 94,32 94,68 68,94 32,94 6,68 6,32" fill="#ef476f" stroke="#fff" stroke-width="4"/><text x="50" y="60" text-anchor="middle" font-size="27" font-weight="900" fill="#fff" font-family="Roboto, Arial, sans-serif">DUR</text>' },
+    bisiklet: { n: 'Bisiklet yolu', svg: '<circle cx="50" cy="50" r="44" fill="#1f63cf"/><circle cx="32" cy="60" r="11" fill="none" stroke="#fff" stroke-width="4"/><circle cx="68" cy="60" r="11" fill="none" stroke="#fff" stroke-width="4"/><path d="M32 60 L44 42 L60 42 L68 60 M44 42 L50 60 L60 42 M60 42 L58 34 M42 36 L50 36" stroke="#fff" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>' },
+    isik: { n: 'Işıklı kavşak', svg: '<polygon points="50,8 94,88 6,88" fill="#fff" stroke="#ef476f" stroke-width="8" stroke-linejoin="round"/><rect x="40" y="34" width="20" height="44" rx="4" fill="' + TK + '"/><circle cx="50" cy="44" r="5" fill="#ff3b5c"/><circle cx="50" cy="56" r="5" fill="#ffd23f"/><circle cx="50" cy="68" r="5" fill="#2fe08a"/>' },
+    girilmez: { n: 'Girilmez', svg: '<circle cx="50" cy="50" r="44" fill="#ef476f"/><rect x="18" y="42" width="64" height="16" rx="2" fill="#fff"/>' }
+  };
+  var SIGN_KEYS = ['yaya', 'okul', 'dur', 'bisiklet', 'isik', 'girilmez'];
+  function signSVG(k) { return '<svg class="tsign" viewBox="0 0 100 100" data-sign="' + k + '">' + SIGNS[k].svg + '</svg>'; }
+
+  /* ---------- Trafik Kahramanı: sorular ---------- */
+  var LIGHT_ANS = { red: 'Dur', yellow: 'Hazırlan', green: 'Geç' };
+  var LIGHT_TIP = { red: 'Kırmızı ışıkta araçlar durur.', yellow: 'Sarı ışıkta araçlar durmaya ya da kalkmaya hazırlanır.', green: 'Yeşil ışıkta araçlar geçer.' };
+  var LIGHT_REV = { red: 'durur', yellow: 'hazırlanır', green: 'geçer' };
+  var LIGHT_CAP = { red: 'Kırmızı', yellow: 'Sarı', green: 'Yeşil' };
+  var TQ = [
+    ['Karşıya nereden geçeriz?', 'Yaya geçidinden', 'Arabaların arasından', 'Nereden olursa', 'Karşıya yaya geçidinden geçeriz.'],
+    ['Geçmeden önce nereye bakarız?', 'Sola, sağa, yine sola', 'Sadece yukarı', 'Hiçbir yere', 'Önce sola, sonra sağa, sonra yine sola bakarız.'],
+    ['Yayalar nerede yürür?', 'Kaldırımda', 'Yolun ortasında', 'Arabaların yanında', 'Yayalar kaldırımda yürür.'],
+    ['Topumuz yola kaçarsa ne yaparız?', 'Bir büyüğe söyleriz', 'Hemen yola koşarız', 'Arabaların altına gireriz', 'Yola koşmayız, bir büyüğümüzden yardım isteriz.'],
+    ['Okul servisinden nasıl ineriz?', 'Servis durunca, sırayla', 'Servis giderken', 'İterek, koşarak', 'Servis tam durunca, sırayla ineriz.'],
+    ['Arabada çocuklar nerede oturur?', 'Arka koltukta', 'Ön koltukta', 'Sürücünün kucağında', 'Çocuklar arabada arka koltukta oturur.'],
+    ['Arabaya binince ne yaparız?', 'Kemerimizi takarız', 'Camdan sarkarız', 'Ayakta dururuz', 'Arabaya binince hemen emniyet kemerini takarız.'],
+    ['Bisiklete binerken ne takarız?', 'Kask', 'Şapka', 'Gözlük', 'Bisiklete binerken başımızı kask korur.'],
+    ['Yaya ışığı kırmızıysa ne yaparız?', 'Bekleriz', 'Koşarak geçeriz', 'Yavaşça geçeriz', 'Kırmızı yaya ışığında kaldırımda bekleriz.'],
+    ['Yolda oyun oynanır mı?', 'Hayır, parkta oynarız', 'Evet, oynanır', 'Araba yoksa oynanır', 'Yolda oyun oynanmaz, parkta ya da bahçede oynarız.'],
+    ['Akşam dışarıda ne giyeriz?', 'Açık renkli, parlak', 'Koyu renkli', 'Fark etmez', 'Açık renkli ve parlak giysiler sürücülerin bizi görmesini sağlar.'],
+    ['Trafik polisi dur derse?', 'Dururuz', 'Koşarız', 'El sallayıp geçeriz', 'Trafik polisinin işaretlerine uyarız.'],
+    ['Yolda kiminle yürürüz?', 'Bir büyüğümüzle', 'Tek başımıza koşarak', 'Arabaların arkasından', 'Küçük çocuklar yolda bir büyükle, elini tutarak yürür.']
+  ];
+  var SIGN_TIP = {
+    yaya: 'Mavi yaya geçidi levhası: buradan karşıya geçilir.',
+    okul: 'Okul geçidi: sürücüler yavaşlar, çocuklar dikkatle geçer.',
+    dur: 'DUR levhasında araçlar tamamen durur.',
+    bisiklet: 'Bu yol bisikletliler içindir.',
+    isik: 'Bu levha ileride trafik ışığı olduğunu söyler.',
+    girilmez: 'Bu yoldan araçlar giremez.'
+  };
+
+  var LEVELS_TRAFFIC = [
+    { name: 'Trafik ışığı', sub: 'Kırmızı, sarı, yeşil', color: '#ef476f', kind: 'lights' },
+    { name: 'Yaya ışığı', sub: 'Bekle ya da geç', color: '#3bb273', kind: 'ped' },
+    { name: 'Doğru mu?', sub: 'Sokakta', color: '#3a86ff', kind: 'judge' },
+    { name: 'Karşıya geçiş', sub: 'Bil bakalım', color: '#ff8a3d', kind: 'quiz' },
+    { name: 'Levhalar', sub: 'Ne anlatıyor?', color: '#8e7dff', kind: 'signs' },
+    { name: 'Hangisi güvenli?', sub: 'Doğruyu seç', color: '#14a3a3', kind: 'safe' },
+    { name: 'Arabada', sub: 'Kemer ve kask', color: '#e0a800', kind: 'car' },
+    { name: 'Şampiyon', sub: 'Hepsi', color: '#26874f', kind: 'mix' }
+  ];
+  GAMES.traffic = { id: 'traffic', title: 'Trafik Kahramanı', iconHTML: 'traffic', color: '#5b5f73', levels: LEVELS_TRAFFIC };
+
+  function trPick(seen, list, pre) {
+    var v, tries = 0;
+    do { v = pick(list); tries++; } while (seen[pre + v] && tries < 30);
+    seen[pre + v] = true;
+    return v;
+  }
+  function makeTrafficQuestion(lv, seen) {
+    var kind = lv.kind;
+    if (kind === 'mix') kind = pick(['lights', 'ped', 'judge', 'quiz', 'signs', 'safe', 'car']);
+    var q = { kind: kind, delay: 2300 };
+    if (kind === 'lights') {
+      var lit = pick(['red', 'yellow', 'green']);
+      if (seen.lastLit === lit) lit = pick(['red', 'yellow', 'green']);
+      seen.lastLit = lit;
+      q.lit = lit; q.tip = LIGHT_TIP[lit];
+      if (Math.random() < 0.4) {
+        // ters soru: anlamı verilir, ışık seçilir
+        q.rev = true; q.answer = lit;
+        q.opts = shuffle(['red', 'yellow', 'green']);
+        q.optClass = 'pic tlopt';
+        q.optHTML = function (v) { return carLightSVG(v); };
+      } else {
+        q.answer = LIGHT_ANS[lit];
+        q.opts = ['Dur', 'Hazırlan', 'Geç'];
+        q.optClass = 'word';
+      }
+      return q;
+    }
+    if (kind === 'ped') {
+      q.green = Math.random() < 0.5;
+      if (seen.lastPed === q.green && Math.random() < 0.6) q.green = !q.green;
+      seen.lastPed = q.green;
+      q.answer = q.green ? 'Bakıp geçerim' : 'Beklerim';
+      q.opts = shuffle(['Beklerim', 'Bakıp geçerim', 'Koşarak geçerim']);
+      q.optClass = 'txt';
+      q.tip = q.green ? 'Yeşil yaya ışığında sola, sağa bakıp yürüyerek geçeriz.' : 'Kırmızı yaya ışığında kaldırımda bekleriz.';
+      return q;
+    }
+    if (kind === 'judge' || kind === 'car') {
+      var sc = trPick(seen, kind === 'car' ? RIDE_SCENES : STREET_SCENES, 's');
+      q.scene = sc; q.tip = SCENES[sc].t;
+      q.answer = SCENES[sc].ok ? 'yes' : 'no';
+      q.opts = ['yes', 'no'];
+      q.optClass = 'yn';
+      q.optHTML = function (v) { return v === 'yes' ? '<svg viewBox="0 0 40 40"><path d="M8 21 L17 30 L33 11" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Doğru</span>' : '<svg viewBox="0 0 40 40"><path d="M10 10 L30 30 M30 10 L10 30" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg><span>Yanlış</span>'; };
+      return q;
+    }
+    if (kind === 'quiz') {
+      var idx, tries = 0;
+      do { idx = rnd(0, TQ.length - 1); tries++; } while (seen['q' + idx] && tries < 40);
+      seen['q' + idx] = true;
+      var t = TQ[idx];
+      q.text = t[0]; q.answer = t[1]; q.tip = t[4];
+      q.opts = shuffle([t[1], t[2], t[3]]);
+      q.optClass = 'txt';
+      return q;
+    }
+    if (kind === 'signs') {
+      var sg = trPick(seen, SIGN_KEYS, 'g');
+      q.sign = sg; q.tip = SIGN_TIP[sg];
+      var others = shuffle(SIGN_KEYS.filter(function (x) { return x !== sg; })).slice(0, 2);
+      q.answer = SIGNS[sg].n;
+      q.opts = shuffle([sg].concat(others)).map(function (k) { return SIGNS[k].n; });
+      q.optClass = 'txt';
+      return q;
+    }
+    // safe: üç sahneden güvenli olanı seç
+    var goods = [], bads = [];
+    var all = STREET_SCENES.concat(RIDE_SCENES);
+    for (var i = 0; i < all.length; i++) (SCENES[all[i]].ok ? goods : bads).push(all[i]);
+    var g = trPick(seen, goods, 'f');
+    var b = shuffle(bads).slice(0, 2);
+    q.answer = g; q.tip = SCENES[g].t;
+    q.opts = shuffle([g].concat(b));
+    q.noChoices = true;
+    return q;
+  }
+
+  function buildTrafficQuestion(stage, q) {
+    var k = q.kind, row;
+    if (k === 'lights') {
+      if (q.rev) {
+        stage.appendChild(el('div', 'cmp-ask', 'Araçlar hangi ışıkta <b>' + LIGHT_REV[q.lit] + '</b>?'));
+        say('Işığı seç!');
+      } else {
+        row = el('div', 'tr-row');
+        row.appendChild(el('div', 'tr-light', carLightSVG(q.lit)));
+        row.appendChild(el('div', 'tr-side', '<div class="hc-q">' + LIGHT_CAP[q.lit] + ' ışık yandı.<br>Araçlar ne yapar?</div>'));
+        stage.appendChild(row);
+        say('Hangi ışık yanıyor?');
+      }
+    } else if (k === 'ped') {
+      row = el('div', 'tr-row');
+      row.appendChild(el('div', 'tr-ped', pedLightSVG(q.green)));
+      row.appendChild(el('div', 'tr-side', '<div class="hc-q">Yaya ışığı böyle.<br>Ne yaparsın?</div>'));
+      stage.appendChild(row);
+      say('Yaya ışığına bak!');
+    } else if (k === 'judge' || k === 'car') {
+      stage.appendChild(el('div', 'tr-scene', sceneSVG(q.scene)));
+      stage.appendChild(el('div', 'cmp-ask small', 'Bu <b>doğru</b> mu?'));
+      say('Resme dikkatle bak!');
+    } else if (k === 'quiz') {
+      stage.appendChild(el('div', 'tr-quiz', q.text));
+      say('Doğru cevabı seç!');
+    } else if (k === 'signs') {
+      row = el('div', 'tr-row');
+      row.appendChild(el('div', 'tr-sign', signSVG(q.sign)));
+      row.appendChild(el('div', 'tr-side', '<div class="hc-q">Bu levhanın<br>adı ne?</div>'));
+      stage.appendChild(row);
+      say('Levhaya bak!');
+    } else {
+      stage.appendChild(el('div', 'cmp-ask', 'Hangisi <b>güvenli</b>?'));
+      var pics = el('div', 'tr-pics');
+      for (var i = 0; i < q.opts.length; i++) {
+        (function (val, n) {
+          var bt = el('button', 'ch pic scopt', sceneSVG(val));
+          bt.style.webkitAnimationDelay = bt.style.animationDelay = (0.08 * n + 0.1) + 's';
+          bt.addEventListener('click', function () { answer(bt, val); });
+          pics.appendChild(bt);
+        })(q.opts[i], i);
+      }
+      stage.appendChild(pics);
+      say('Doğru davranışı bul!');
+    }
+    stage.appendChild(el('div', 'tr-note', ''));
+    q.onRight = function () { trafficNote(q.tip, true); };
+  }
+
+  function trafficNote(text, ok) {
+    var n = $('stage').querySelector('.tr-note');
+    if (!n) return;
+    n.innerHTML = text;
+    n.className = 'tr-note show' + (ok ? ' ok' : '');
+  }
+
+  function trafficHint(val) {
+    var q = G.cur;
+    if (q.kind === 'judge' || q.kind === 'car') {
+      trafficNote(q.tip, false);
+      return SCENES[q.scene].ok ? 'Bu doğru bir davranış!' : 'Bu tehlikeli!';
+    }
+    if (q.kind === 'safe') {
+      trafficNote(SCENES[val].t, false);
+      return 'Bu güvenli değil!';
+    }
+    if (q.kind === 'ped' && val === 'Koşarak geçerim') {
+      trafficNote('Yolda koşmayız; düşebiliriz, sürücüler bizi göremeyebilir.', false);
+      return pick(RETRY);
+    }
+    if (G.wrongNow >= 2) trafficNote(q.tip, false);
+    return pick(RETRY);
+  }
+
   function buildChoices(q) {
     var box = $('choices');
     box.innerHTML = '';
@@ -2368,7 +2690,7 @@
       if (!clean) G.missQ++;
       G.streak = clean ? G.streak + 1 : 0;
       if (!q.keepBtn) btn.className = q.build ? 'ch pvb pvok right' : 'ch right' + (q.optClass ? ' ' + q.optClass : '');
-      var others = $('choices').querySelectorAll('.ch');
+      var others = $('s-play').querySelectorAll('.ch');
       for (var i = 0; i < others.length; i++) if (others[i] !== btn) others[i].classList.add('fade');
       var box = $('stage').querySelector('.box');
       if (box) { box.innerHTML = q.answerText || String(q.answer); box.className = 'box done'; }
@@ -2380,7 +2702,7 @@
       if (G.streak === 3 || G.streak === 5 || G.streak === QUESTIONS_PER_LEVEL) showStreak(G.streak);
       G.q++;
       renderDots();
-      later(nextQuestion, G.lv.kind === 'line' && !clean ? 1100 : 950);
+      later(nextQuestion, q.delay || (G.lv.kind === 'line' && !clean ? 1100 : 950));
     } else {
       G.wrongNow++;
       G.streak = 0;
@@ -2389,7 +2711,9 @@
       if (q.build) { restartAnim(btn, 'shake'); say(q.ctrl === 'clock' ? clockSetHint() : q.ctrl === 'hece' ? heceBuildWrong() : q.ctrl === 'shop' ? shopPayHint() : pvBuildHint()); return; }
       btn.disabled = true;
       btn.className += ' wrong';
-      if (G.op === 'geo') {
+      if (G.op === 'traffic') {
+        say(trafficHint(val));
+      } else if (G.op === 'geo') {
         say(geoHint(val));
       } else if (G.op === 'shop') {
         say(shopHint(val));

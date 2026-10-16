@@ -787,3 +787,50 @@ svg { display: block; }
 .game-icon .geo-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; height: 100%; }
 .game-icon .geo-ico .geo { width: 3.4rem; height: 3.4rem; margin: 0 .2rem; }
 .ch.pic.geoopt { padding: .45rem; }
+
+/* ---------- Trafik Kahramanı ---------- */
+.tr-row {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+}
+.tr-side { text-align: center; }
+.tr-light { width: 6rem; height: 14rem; margin-right: 2rem; -webkit-flex: none; flex: none; }
+.tr-ped { width: 10rem; height: 12rem; margin-right: 2rem; -webkit-flex: none; flex: none; }
+.tr-sign { width: 12rem; height: 12rem; margin-right: 2rem; -webkit-flex: none; flex: none;
+  background: #fff; border-radius: 1.6rem; border-bottom: .4rem solid #d7dfea; padding: .8rem; }
+.tlight, .plight, .tsign, .scene { display: block; width: 100%; height: 100%; }
+.tr-scene { width: 23rem; height: 14.4rem; border-radius: 1.4rem; overflow: hidden;
+  border-bottom: .4rem solid #d7dfea; background: #fff; -webkit-flex: none; flex: none; }
+.tr-quiz {
+  font-size: 2.6rem; font-weight: 900; color: #2b2d42; line-height: 1.2; text-align: center;
+  background: rgba(255,255,255,.88); border-radius: 1.4rem; padding: 1.2rem 2rem; max-width: 40rem;
+}
+.tr-note {
+  min-height: 2.4rem; margin-top: .4rem; max-width: 46rem;
+  font-size: 1.3rem; font-weight: 900; line-height: 1.2; text-align: center; color: #2b2d42;
+  padding: .4rem 1.2rem; border-radius: 1rem; opacity: 0;
+}
+.tr-note.show { opacity: 1; background: #fff3c4; -webkit-animation: say .3s ease-out; animation: say .3s ease-out; }
+.tr-note.show.ok { background: #c9f2da; }
+.ch.txt {
+  width: 13.5rem; height: 6.6rem; margin: 0 .5rem; padding: 0 .7rem;
+  border-radius: 1.4rem; font-size: 1.45rem; line-height: 1.15;
+}
+.ch.yn { width: 9.5rem; height: 7rem; border-radius: 1.4rem; margin: 0 1.2rem; font-size: 1.4rem; }
+.ch.yn svg { display: block; width: 3.2rem; height: 3.2rem; margin: 0 auto .1rem; }
+.ch.yn span { display: block; }
+.ch.yn.k0 { background: #3bb273; border-bottom-color: #26874f; }
+.ch.yn.k1 { background: #ef476f; border-bottom-color: #c42a50; }
+.ch.pic.tlopt { width: 5rem; height: 8.4rem; border-radius: 1.2rem; padding: .3rem; margin: 0 1.4rem; }
+.tr-pics { margin-top: 1.2rem; white-space: nowrap; }
+.ch.pic.scopt { width: 16rem; height: 10rem; border-radius: 1.2rem; padding: .3rem; margin: 0 .5rem; overflow: hidden; }
+.ch.pic.scopt .scene { border-radius: .9rem; }
+.game-icon .tr-ico { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; height: 100%; }
+.game-icon .tr-ico .tlight { width: 2.2rem; height: 5.2rem; margin-right: .5rem; }
+.game-icon .tr-ico .tsign { width: 4.4rem; height: 4.4rem; }
+.portrait .tr-row { -webkit-flex-direction: column; flex-direction: column; }
+.portrait .tr-light, .portrait .tr-ped, .portrait .tr-sign { margin: 0 0 1rem; }
+.portrait .ch.txt { width: 11.6rem; font-size: 1.3rem; margin: 0 .3rem; }
+.portrait .ch.pic.scopt { width: 11.6rem; height: 7.25rem; margin: 0 .3rem; }
+.portrait .tr-scene { width: 34rem; height: 21.25rem; }
