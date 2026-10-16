@@ -114,7 +114,7 @@ jobs:
         run: |
           # Yeni sürümün kenar sunuculara yayılmasını bekle (en fazla ~2 dk)
           for i in $(seq 1 12); do
-            if curl -s "https://mandi.etka.org/app.js?t=$i" | grep -q "var BUILD = .${GITHUB_SHA::7}."; then echo "Yeni sürüm yayında ($i. deneme)"; break; fi
+            if curl -s "https://mandi.etka.org/app.js?t=$i" | grep -q "var BUILD = .${GITHUB_SHA::7}." && [ "$(curl -s -o /dev/null -w '%{http_code}' "https://mandi.etka.org/bus.js?t=$i")" = 200 ]; then echo "Yeni sürüm yayında ($i. deneme)"; sleep 15; break; fi
             sleep 10
           done
           fail=0
