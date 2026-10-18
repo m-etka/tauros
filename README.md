@@ -8,6 +8,7 @@ Ana sayfa konu başlıkları (Matematik, Türkçe, Hayat Bilgisi, Akıl Oyunlar�
 
 
 - **Mandi Otobüsü** (`bus.js`, sonradan yüklenir): Bakkal Mandi 12 yıldızla açılır. 3 seviye — bilet parası say, yolcu say (binen/inen), para üstü ver. Yandan görünüş sürüş: katmanlar `translate3d` ile kayar, Gaz/Fren basılı tutulur (klavyede oklar). `window.Mandi` arayüzü ve `GAMES.x.impl = {setup, next}` ile app.js'e bağlanır.
+- **Satranç Okulu** (`chess.js`, sonradan yüklenir, Akıl Oyunları): rakipsiz eğitim, 12 sıralı seviye (Kale, Fil, Vezir, Şah, At, Piyon küçük tahtada; Engeller, Taş yeme, Şah çekme, Özel hamleler, Tam tahta, Şampiyon). Kural motoru (yasal hamle, şah, mat, geçerken alma, terfi) `window.ChessRules` ile test edilir. Görev türleri: `mark` (karelere dokun), `stars` (oynat/yıldız/ye), `move` (doğru hamle), `choose` (seçenek).
 - **Mangala** (`mangala.js`, sonradan yüklenir, Akıl Oyunları): Türk Mangalası kuralları. 4 kilitsiz seviye (`free: true`) — Kolay Mandi (ipuçlu), Orta, Zor (minimax, derinlik 6), İki kişi (`solo`: Devam zincirine girmez). Kurallar `window.MangalaRules.applyMove` ile test edilebilir.
 - **Trafik Kahramanı** (Hayat Bilgisi, trafikte güvenlik): 8 seviye — trafik/yaya ışığı, doğru mu (sahne), soru-cevap, levhalar, hangisi güvenli, arabada kemer/kask. Sahneler SVG (`SCENES`), cevaptan sonra açıklama notu (`.tr-note`).
 - **Hece Treni** (Türkçe, 1. sınıf heceleme; sessiz): 8 seviye — resmi bul, heceleri vagonlara diz, eksik hece, kaç hece; 37 SVG resimli kelime (`WORDS`/`PIC` in app.js).

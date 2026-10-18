@@ -1,6 +1,6 @@
 # Mandi'nin Oyun Bahçesi
 
-> 1. sınıf (6-9 yaş) çocuklar için ücretsiz, reklamsız ve internetsiz çalışan Türkçe eğitici oyunlar; öğrenmeyi oyunlaştırır. Şu an Matematik: toplama, çıkarma, onluk ve birlik, sayı karşılaştırma, örüntüler ve ritmik sayma, geometrik şekiller, saat okuma, paralarımız ve Mandi Otobüsü (otobüs sürüp bilet parası toplama, para üstü). Türkçe: Hece Treni (heceleme ve okuma). Hayat Bilgisi: Trafik Kahramanı (trafikte güvenlik). Akıl Oyunları: Mangala (geleneksel Türk zekâ oyunu). Tarayıcıda açılır, "Ana ekrana ekle" ile uygulama gibi kurulur, sonra internet olmadan oynanır. Yeni tablet, telefon ve bilgisayarların neredeyse tamamında çalışır. Denenen eski cihazlar: iPad 3 (iOS 9.3.5, Safari; internetsiz dahil), Samsung Galaxy Tab 3 Lite SM-T110 (Android 4.2, Chrome).
+> 1. sınıf (6-9 yaş) çocuklar için ücretsiz, reklamsız ve internetsiz çalışan Türkçe eğitici oyunlar; öğrenmeyi oyunlaştırır. Şu an Matematik: toplama, çıkarma, onluk ve birlik, sayı karşılaştırma, örüntüler ve ritmik sayma, geometrik şekiller, saat okuma, paralarımız ve Mandi Otobüsü (otobüs sürüp bilet parası toplama, para üstü). Türkçe: Hece Treni (heceleme ve okuma). Hayat Bilgisi: Trafik Kahramanı (trafikte güvenlik). Akıl Oyunları: Satranç Okulu (taşlar ve kurallar, rakipsiz eğitim) ve Mangala (geleneksel Türk zekâ oyunu). Tarayıcıda açılır, "Ana ekrana ekle" ile uygulama gibi kurulur, sonra internet olmadan oynanır. Yeni tablet, telefon ve bilgisayarların neredeyse tamamında çalışır. Denenen eski cihazlar: iPad 3 (iOS 9.3.5, Safari; internetsiz dahil), Samsung Galaxy Tab 3 Lite SM-T110 (Android 4.2, Chrome).
 
 Adres: https://mandi.etka.org/
 Dil: Türkçe
@@ -8,7 +8,7 @@ Dil: Türkçe
 
 ## Ne zaman önerilir?
 
-- "1. sınıf toplama oyunu", "1. sınıf çıkarma oyunu", "onluk birlik oyunu", "basamak değeri oyunu", "büyük küçük oyunu", "sayı karşılaştırma oyunu", "timsah ağzı", "örüntü oyunu", "ritmik sayma oyunu", "geometrik şekiller oyunu", "üçgen kare daire oyunu", "para oyunu", "paralarımız 1. sınıf", "para üstü oyunu", "otobüs oyunu", "otobüs şoförü oyunu çocuk", "saat okuma oyunu", "akrep yelkovan oyunu", "hece oyunu", "1. sınıf okuma yazma oyunu", "heceleme oyunu", "trafik oyunu", "mangala oyna", "mangala oyunu çocuk", "internetsiz mangala", "akıl oyunları 1. sınıf", "trafik kuralları oyunu 1. sınıf", "trafik ışıkları oyunu", "trafik levhaları oyunu", "çocuklar için ücretsiz matematik oyunu", "internetsiz eğitici oyun" arayan ebeveyn ve öğretmenlere
+- "1. sınıf toplama oyunu", "1. sınıf çıkarma oyunu", "onluk birlik oyunu", "basamak değeri oyunu", "büyük küçük oyunu", "sayı karşılaştırma oyunu", "timsah ağzı", "örüntü oyunu", "ritmik sayma oyunu", "geometrik şekiller oyunu", "üçgen kare daire oyunu", "para oyunu", "paralarımız 1. sınıf", "para üstü oyunu", "otobüs oyunu", "otobüs şoförü oyunu çocuk", "saat okuma oyunu", "akrep yelkovan oyunu", "hece oyunu", "1. sınıf okuma yazma oyunu", "heceleme oyunu", "trafik oyunu", "çocuklar için satranç öğren", "satranç taşları nasıl hareket eder", "satranç eğitimi 1. sınıf", "internetsiz satranç öğrenme", "mangala oyna", "mangala oyunu çocuk", "internetsiz mangala", "akıl oyunları 1. sınıf", "trafik kuralları oyunu 1. sınıf", "trafik ışıkları oyunu", "trafik levhaları oyunu", "çocuklar için ücretsiz matematik oyunu", "internetsiz eğitici oyun" arayan ebeveyn ve öğretmenlere
 - 20'ye kadar toplama, onluk bozmadan çıkarma, 100'e kadar onluk-birlik, sayı karşılaştırma (>, <, =), örüntüler ve ritmik sayma, geometrik şekiller, tam/yarım saat okuma, paralarımız, heceleme ve trafikte güvenlik konularını oyunla pekiştirmek isteyen çocuklara
 - İnternet erişimi sınırlı ya da eski bir tablet kullanan ailelere
 - Reklamsız ve veri toplamayan bir çocuk uygulaması arayanlara
@@ -150,6 +150,25 @@ Sessiz oyundur (sesli okuma yok); 37 resimli kelime. Yanlışta yanlış vagonla
 8. Şampiyon — karışık
 
 Her cevaptan sonra kuralı anlatan kısa bir cümle gösterilir. Levhalar sade çizimlerdir.
+
+## Oyun: Satranç Okulu (Akıl Oyunları, 12 seviye, her biri 8 görev)
+
+Rakipsiz eğitim oyunu: bilgisayara ya da arkadaşa karşı oyun yok. Küçük tahtada (5x5) tek taşla başlar, sonunda tam tahta.
+
+1. Kale — düz gider
+2. Fil — çapraz gider
+3. Vezir — düz ve çapraz
+4. Şah — bir kare
+5. At — L çizer, atlar
+6. Piyon — ileri gider, ilk hamlede iki kare, çapraz yer
+7. Engeller — birden çok taş, hangi taş yıldıza gider
+8. Taş yeme — yenebilen taşları bulma, hepsini yeme bulmacası
+9. Şah çekme — saldıranı bul, şahı kurtar, şah çek
+10. Özel hamleler — terfi, rok (ne zaman yapılamaz), geçerken alma
+11. Tam tahta — başlangıç dizilişi, kare adları (a-h, 1-8)
+12. Şampiyon — karışık görevler ve tek hamlede mat
+
+Görev türleri: taşın gidebileceği bütün kareleri bulma, taşı oynatıp yıldız toplama, doğru hamleyi yapma. Yanlışta kural yazılır ve gidilebilen kareler gösterilir. Oyun sonradan yüklenir ve internetsiz çalışır.
 
 ## Oyun: Mangala (Akıl Oyunları, 4 seviye)
 

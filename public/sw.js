@@ -8,6 +8,7 @@ var FILES = [
   'app.js',
   'bus.js',
   'mangala.js',
+  'chess.js',
   'manifest.json',
   'icons/icon-192.png',
   'icons/icon-512.png'

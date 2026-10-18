@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.11.2';
+  var APP_VERSION = '1.12.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -310,14 +310,31 @@
     save.games.mangala_v = 2;
   })();
 
+  // Satranç Okulu: taşlar ve kurallar, rakipsiz eğitim (chess.js, sonradan yüklenir)
+  var LEVELS_CHESS = [
+    { name: 'Kale', sub: 'Düz gider', color: '#3a86ff', kind: 'R' },
+    { name: 'Fil', sub: 'Çapraz gider', color: '#8e7dff', kind: 'B' },
+    { name: 'Vezir', sub: 'Her yöne gider', color: '#ef476f', kind: 'Q' },
+    { name: 'Şah', sub: 'Bir kare gider', color: '#e0a800', kind: 'K' },
+    { name: 'At', sub: 'L çizer', color: '#3bb273', kind: 'N' },
+    { name: 'Piyon', sub: 'İleri gider, çapraz yer', color: '#ff8a3d', kind: 'P' },
+    { name: 'Engeller', sub: 'Birden çok taş', color: '#14a3a3', kind: 'block' },
+    { name: 'Taş yeme', sub: 'Rakibi ye', color: '#d65db1', kind: 'capture' },
+    { name: 'Şah çekme', sub: 'Tehdit ve kaçış', color: '#c42a50', kind: 'check' },
+    { name: 'Özel hamleler', sub: 'Terfi, rok', color: '#a0662f', kind: 'special' },
+    { name: 'Tam tahta', sub: 'Taşları diz', color: '#5b5f73', kind: 'setup' },
+    { name: 'Şampiyon', sub: 'Mat et!', color: '#26874f', kind: 'champ' }
+  ];
+  GAMES.chess = { id: 'chess', title: 'Satranç Okulu', iconHTML: 'chess', color: '#7a5230', levels: LEVELS_CHESS, lazy: 'chess.js' };
+
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
     { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'bus'] },
     { title: 'Türkçe', games: ['hece'] },
     { title: 'Hayat Bilgisi', games: ['traffic'] },
-    { title: 'Akıl Oyunları', games: ['mangala'] }
+    { title: 'Akıl Oyunları', games: ['chess', 'mangala'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'bus', 'hece', 'traffic', 'mangala'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'bus', 'hece', 'traffic', 'chess', 'mangala'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -451,6 +468,13 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'chess') {
+      var cq = '';
+      for (var cy = 0; cy < 3; cy++) for (var cx = 0; cx < 5; cx++) cq += '<rect x="' + (10 + cx * 16) + '" y="' + (4 + cy * 16) + '" width="16" height="16" fill="' + ((cx + cy) % 2 ? '#b58863' : '#f0d9b5') + '"/>';
+      return '<div class="game-icon" style="background:' + game.color + '"><svg class="cs-ico" viewBox="0 0 100 56">' + cq +
+        '<path d="M37 50 C37 44 41 42 43 39 L38.5 40.5 Q34.5 40 35 36 L42 28.5 L43 24 L46.5 27.5 Q55 29.5 54 41 L53 50 Z" fill="#fff" stroke="#2b2d42" stroke-width="2" stroke-linejoin="round"/>' +
+        '<rect x="33" y="49" width="24" height="5" rx="2" fill="#fff" stroke="#2b2d42" stroke-width="2"/></svg></div>';
+    }
     if (game.iconHTML === 'mangala') {
       var mp = '', cols = ['#ef476f', '#3a86ff', '#ffd23f', '#3bb273'];
       for (var mi = 0; mi < 4; mi++) {
@@ -575,6 +599,7 @@
   function renderLevels() {
     var box = $('levels');
     box.innerHTML = '';
+    box.className = 'levels' + (CUR.levels.length > 8 ? ' many' : '');
     $('levels-title').innerHTML = CUR.title;
     var open = unlockedCount();
     var st = starsOf(CUR);
