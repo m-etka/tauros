@@ -128,7 +128,8 @@
       return '<div class="mg-chip p' + p + (S.turn === p && !S.over ? ' on' : '') + '"><b>' + nm[p] + '</b><span>' + S.view[storeOf(p)] + '</span></div>';
     };
     var msg = S.over ? 'Oyun bitti!' : S.two ? 'Sıra: <b>' + nm[S.turn] + '</b>' : S.turn === 0 ? 'Sıra <b>sende</b>!' : 'Mandi düşünüyor...';
-    box.innerHTML = '<div class="mg-turn">' + chip(0) + '<div class="mg-msg">' + msg + '</div>' + chip(1) + '</div>';
+    // isimler hazinelerle aynı tarafta: Mandi/Turuncu solda, Sen/Mavi sağda
+    box.innerHTML = '<div class="mg-turn">' + chip(1) + '<div class="mg-msg">' + msg + '</div>' + chip(0) + '</div>';
     S.board.className = 'mg-board turn' + S.turn + (S.over ? ' over' : '');
     markHints();
   }
@@ -272,16 +273,22 @@
     if (S.two) {
       msg += a === b ? 'Berabere! ' + a + ' - ' + b : (a > b ? nm[0] : nm[1]) + ' kazandı! ' + Math.max(a, b) + ' - ' + Math.min(a, b);
       g.missQ = 0;
+      g.resultText = a === b ? 'Berabere bitti: ' + a + ' - ' + b : (a > b ? nm[0] : nm[1]) + ' kazandı: ' + Math.max(a, b) + ' - ' + Math.min(a, b);
     } else if (a > b) {
       msg += 'Kazandın! ' + a + ' - ' + b;
       g.missQ = a - b >= 10 ? 0 : 2;
+      g.resultText = "Mandi'yi yendin: " + a + ' - ' + b + (a - b >= 10 ? '' : '<br>10 taş farkla yenersen 3 yıldız!');
       M.mascot.face('oh', 1500);
     } else if (a === b) {
       msg += 'Berabere! ' + a + ' - ' + b;
       g.missQ = 4;
+      g.noNext = true;
+      g.resultText = 'Berabere bitti: ' + a + ' - ' + b + '<br>Bir daha oyna, Mandi\'yi yen!';
     } else {
       msg += 'Mandi kazandı: ' + b + ' - ' + a + '. Bir daha dene!';
       g.missQ = 4;
+      g.noNext = true;
+      g.resultText = 'Mandi kazandı: ' + b + ' - ' + a + '<br>Bir daha dene, bu sefer sen kazan!';
       M.mascot.face('happy', 1500);
     }
     $('choices').querySelector('.mg-msg').innerHTML = msg;

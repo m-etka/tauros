@@ -969,9 +969,12 @@ svg { display: block; }
 .mg-hint.cap { display: block; background: #3bb273; color: #fff; }
 .mg-hint.cap:after { content: '+'; }
 .mg-row.bot .mg-hint { top: auto; bottom: -.5rem; }
-.mg-board.turn0 .mg-pit.p0 { border-color: #3a86ff; }
-.mg-board.turn1 .mg-pit.p1 { border-color: #ff8a3d; }
-.mg-board.over .mg-pit { border-color: #7a4a1f; }
+/* sıralar her zaman sahibinin renginde; sırası gelen sıra parlak */
+.mg-pit.p0 { border-color: #5f86c4; }
+.mg-pit.p1 { border-color: #c4834f; }
+.mg-board.turn0 .mg-pit.p0 { border-color: #3a86ff; background: #9a6533; }
+.mg-board.turn1 .mg-pit.p1 { border-color: #ff8a3d; background: #9a6533; }
+.mg-board.over .mg-pit { border-color: #7a4a1f; background: #8b5a2b; }
 .mg-pit.drop, .mg-store.drop { -webkit-animation: mgDrop .25s ease-out; animation: mgDrop .25s ease-out; }
 .mg-pit.lift, .mg-pit.pick { -webkit-animation: mgLift .4s ease-out; animation: mgLift .4s ease-out; }
 .mg-pit.grab { -webkit-animation: mgGrab .6s ease-out; animation: mgGrab .6s ease-out; }

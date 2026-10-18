@@ -156,9 +156,11 @@ Her cevaptan sonra kuralı anlatan kısa bir cümle gösterilir. Levhalar sade �
 Geleneksel Türk zekâ oyunu; Akıl ve Zekâ Oyunları turnuva kuralları (6 kuyu, 4'er taş, hazine).
 
 1. Kolay Mandi — ipuçlu: bir tur daha kazandıran kuyular yıldızlı, taş aldıranlar artılı
-2. İki kişi — aynı tablette iki çocuk
-3. Orta Mandi
-4. Zor Mandi — ileriyi düşünen rakip
+2. Orta Mandi
+3. Zor Mandi — ileriyi düşünen rakip
+4. İki kişi — aynı tablette iki çocuk
+
+Seviyeler kilitsizdir; istenen zorluk doğrudan seçilir.
 
 Kurallar: taşlar alınır, ilki aynı kuyuya, diğerleri sağa birer birer bırakılır (tek taş yandaki kuyuya geçer). Son taş kendi hazinesine düşerse bir tur daha. Son taş rakip kuyusunu çift yaparsa o taşlar alınır. Son taş kendi boş kuyusuna düşerse karşı kuyuyla birlikte alınır. Kuyularını ilk bitiren rakibin kalan taşlarını alır. Oyun sonradan yüklenir ve internetsiz çalışır.
 

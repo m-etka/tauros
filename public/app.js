@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.11.1';
+  var APP_VERSION = '1.11.2';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -294,11 +294,21 @@
   // Mangala: geleneksel Türk zekâ oyunu (mangala.js, sonradan yüklenir)
   var LEVELS_MANGALA = [
     { name: 'Kolay Mandi', sub: 'İpuçlu', color: '#3bb273', kind: 'easy', hints: true },
-    { name: 'İki kişi', sub: 'Arkadaşınla', color: '#3a86ff', kind: 'two' },
     { name: 'Orta Mandi', sub: 'Dikkatli ol', color: '#ff8a3d', kind: 'mid' },
-    { name: 'Zor Mandi', sub: 'Usta işi', color: '#ef476f', kind: 'hard' }
+    { name: 'Zor Mandi', sub: 'Usta işi', color: '#ef476f', kind: 'hard' },
+    { name: 'İki kişi', sub: 'Arkadaşınla', color: '#3a86ff', kind: 'two', solo: true }
   ];
-  GAMES.mangala = { id: 'mangala', title: 'Mangala', iconHTML: 'mangala', color: '#a0662f', levels: LEVELS_MANGALA, lazy: 'mangala.js' };
+  // free: seviyeler kilitsiz, sıralı değil (oyun modları). solo: "Sonraki" zincirine girmez.
+  GAMES.mangala = { id: 'mangala', title: 'Mangala', iconHTML: 'mangala', color: '#a0662f', levels: LEVELS_MANGALA, lazy: 'mangala.js', free: true };
+  // 1.11.0 kayıtlarında sıra Kolay, İki kişi, Orta, Zor idi: yıldızları yeni sıraya taşı
+  (function () {
+    var m = save.games.mangala;
+    if (m && !save.games.mangala_v) {
+      save.games.mangala = { 0: m[0], 1: m[2], 2: m[3], 3: m[1] };
+      for (var k in save.games.mangala) if (!save.games.mangala[k]) delete save.games.mangala[k];
+    }
+    save.games.mangala_v = 2;
+  })();
 
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
@@ -550,6 +560,7 @@
   /* Seviye seçimi                                                       */
   /* ------------------------------------------------------------------ */
   function unlockedCount() {
+    if (CUR.free) return CUR.levels.length;
     var n = 1, st = starsOf(CUR), L = CUR.levels;
     for (var i = 0; i < L.length; i++) {
       if (st[i] > 0) n = i + 2; else break;
@@ -2968,7 +2979,9 @@
     if (stars === 3) txt = G.game.title + ' ustası oldun!';
     else if (stars === 2) txt = 'Bir daha oynarsan 3 yıldız alabilirsin!';
     else txt = 'Her oyunda daha iyi oluyorsun!';
-    if (lvlIndex === LV.length - 1) txt = 'Bütün seviyeleri bitirdin! Sen bir şampiyonsun!';
+    var hasNext = lvlIndex < LV.length - 1 && !LV[lvlIndex].solo && !LV[lvlIndex + 1].solo && !G.noNext;
+    if (G.game.free) { if (G.resultText) txt = G.resultText; }
+    else if (lvlIndex === LV.length - 1) txt = 'Bütün seviyeleri bitirdin! Sen bir şampiyonsun!';
     else if (!prev) txt += '<br>Yeni seviye açıldı!';
     $('result-text').innerHTML = txt;
 
@@ -2986,7 +2999,7 @@
     later(function () { burst($('result-mascot'), 18); }, 900);
 
     var next = $('btn-next');
-    next.style.display = lvlIndex < LV.length - 1 ? '' : 'none';
+    next.style.display = hasNext ? '' : 'none';
     next.onclick = function () { Snd.tap(); startLevel(lvlIndex + 1); };
     $('btn-again').onclick = function () { Snd.tap(); startLevel(lvlIndex); };
   }
