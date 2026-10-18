@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.11.0';
+  var APP_VERSION = '1.11.1';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -3108,7 +3108,7 @@
     status.innerHTML = PRIVATE_MSG;
   }
 
-  // Cihazın kendisinden manifest dosyasını kontrol et
+  // Cihazın kendisinden internetsiz dosya listesini (offline.appcache) kontrol et
   var manifestCheck = '';
   function checkManifest(done) {
     try {
@@ -3117,23 +3117,44 @@
       x.onreadystatechange = function () {
         if (x.readyState !== 4) return;
         var ct = (x.getResponseHeader('Content-Type') || '').split(';')[0];
-        manifestCheck = 'manifest ' + x.status + ' ' + ct;
+        // yalnızca sorun varsa göster
+        manifestCheck = x.status === 200 && ct === 'text/cache-manifest' ? '' : x.status === 0 ? '' : 'dosya listesi alınamadı (' + x.status + ')';
         done();
       };
       x.send();
-    } catch (e) { manifestCheck = 'manifest hata'; done(); }
+    } catch (e) { manifestCheck = ''; done(); }
   }
 
-  // Teşhis: hangi çevrimdışı yöntem kullanılıyor, durumu ne
+  // Eski yöntemin (AppCache) olaylarını Türkçeye çevir
+  var AC_WORDS = { checking: 'kontrol', noupdate: 'güncel', downloading: 'iniyor', progress: 'iniyor', cached: 'kaydedildi', updateready: 'yeni sürüm', obsolete: 'kaldırıldı', error: 'hata' };
+  var AC_REASONS = { manifest: 'dosya listesi', signature: 'dosya listesi', network: 'bağlantı', quota: 'yer yok', resource: 'dosya inmedi', policy: 'izin yok' };
+  function acWord(ev) {
+    var m = /^(\w+)(?:\((\w+)\))?(?: (\d+\/\d+))?/.exec(ev) || [];
+    var w = AC_WORDS[m[1]] || m[1] || '';
+    if (m[2]) w += ' (' + (AC_REASONS[m[2]] || 'bilinmiyor') + ')';
+    if (m[3]) w += ' ' + m[3];
+    return w;
+  }
+
+  // Durum: internetsiz kullanım hazır mı (sade Türkçe; ayrıntı yalnızca sorun varsa)
   function offlineInfo() {
-    var parts = [];
-    if (navigator.serviceWorker) parts.push('SW ' + (navigator.serviceWorker.controller ? 'aktif' : 'pasif'));
-    else parts.push('SW yok');
-    if (ac) parts.push('AC ' + ['yok', 'hazır', 'kontrol', 'iniyor', 'yeni', 'silindi'][ac.status]);
-    if (window.navigator.standalone) parts.push('ana ekran');
-    if (!storageOK) parts.push('depolama KAPALI');
+    var parts = [], ok = false, state;
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) { state = 'hazır'; ok = true; }
+    else if (ac && ac.status !== 0) {
+      state = ['kurulmadı', 'hazır', 'kontrol ediliyor', 'iniyor', 'yeni sürüm hazır', 'kaldırıldı'][ac.status] + ' (eski yöntem)';
+      ok = ac.status === 1 || ac.status === 4;
+    } else if (navigator.serviceWorker) state = 'hazırlanıyor';
+    else if (ac) state = 'kurulmadı';
+    else state = 'bu tarayıcıda yok';
+    parts.push('İnternetsiz: ' + state);
+    if (window.navigator.standalone) parts.push('ana ekranda');
+    if (!storageOK) parts.push('kayıt kapalı (gizli mod?)');
     var log = window.__acLog;
-    if (ac && log) parts.push('olaylar: ' + (log.length ? log.join('>') : 'hiç'));
+    if (!ok && ac && log && log.length) {
+      var words = [];
+      for (var i = 0; i < log.length; i++) words.push(acWord(log[i]));
+      parts.push('adımlar: ' + words.join(' > '));
+    }
     if (manifestCheck) parts.push(manifestCheck);
     return parts.join(', ');
   }
