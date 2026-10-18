@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.10.1';
+  var APP_VERSION = '1.11.0';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 
@@ -291,13 +291,23 @@
   ];
   GAMES.bus = { id: 'bus', title: 'Mandi Otobüsü', iconHTML: 'bus', color: '#f2a900', levels: LEVELS_BUS, lazy: 'bus.js', unlock: { game: 'shop', stars: 12 } };
 
+  // Mangala: geleneksel Türk zekâ oyunu (mangala.js, sonradan yüklenir)
+  var LEVELS_MANGALA = [
+    { name: 'Kolay Mandi', sub: 'İpuçlu', color: '#3bb273', kind: 'easy', hints: true },
+    { name: 'İki kişi', sub: 'Arkadaşınla', color: '#3a86ff', kind: 'two' },
+    { name: 'Orta Mandi', sub: 'Dikkatli ol', color: '#ff8a3d', kind: 'mid' },
+    { name: 'Zor Mandi', sub: 'Usta işi', color: '#ef476f', kind: 'hard' }
+  ];
+  GAMES.mangala = { id: 'mangala', title: 'Mangala', iconHTML: 'mangala', color: '#a0662f', levels: LEVELS_MANGALA, lazy: 'mangala.js' };
+
   // Ana sayfa: konu başlıkları altında oyun kartları (yeni oyunlar buraya eklenir)
   var SUBJECTS = [
     { title: 'Matematik', games: ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'bus'] },
     { title: 'Türkçe', games: ['hece'] },
-    { title: 'Hayat Bilgisi', games: ['traffic'] }
+    { title: 'Hayat Bilgisi', games: ['traffic'] },
+    { title: 'Akıl Oyunları', games: ['mangala'] }
   ];
-  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'bus', 'hece', 'traffic'];
+  var GAME_ORDER = ['add', 'sub', 'pv', 'cmp', 'pat', 'geo', 'clock', 'shop', 'bus', 'hece', 'traffic', 'mangala'];
   var CUR = GAMES.add; // seçili oyun
   function starsOf(game) {
     if (game.id === 'add') return save.stars;
@@ -431,6 +441,15 @@
     return t;
   }
   function gameIcon(game) {
+    if (game.iconHTML === 'mangala') {
+      var mp = '', cols = ['#ef476f', '#3a86ff', '#ffd23f', '#3bb273'];
+      for (var mi = 0; mi < 4; mi++) {
+        mp += '<circle cx="' + (30 + mi * 14) + '" cy="20" r="5.5" fill="#7a4a1f"/><circle cx="' + (30 + mi * 14) + '" cy="38" r="5.5" fill="#7a4a1f"/>' +
+          '<circle cx="' + (29 + mi * 14) + '" cy="19" r="2" fill="' + cols[mi] + '"/><circle cx="' + (31 + mi * 14) + '" cy="39" r="2" fill="' + cols[(mi + 2) % 4] + '"/>';
+      }
+      return '<div class="game-icon" style="background:' + game.color + '"><svg class="mg-ico" viewBox="0 0 100 58"><rect x="4" y="6" width="92" height="46" rx="12" fill="#e0a66b" stroke="#7a4a1f" stroke-width="2.5"/>' +
+        '<rect x="9" y="12" width="12" height="34" rx="6" fill="#7a4a1f"/><rect x="79" y="12" width="12" height="34" rx="6" fill="#7a4a1f"/>' + mp + '</svg></div>';
+    }
     if (game.iconHTML === 'bus') {
       return '<div class="game-icon" style="background:' + game.color + '"><svg class="bus-ico" viewBox="0 0 100 60"><rect x="4" y="6" width="90" height="40" rx="7" fill="#ffd23f" stroke="#2b2d42" stroke-width="3"/>' +
         '<rect x="12" y="13" width="15" height="13" rx="2" fill="#bfe8ff"/><rect x="31" y="13" width="15" height="13" rx="2" fill="#bfe8ff"/><rect x="50" y="13" width="15" height="13" rx="2" fill="#bfe8ff"/><rect x="73" y="13" width="12" height="27" rx="2" fill="#bfe8ff"/>' +

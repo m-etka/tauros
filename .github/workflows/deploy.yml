@@ -38,7 +38,7 @@ jobs:
           sed -i "s/mandi-v1/mandi-${GITHUB_SHA::8}/" public/sw.js
           sed -i "s/__BUILD__/${GITHUB_SHA::7}/" public/app.js public/offline.appcache
           # İnternetsiz kullanım için indirilen dosyaların toplam boyutu (sürüm satırında gösterilir)
-          SIZE=$(cat public/index.html public/style.css public/app.js public/bus.js public/manifest.json public/icons/icon-192.png public/icons/icon-512.png | wc -c)
+          SIZE=$(cat public/index.html public/style.css public/app.js public/bus.js public/mangala.js public/manifest.json public/icons/icon-192.png public/icons/icon-512.png | wc -c)
           KB=$(( (SIZE + 1023) / 1024 ))
           sed -i "s/__SIZE__/$KB/" public/app.js
           echo "::notice::Internetsiz paket boyutu: $KB KB"
@@ -114,7 +114,7 @@ jobs:
         run: |
           # Yeni sürümün kenar sunuculara yayılmasını bekle (en fazla ~2 dk)
           for i in $(seq 1 12); do
-            if curl -s "https://mandi.etka.org/app.js?t=$i" | grep -q "var BUILD = .${GITHUB_SHA::7}." && [ "$(curl -s -o /dev/null -w '%{http_code}' "https://mandi.etka.org/bus.js?t=$i")" = 200 ]; then echo "Yeni sürüm yayında ($i. deneme)"; sleep 15; break; fi
+            if curl -s "https://mandi.etka.org/app.js?t=$i" | grep -q "var BUILD = .${GITHUB_SHA::7}." && [ "$(curl -s -o /dev/null -w '%{http_code}' "https://mandi.etka.org/bus.js?t=$i")" = 200 ] && [ "$(curl -s -o /dev/null -w '%{http_code}' "https://mandi.etka.org/mangala.js?t=$i")" = 200 ]; then echo "Yeni sürüm yayında ($i. deneme)"; sleep 15; break; fi
             sleep 10
           done
           fail=0
@@ -137,7 +137,7 @@ jobs:
           # Web Analytics sayaç betiği Cloudflare tarafından eklenir; karşılaştırmada yok sayılır
           curl -s https://mandi.etka.org/ | sed -E 's#<script[^>]*cloudflareinsights[^<]*</script>##g' > /tmp/live.html
           if cmp -s /tmp/live.html public/index.html || diff -q <(tr -d '\n' < /tmp/live.html) <(tr -d '\n' < public/index.html) >/dev/null; then echo "::notice::Canlı index.html depodakiyle aynı (sayaç hariç)"; elif false; then echo "::notice::Canlı index.html depodakiyle aynı"; else echo "::warning::Canlı index.html farklı (Cloudflare bir şey ekliyor olabilir): $(diff public/index.html /tmp/live.html | grep '^>' | head -5 | cut -c1-160 | tr '\n' ' ')"; fi
-          CODES=""; for f in / style.css app.js bus.js manifest.json icons/icon-192.png offline.appcache; do CODES="$CODES $f=$(curl -s -o /dev/null -w '%{http_code}' https://mandi.etka.org/${f#/})"; done
+          CODES=""; for f in / style.css app.js bus.js mangala.js manifest.json icons/icon-192.png offline.appcache; do CODES="$CODES $f=$(curl -s -o /dev/null -w '%{http_code}' https://mandi.etka.org/${f#/})"; done
           echo "::notice::AppCache dosyaları:$CODES"
           CHAIN=$(echo | openssl s_client -connect mandi.etka.org:443 -servername mandi.etka.org -showcerts 2>/dev/null | grep -E '^ *[0-9]+ s:|^ *i:' | sed 's/^ *//' | tr '\n' ' ')
           echo "::notice::Sertifika zinciri: $CHAIN"

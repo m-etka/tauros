@@ -54,14 +54,11 @@
       '<rect class="bdoor-open" x="134" y="12" width="16" height="41" rx="2" fill="#5b5f73" visibility="hidden"/>' +
       '<circle cx="163" cy="46" r="3" fill="#fff3c4"/>' +
       '<text x="62" y="51" text-anchor="middle" font-size="8" font-weight="900" fill="#2b2d42" font-family="Roboto, Arial, sans-serif">MANDİ</text>';
-    var wheels = [34, 122];
-    for (var k = 0; k < 2; k++) {
-      s += '<g class="bw" transform="rotate(0 ' + wheels[k] + ' 56)"><circle cx="' + wheels[k] + '" cy="56" r="10" fill="#2b2d42"/>' +
-        '<circle cx="' + wheels[k] + '" cy="56" r="4.6" fill="#b8bfcc"/>' +
-        '<line x1="' + (wheels[k] - 4.6) + '" y1="56" x2="' + (wheels[k] + 4.6) + '" y2="56" stroke="#5b5f73" stroke-width="1.6"/>' +
-        '<line x1="' + wheels[k] + '" y1="51.4" x2="' + wheels[k] + '" y2="60.6" stroke="#5b5f73" stroke-width="1.6"/></g>';
-    }
-    return s + '</svg>';
+    return s + '</svg>' + wheelDiv('bw0') + wheelDiv('bw1');
+  }
+  function wheelDiv(cls) {
+    return '<div class="bv-wheel ' + cls + '"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#2b2d42"/><circle cx="10" cy="10" r="4.6" fill="#b8bfcc"/>' +
+      '<line x1="5.4" y1="10" x2="14.6" y2="10" stroke="#5b5f73" stroke-width="1.6"/><line x1="10" y1="5.4" x2="10" y2="14.6" stroke="#5b5f73" stroke-width="1.6"/></svg></div>';
   }
 
   function hillsSVG() {
@@ -77,12 +74,21 @@
     for (var j = 0; j < 700; j += 50) s += '<rect x="' + j + '" y="48" width="1.5" height="20" fill="#cfc6b4"/>';
     return s + '</svg>';
   }
-  function treeSVG(c) {
-    return '<svg viewBox="0 0 40 50"><rect x="17" y="30" width="6" height="20" fill="#8b5a2b"/><circle cx="20" cy="22" r="17" fill="' + c + '"/></svg>';
+  function treeG(x, c) {
+    return '<g transform="translate(' + x + ' 0)"><rect x="17" y="30" width="6" height="20" fill="#8b5a2b"/><circle cx="20" cy="22" r="17" fill="' + c + '"/></g>';
   }
-  function houseSVG(c) {
-    return '<svg viewBox="0 0 70 50"><polygon points="4,22 35,2 66,22" fill="#ef476f"/><rect x="9" y="20" width="52" height="30" fill="' + c + '"/>' +
-      '<rect x="16" y="27" width="11" height="10" fill="#bfe8ff"/><rect x="43" y="27" width="11" height="10" fill="#bfe8ff"/><rect x="30" y="32" width="10" height="18" fill="#8b5a2b"/></svg>';
+  function houseG(x, c) {
+    return '<g transform="translate(' + x + ' 0)"><polygon points="4,22 35,2 66,22" fill="#ef476f"/><rect x="9" y="20" width="52" height="30" fill="' + c + '"/>' +
+      '<rect x="16" y="27" width="11" height="10" fill="#bfe8ff"/><rect x="43" y="27" width="11" height="10" fill="#bfe8ff"/><rect x="30" y="32" width="10" height="18" fill="#8b5a2b"/></g>';
+  }
+  // 50 rem'lik manzara karesi iki kez çizilir (100 rem); kaydırma = -(pos mod 50)
+  function sceneryStrip() {
+    var tile = '', x = 0;
+    while (x < 440) {
+      if (Math.random() < 0.4) { tile += houseG(x, pick(['#ffe8b8', '#d6ecff', '#ffd6e0', '#e3f7d4'])); x += 70 + rnd(10, 50); }
+      else { tile += treeG(x, pick(['#3bb273', '#2f9e63', '#5cc184'])); x += 40 + rnd(20, 60); }
+    }
+    return '<svg viewBox="0 0 1000 50" preserveAspectRatio="none"><g>' + tile + '</g><g transform="translate(500 0)">' + tile + '</g></svg>';
   }
   function stopSVG(name) {
     return '<svg viewBox="0 0 46 52"><rect x="21" y="10" width="4" height="42" fill="#5b5f73"/>' +
@@ -101,8 +107,13 @@
     var f = parseFloat(document.documentElement.style.fontSize);
     return f > 0 ? f : 16;
   }
-  function tr(node, xrem, yrem) {
-    var v = 'translate3d(' + (xrem * B.fs).toFixed(1) + 'px,' + ((yrem || 0) * B.fs).toFixed(1) + 'px,0)';
+  // Tam piksele yuvarla; değişmediyse yazma (eski cihazlarda gereksiz yeniden çizimi önler)
+  function tr(node, xrem, yrem, rot) {
+    var x = Math.round(xrem * B.fs), y = Math.round((yrem || 0) * B.fs);
+    var key = x + ',' + y + ',' + (rot || 0);
+    if (node._k === key) return;
+    node._k = key;
+    var v = 'translate3d(' + x + 'px,' + y + 'px,0)' + (rot ? ' rotate(' + rot + 'deg)' : '');
     node.style.webkitTransform = node.style.transform = v;
   }
   function choices3(ans, min) {
@@ -195,8 +206,9 @@
     var view = el('div', 'bus-view');
     B.hills = el('div', 'bv-hills', hillsSVG());
     B.ground = el('div', 'bv-ground', groundSVG());
+    B.scenery = el('div', 'bv-scenery', sceneryStrip());
     B.layer = el('div', 'bv-objs');
-    view.appendChild(B.hills); view.appendChild(B.ground); view.appendChild(B.layer);
+    view.appendChild(B.hills); view.appendChild(B.scenery); view.appendChild(B.ground); view.appendChild(B.layer);
     B.busEl = el('div', 'bv-bus', busSVG());
     view.appendChild(B.busEl);
     B.near = el('div', 'bv-near');
@@ -211,14 +223,8 @@
     B.view = view;
     B.routeBus = view.querySelector('.rb');
     B.heads = B.busEl.querySelectorAll('.bh');
-    B.wheels = B.busEl.querySelectorAll('.bw');
-    // manzara: ağaçlar ve evler (uzak), duraklar ve yolcular (yakın)
-    var end = B.plan[B.plan.length - 1].x + 40, x = -30;
-    while (x < end) {
-      if (Math.random() < 0.4) addObj(x, 'far', houseSVG(pick(['#ffe8b8', '#d6ecff', '#ffd6e0', '#e3f7d4'])), 1.2, 7, 5);
-      else addObj(x, 'far', treeSVG(pick(['#3bb273', '#2f9e63', '#5cc184'])), 1.2, 4, 5);
-      x += rnd(7, 13);
-    }
+    B.wheels = [B.busEl.querySelector('.bw0'), B.busEl.querySelector('.bw1')];
+    // duraklar ve yolcular (yakın)
     for (var s = 0; s < B.plan.length; s++) {
       var st = B.plan[s];
       addObj(st.x - 8, 'nearobj', stopSVG(st.name), 7.1, 4.6, 5.2).n.className = 'bo nearobj bstop';
@@ -254,19 +260,21 @@
     var p = B.pos;
     tr(B.hills, -((p * 0.35) % 40));
     tr(B.ground, -(((p % 10) + 10) % 10));
+    tr(B.scenery, -(((p % 50) + 50) % 50));
     for (var i = 0; i < B.objs.length; i++) {
       var o = B.objs[i], sx = o.x - p + DOOR_X;
       var vis = sx > -o.w - 1 && sx < B.vw + 1;
       if (vis !== o.on) { o.on = vis; o.n.style.display = vis ? '' : 'none'; }
       if (vis) tr(o.n, sx);
     }
-    var ang = (p / (2 * Math.PI)) * 360 % 360;
-    B.wheels[0].setAttribute('transform', 'rotate(' + ang.toFixed(1) + ' 34 56)');
-    B.wheels[1].setAttribute('transform', 'rotate(' + ang.toFixed(1) + ' 122 56)');
+    var ang = Math.round((p / (2 * Math.PI)) * 360 % 360 / 6) * 6;
+    tr(B.wheels[0], 0, 0, ang);
+    tr(B.wheels[1], 0, 0, ang);
     var bob = B.v > 0.5 ? Math.sin(Date.now() / 70) * 0.05 : 0;
     tr(B.busEl, 0, bob);
     var last = B.plan[B.plan.length - 1].x;
-    B.routeBus.style.left = Math.max(0, Math.min(100, (p / last) * 100)).toFixed(1) + '%';
+    if (!B.routeW) B.routeW = B.routeBus.parentNode.offsetWidth / B.fs;
+    tr(B.routeBus, Math.max(0, Math.min(1, p / last)) * B.routeW);
   }
 
   /* ---------------- Sürüş ---------------- */
@@ -307,6 +315,7 @@
     B.target = st.x;
     B.driving = true; B.gas = false; B.brake = false; B.warned = false; B.nearSaid = false;
     B.fs = fsize();
+    B.routeW = 0;
     B.vw = B.view.offsetWidth / B.fs;
     var g = M.G();
     g.locked = true;
@@ -325,7 +334,7 @@
   function frame() {
     if (!B || !B.driving) return;
     if (M.screen() !== 'play' || M.G() !== B.g) { B.driving = false; return; }
-    var now = Date.now(), dt = Math.min(0.05, (now - B.t) / 1000);
+    var now = Date.now(), dt = Math.min(0.08, (now - B.t) / 1000);
     B.t = now;
     var v = B.v;
     if (B.brake) v -= BRAKE * dt;
