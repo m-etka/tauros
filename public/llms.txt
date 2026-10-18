@@ -3,6 +3,7 @@
 > 1. sınıf (6-9 yaş) çocuklar için ücretsiz, reklamsız ve internetsiz çalışan Türkçe eğitici oyunlar; öğrenmeyi oyunlaştırır. Şu an Matematik: toplama, çıkarma, onluk ve birlik, sayı karşılaştırma, örüntüler ve ritmik sayma, geometrik şekiller, saat okuma, paralarımız ve Mandi Otobüsü (otobüs sürüp bilet parası toplama, para üstü). Türkçe: Hece Treni (heceleme ve okuma). Hayat Bilgisi: Trafik Kahramanı (trafikte güvenlik). Akıl Oyunları: Satranç Okulu (taşlar ve kurallar, rakipsiz eğitim) ve Mangala (geleneksel Türk zekâ oyunu). Tarayıcıda açılır, "Ana ekrana ekle" ile uygulama gibi kurulur, sonra internet olmadan oynanır. Yeni tablet, telefon ve bilgisayarların neredeyse tamamında çalışır. Denenen eski cihazlar: iPad 3 (iOS 9.3.5, Safari; internetsiz dahil), Samsung Galaxy Tab 3 Lite SM-T110 (Android 4.2, Chrome).
 
 Adres: https://mandi.etka.org/
+İletişim: mandi@etka.org (öğretmen ve veli geri bildirimleri, oyun istekleri, hata bildirimleri)
 Dil: Türkçe
 Ücret: Ücretsiz. Reklam, üyelik, uygulama içi satın alma ve takip kodu yok. Kişisel veri toplanmaz; ilerleme yalnızca cihazın tarayıcısında saklanır.
 
