@@ -166,6 +166,13 @@
   function sqName(x, y, n) { return String.fromCharCode(97 + x) + (n - y); }
 
   /* ---------------- Görev üreticileri ---------------- */
+  // Engel taşları: sorulan taşla aynı türden olmasın (karışmasın)
+  function otherTypes(t) {
+    var all = ['P', 'N', 'B', 'R'], out = [];
+    for (var i = 0; i < all.length; i++) if (all[i] !== t) out.push(all[i]);
+    return out;
+  }
+  function whiteCount(b) { var n = 0; for (var k in b.p) if (b.p.hasOwnProperty(k) && b.p[k].c === 'w') n++; return n; }
   // Kaç kareye gidebilir: hedefler = yasal hamleler
   function tMark(t, n, opts) {
     opts = opts || {};
@@ -176,7 +183,7 @@
       else { x = rnd(0, n - 1); y = rnd(0, n - 1); }
       put(b, x, y, t, 'w');
       var own = opts.own || 0, foe = opts.foe || 0, j, s;
-      for (j = 0; j < own; j++) { s = emptySq(b); put(b, s[0], s[1], pick(['P', 'N', 'B', 'R']), 'w'); }
+      for (j = 0; j < own; j++) { s = emptySq(b); put(b, s[0], s[1], pick(otherTypes(t)), 'w'); }
       for (j = 0; j < foe; j++) { s = emptySq(b); put(b, s[0], s[1], pick(['P', 'N', 'B', 'R']), 'b'); }
       if (t === 'P' && opts.pawnFoe) {
         var dx = pick([-1, 1]);
@@ -187,13 +194,14 @@
       tries++;
     } while ((tg.length < (t === 'P' ? 1 : 2) || tg.length > 14) && tries < 60);
     var q = { mode: 'mark', b: b, piece: [x, y], targets: keysOf(tg), tip: TIPS[t], t: t };
-    q.ask = GEN[t] + ' gidebileceği bütün karelere dokun!';
+    var many = whiteCount(b) > 1;
+    q.ask = (many ? 'Sarı karedeki ' + GEN[t].toLowerCase() : GEN[t]) + ' gidebileceği bütün karelere dokun!';
     if (opts.capOnly) {
       var caps = [];
       for (var i = 0; i < tg.length; i++) if (at(b, tg[i][0], tg[i][1])) caps.push(tg[i]);
       if (!caps.length) return tMark(t, n, opts);
       q.targets = keysOf(caps);
-      q.ask = NAMES[t] + ' hangi siyah taşları yiyebilir? Hepsine dokun!';
+      q.ask = (many ? 'Sarı karedeki ' + NAMES[t].toLowerCase() : NAMES[t]) + ' hangi siyah taşları yiyebilir? Hepsine dokun!';
       q.tip = TIPS[t] + ' Rakip taşın olduğu kareye giderek onu yer.';
     }
     return q;
@@ -225,7 +233,7 @@
       b = mk(n);
       x = rnd(0, n - 1); y = t === 'P' ? n - 2 : rnd(0, n - 1);
       put(b, x, y, t, 'w');
-      for (var j = 0; j < (opts.own || 0); j++) { var s = emptySq(b); put(b, s[0], s[1], pick(['P', 'N', 'B']), 'w'); }
+      for (var j = 0; j < (opts.own || 0); j++) { var s = emptySq(b); put(b, s[0], s[1], pick(otherTypes(t)), 'w'); }
       r = reach(b, x, y);
       tries++;
     } while (r.length < nStars + 2 && tries < 60);
@@ -597,6 +605,7 @@
     if (q.hl) for (var hi = 0; hi < q.hl.length; hi++) C.squares[q.hl[hi]].className += ' hl';
     if (q.checkK) C.squares[K(q.checkK[0], q.checkK[1])].className += ' chk';
     if (q.ghost) C.squares[q.ghost].querySelector('.mk').innerHTML = '<span class="ghost">' + pieceSVG('P', 'b') + '</span>';
+    if (q.piece) clsToggle(K(q.piece[0], q.piece[1]), 'sel', true); // sorulan taş
     if (q.showDots) {
       var src = q.piece || XY(q.movers[0]), lm = legal(q.b, src[0], src[1]);
       for (var d = 0; d < lm.length; d++) C.squares[K(lm[d][0], lm[d][1])].className += ' hint';
