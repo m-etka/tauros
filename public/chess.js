@@ -36,7 +36,11 @@
       '<circle cx="17" cy="13" r="1.4" fill="' + d + '"/>';
     else if (t === 'Q') g = '<path d="M11 30 L8 13 L14.5 22 L15 9.5 L20 20 L25 9.5 L25.5 22 L32 13 L29 30 Z"' + a + '/>' +
       '<circle cx="8" cy="12" r="2.3"' + a + '/><circle cx="15" cy="8.5" r="2.3"' + a + '/><circle cx="25" cy="8.5" r="2.3"' + a + '/><circle cx="32" cy="12" r="2.3"' + a + '/>';
-    else if (t === 'K') g = '<path d="M11 30 Q9 19 20 17.5 Q31 19 29 30 Z"' + a + '/><rect x="18.3" y="4" width="3.4" height="13" rx="1"' + a + '/><rect x="14.5" y="7.5" width="11" height="3.4" rx="1"' + a + '/>';
+    // Şah: üç tepeli taç ve ortada tek taş (haçsız; vezirin sivri, boncuklu tacından farklı)
+    else if (t === 'K') g = '<path d="M11 30 Q9 20 20 18.5 Q31 20 29 30 Z"' + a + '/>' +
+      '<path d="M11.5 19 L10.5 8.5 L15.5 12.5 L20 5.5 L24.5 12.5 L29.5 8.5 L28.5 19 Z"' + a + '/>' +
+      '<rect x="11.5" y="15.5" width="17" height="3.5" rx="1"' + a + '/>' +
+      '<circle cx="20" cy="12.2" r="2.2" fill="' + d + '"/>';
     return '<svg class="cpc" viewBox="0 0 40 40">' + g + base + '</svg>';
   }
   var STAR = '<svg class="cstar" viewBox="0 0 20 20"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L10 14.8l-5.2 2.8 1-5.8L1.5 7.7l5.9-.8z" fill="#ffd23f" stroke="#e0a800" stroke-width="1"/></svg>';
