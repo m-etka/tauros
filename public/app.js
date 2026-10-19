@@ -8,7 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var QUESTIONS_PER_LEVEL = 8;
   var STORE_KEY = 'mandi.v1';
-  var APP_VERSION = '1.12.2';
+  var APP_VERSION = '1.12.3';
   var BUILD = '__BUILD__'; // yayında commit kısaltmasıyla değiştirilir
   var SIZE_KB = '__SIZE__'; // yayında internetsiz paketin toplam boyutu (KB) yazılır
 

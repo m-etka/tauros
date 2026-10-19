@@ -169,7 +169,7 @@ Rakipsiz eğitim oyunu: bilgisayara ya da arkadaşa karşı oyun yok. Küçük t
 11. Tam tahta — başlangıç dizilişi, kare adları (a-h, 1-8)
 12. Şampiyon — karışık görevler ve tek hamlede mat
 
-Görev türleri: taşın gidebileceği bütün kareleri bulma, taşı oynatıp yıldız toplama, doğru hamleyi yapma. Yanlışta kural yazılır ve gidilebilen kareler gösterilir. Oyun sonradan yüklenir ve internetsiz çalışır.
+Her yeni taş ve kural (taş yeme, şah çekme, terfi, rok, geçerken alma) önce örnek hamlelerin oynandığı kısa bir tanıtımla gösterilir. Görev türleri: taşın gidebileceği bütün kareleri bulma, taşı oynatıp yıldız toplama, doğru hamleyi yapma. Yanlışta kural yazılır ve gidilebilen kareler gösterilir. Oyun sonradan yüklenir ve internetsiz çalışır.
 
 ## Oyun: Mangala (Akıl Oyunları, 4 seviye)
 

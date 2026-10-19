@@ -1059,3 +1059,10 @@ svg { display: block; }
 .levels.many .lvl-stars svg { width: 1.3rem; height: 1.3rem; }
 .about-mail { text-align: center; margin: .2rem 0 .8rem; }
 .about-mail a { display: inline-block; font-size: 1.35rem; font-weight: 900; color: #fff; background: #3a86ff; border-radius: 1.2rem; border-bottom: .3rem solid #1f63cf; padding: .55rem 1.4rem; text-decoration: none; }
+/* Satranç tanıtımı */
+.cs-board.slow .cs-pcs .pc { -webkit-transition-duration: .65s; transition-duration: .65s; }
+.sq.path { background: #b9e3ff; }
+.sq.d.path { background: #8cc8f0; }
+.ch.word.cs-go { background: #3bb273; border-bottom-color: #26874f; min-width: 11rem; }
+.ch.word.cs-again { background: #8e7dff; border-bottom-color: #6a57e0; }
+.ch.cs-pulse { -webkit-animation: pedalPulse 1s ease-in-out 3; animation: pedalPulse 1s ease-in-out 3; }

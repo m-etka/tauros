@@ -559,6 +559,149 @@
     }
   };
 
+
+  /* ---------------- Tanıtım: yeni taş/kural önce gösterilir ---------------- */
+  // Adım: {text, move:[from,to], back:true, dots:key, path:[keys], hl:[keys], put:[t,c,x,y], del:key, setup:{n,pcs,labels}, ep:[x,y], promo:'P', wait}
+  function there(from, to, text) { return [{ move: [from, to], text: text }, { move: [to, from], back: true, wait: 900 }]; }
+  function cat() { var o = []; for (var i = 0; i < arguments.length; i++) o = o.concat(arguments[i]); return o; }
+  var INTRO = {
+    R: { title: 'Bu bir kale!', n: 5, pcs: [['R', 'w', 2, 2]], steps: cat(
+      [{ dots: '2,2', text: 'Kale düz gider. Noktalar, kalenin gidebildiği kareler.', wait: 2600 }],
+      there('2,2', '2,0', 'İleri gider...'), there('2,2', '4,2', 'Sağa gider...'), there('2,2', '2,4', 'Geri gider...'), there('2,2', '0,2', 'Sola gider...'),
+      there('2,2', '2,1', 'Bir kare de gidebilir, istediği kadar da!'),
+      [{ text: 'Kale çapraz gidemez. Şimdi sıra sende!', wait: 1500 }]) },
+    B: { title: 'Bu bir fil!', n: 5, pcs: [['B', 'w', 2, 2]], steps: cat(
+      [{ dots: '2,2', text: 'Fil çapraz gider. Noktalar, filin gidebildiği kareler.', wait: 2600 }],
+      there('2,2', '0,0', 'Çapraz, sola yukarı...'), there('2,2', '4,0', 'Sağa yukarı...'), there('2,2', '4,4', 'Sağa aşağı...'), there('2,2', '3,3', 'Bir kare de olur, istediği kadar da.'),
+      [{ hl: ['0,0', '2,0', '4,0', '1,1', '3,1', '0,2', '4,2', '1,3', '3,3', '0,4', '2,4', '4,4'], text: 'Fil hep aynı renk karelerde kalır. Bu fil açık renkli karelerde gezer.', wait: 3000 },
+       { text: 'Şimdi sıra sende!', wait: 1200 }]) },
+    Q: { title: 'Bu bir vezir!', n: 5, pcs: [['Q', 'w', 2, 2]], steps: cat(
+      [{ dots: '2,2', text: 'Vezir hem düz hem çapraz gider. En güçlü taştır!', wait: 2800 }],
+      there('2,2', '2,0', 'Kale gibi düz...'), there('2,2', '4,2', 'Düz, sağa...'), there('2,2', '4,0', 'Fil gibi çapraz...'), there('2,2', '0,4', 'Çapraz, sola aşağı...'),
+      [{ text: 'İstediği kadar gider. Şimdi sıra sende!', wait: 1500 }]) },
+    K: { title: 'Bu şah!', n: 5, pcs: [['K', 'w', 2, 2]], steps: cat(
+      [{ dots: '2,2', text: 'Şah en önemli taştır. Her yöne gider ama yalnızca bir kare!', wait: 2800 }],
+      there('2,2', '2,1', 'Bir kare ileri...'), there('2,2', '3,1', 'Bir kare çapraz...'), there('2,2', '1,2', 'Bir kare yana...'), there('2,2', '2,3', 'Bir kare geri...'),
+      [{ text: 'Şah iki kare gidemez. Şimdi sıra sende!', wait: 1500 }]) },
+    N: { title: 'Bu bir at!', n: 5, pcs: [['N', 'w', 2, 2]], steps: cat(
+      [{ dots: '2,2', text: 'At, L harfi çizerek gider. Noktalar, atın gidebildiği kareler.', wait: 2800 },
+       { path: ['2,1', '2,0'], text: 'İki kare düz...', wait: 1500 },
+       { path: ['2,1', '2,0', '3,0'], text: '...bir kare yana: L!', wait: 1400 },
+       { move: ['2,2', '3,0'], wait: 1200 }, { move: ['3,0', '2,2'], back: true, wait: 900 },
+       { path: ['3,2', '4,2', '4,3'], text: 'Başka bir L: iki kare sağa, bir kare aşağı.', wait: 1800 },
+       { move: ['2,2', '4,3'], wait: 1200 }, { move: ['4,3', '2,2'], back: true, wait: 900 },
+       { put: ['P', 'w', 2, 1] }, { put: ['P', 'w', 1, 2] }, { put: ['P', 'w', 3, 2] }, { put: ['P', 'w', 2, 3], text: 'At, taşların üstünden atlayabilir!', wait: 1800 },
+       { move: ['2,2', '1,0'], wait: 1300 }, { move: ['1,0', '2,2'], back: true, wait: 900 },
+       { text: 'Atı ancak çok alıştırmayla öğreniriz. Şimdi sıra sende!', wait: 1500 }]) },
+    P: { title: 'Bu bir piyon!', n: 6, pcs: [['P', 'w', 2, 4]], steps: [
+      { text: 'Piyon hep ileri gider, geri gelemez.', wait: 2200 },
+      { dots: '2,4', text: 'İlk hamlesinde bir ya da iki kare gidebilir.', wait: 2400 },
+      { move: ['2,4', '2,2'], text: 'İki kare ilerledi!', wait: 1600 },
+      { move: ['2,2', '2,1'], text: 'Sonra hep bir kare gider.', wait: 1600 },
+      { put: ['N', 'b', 2, 0], text: 'Önüne bir taş gelirse duramaz, yiyemez: takılır.', wait: 2400 },
+      { setup: { n: 6, pcs: [['P', 'w', 2, 3], ['P', 'b', 2, 2], ['N', 'b', 3, 2]] }, text: 'Ama çapraz yer!', wait: 1800 },
+      { move: ['2,3', '3,2'], text: 'Piyon çapraz giderek siyah atı yedi.', wait: 2000 },
+      { text: 'İleri gider, çapraz yer. Şimdi sıra sende!', wait: 1500 }] },
+    capture: { title: 'Taş yeme', n: 5, pcs: [['R', 'w', 0, 4], ['P', 'b', 0, 1], ['N', 'b', 3, 4]], steps: [
+      { text: 'Rakip taşın karesine gidersen onu yersin; o taş tahtadan çıkar.', wait: 2600 },
+      { dots: '0,4', text: 'Kale yukarıdaki piyona ve sağdaki ata gidebilir.', wait: 2400 },
+      { move: ['0,4', '0,1'], text: 'Kale siyah piyonu yedi!', wait: 1800 },
+      { setup: { n: 5, pcs: [['R', 'w', 0, 4], ['P', 'w', 0, 2], ['N', 'b', 0, 0]] }, text: 'Kendi taşını yiyemezsin, üstünden de geçemezsin.', wait: 1600 },
+      { dots: '0,4', text: 'Beyaz piyon yolu kapatıyor; kale siyah ata ulaşamaz.', wait: 2600 },
+      { text: 'Şimdi sıra sende!', wait: 1200 }] },
+    check: { title: 'Şah çekme', n: 6, pcs: [['K', 'w', 2, 4], ['R', 'b', 2, 0]], steps: [
+      { hl: ['2,0'], chk: '2,4', text: 'Siyah kale beyaz şaha saldırıyor. Buna "şah çekmek" denir.', wait: 3000 },
+      { text: 'Şah tehdit altında kalamaz; hemen kurtulmalı.', wait: 2200 },
+      { dots: '2,4', text: 'Noktalar güvenli kareler. Kalenin yolundaki kareler tehlikeli!', wait: 2800 },
+      { move: ['2,4', '3,4'], chk: null, text: 'Şah güvenli kareye kaçtı!', wait: 1800 },
+      { text: 'Şah yenmez. Kaçacak yeri kalmazsa "mat" olur ve oyun biter.', wait: 2600 },
+      { text: 'Şimdi sıra sende!', wait: 1200 }] },
+    special: { title: 'Özel hamleler', n: 8, labels: true, pcs: [['P', 'w', 3, 1], ['K', 'w', 4, 7], ['K', 'b', 0, 0]], steps: [
+      { text: 'Üç özel kural var. Birincisi terfi.', wait: 2000 },
+      { move: ['3,1', '3,0'], promo: 'P', text: 'Piyon son sıraya ulaştı...', wait: 1600 },
+      { put: ['Q', 'w', 3, 0], text: '...ve vezire dönüştü! Kale, fil ya da at da seçilebilir.', wait: 2600 },
+      { setup: { n: 8, labels: true, pcs: [['K', 'w', 4, 7], ['R', 'w', 7, 7], ['P', 'w', 5, 6], ['P', 'w', 6, 6], ['P', 'w', 7, 6], ['K', 'b', 4, 0]] }, text: 'İkincisi rok: şah ile kale birlikte oynar.', wait: 2200 },
+      { move: ['4,7', '6,7'], text: 'Şah kaleye doğru iki kare gider...', wait: 1600 },
+      { move: ['7,7', '5,7'], text: '...kale şahın üstünden atlayıp yanına geçer.', wait: 2200 },
+      { text: 'Arada taş varsa ya da şah tehdit altındaysa rok yapılamaz.', wait: 2400 },
+      { setup: { n: 8, labels: true, pcs: [['P', 'w', 3, 3], ['P', 'b', 4, 1], ['K', 'w', 4, 7], ['K', 'b', 0, 0]] }, text: 'Üçüncüsü geçerken alma.', wait: 1800 },
+      { move: ['4,1', '4,3'], text: 'Siyah piyon iki kare ilerleyip beyaz piyonun yanına geldi.', wait: 2400 },
+      { ep: [4, 2], move: ['3,3', '4,2'], text: 'Beyaz piyon çapraz gidip onu "geçerken" aldı!', wait: 2400 },
+      { text: 'Bu yalnızca hemen o hamlede yapılabilir. Şimdi sıra sende!', wait: 1800 }] }
+  };
+
+  function introBoard(def) {
+    var b = mk(def.n);
+    for (var i = 0; i < def.pcs.length; i++) put(b, def.pcs[i][2], def.pcs[i][3], def.pcs[i][0], def.pcs[i][1]);
+    var q = { mode: 'intro', b: b, ask: C.introDef.title, labels: !!def.labels };
+    C.q = q;
+    buildTask(q);
+    C.board.className += ' slow';
+    $('cs-cnt').innerHTML = '';
+  }
+  function introButtons() {
+    var box = $('choices');
+    box.innerHTML = '';
+    var again = el('button', 'ch word cs-again', 'Tekrar izle');
+    var go = el('button', 'ch word cs-go', 'Başla!');
+    again.addEventListener('click', function () { Snd.tap(); playIntro(); });
+    go.addEventListener('click', function () { Snd.tap(); endIntro(); });
+    box.appendChild(again); box.appendChild(go);
+  }
+  function playIntro() {
+    var def = C.introDef, g = M.G(), run = ++C.introRun, t = 400;
+    introBoard(def);
+    say('İzle!');
+    M.mascot.face('happy', 900);
+    var ok = function () { return C && C.inIntro && C.introRun === run && M.G() === g; };
+    for (var i = 0; i < def.steps.length; i++) {
+      (function (st) {
+        later(function () { if (ok()) introStep(st); }, t);
+        t += st.wait || (st.move ? 1500 : st.put ? 350 : 1200);
+      })(def.steps[i]);
+    }
+    later(function () { if (ok()) { M.restartAnim($('choices').querySelector('.cs-go'), 'cs-pulse'); say('Hadi başlayalım!'); } }, t);
+  }
+  function introStep(st) {
+    var q = C.q;
+    if (st.setup) introBoard(st.setup);
+    q = C.q;
+    clearHints();
+    for (var k in C.squares) if (C.squares.hasOwnProperty(k)) { clsToggle(k, 'hl', false); clsToggle(k, 'path', false); }
+    if (st.chk !== undefined) for (var c in C.squares) if (C.squares.hasOwnProperty(c)) clsToggle(c, 'chk', c === st.chk);
+    if (st.hl) for (var h = 0; h < st.hl.length; h++) clsToggle(st.hl[h], 'hl', true);
+    if (st.path) for (var p = 0; p < st.path.length; p++) clsToggle(st.path[p], 'path', true);
+    if (st.dots) { var xy = XY(st.dots), lm = legal(q.b, xy[0], xy[1]); for (var d = 0; d < lm.length; d++) clsToggle(K(lm[d][0], lm[d][1]), 'hint', true); }
+    if (st.put) { put(q.b, st.put[2], st.put[3], st.put[0], st.put[1]); renderPieces(); Snd.tone(700, 0, 0.06, 'triangle', 0.15); }
+    if (st.ep) q.b.ep = st.ep;
+    if (st.move) {
+      C.promo = st.promo || null;
+      var f = XY(st.move[0]), to = XY(st.move[1]), node = C.nodes[st.move[0]], victim = C.nodes[st.move[1]];
+      if (victim) victim.className += ' gone';
+      if (q.b.ep && at(q.b, f[0], f[1]).t === 'P' && to[0] === q.b.ep[0] && to[1] === q.b.ep[1] && C.nodes[K(to[0], f[1])]) C.nodes[K(to[0], f[1])].className += ' gone';
+      doMove(q.b, f[0], f[1], to[0], to[1], C.promo);
+      C.promo = null;
+      delete C.nodes[st.move[0]];
+      if (node) { placeNode(node, to[0], to[1]); C.nodes[st.move[1]] = node; }
+      if (!st.back) Snd.tone(520, 0, 0.08, 'triangle', 0.18);
+      later(function () { if (C && C.q === q) renderPieces(); }, 700);
+    }
+    if (st.text) note(st.text, true);
+  }
+  function showIntro(kind) {
+    C.inIntro = true;
+    C.introDef = INTRO[kind];
+    C.introRun = C.introRun || 0;
+    introButtons();
+    playIntro();
+  }
+  function endIntro() {
+    C.inIntro = false;
+    C.introDone = true;
+    C.introRun++;
+    next();
+  }
+
   /* ---------------- Çizim ve etkileşim ---------------- */
   var C = null; // aktif görev durumu
 
@@ -709,7 +852,7 @@
 
   function tap(k) {
     var g = M.G(), q = C.q;
-    if (!g || g.locked || C.busy) return;
+    if (!g || g.locked || C.busy || q.mode === 'intro') return;
     var p = XY(k), pc = at(q.b, p[0], p[1]);
     if (q.mode === 'mark' || q.mode === 'pick') {
       if (C.done[k]) return;
@@ -854,6 +997,7 @@
   function next() {
     var g = M.G();
     if (!C || C.g !== g) return;
+    if (g.q === 0 && !C.introDone && INTRO[g.lv.kind]) { if (!C.inIntro) showIntro(g.lv.kind); return; }
     if (g.q >= C.tasks.length) { M.finishLevel(); return; }
     var maker = C.tasks[g.q];
     var mkTask = function () { return maker(C.seen); };
